@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Maktab Nazorati — Kali Linux Monitoring</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:sans-serif; }
+    body { background:#0f172a; color:#fff; display:flex; flex-direction:column; height:100vh; }
+    header { background:#1e293b; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
+    #container { display:flex; flex:1; }
+    #map { flex:1; height:100%; }
+    #sidebar { width:340px; background:#1e293b; padding:16px; display:flex; flex-direction:column; gap:12px; }
+    .card { background:#0f172a; padding:14px; border-radius:8px; border:1px solid #334155; }
+    .btn { background:#0284c7; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Maktab Nazorati (Kali Linux)</h2>
+    <span style="color:#22c55e;">● Server Faol (Port 3000)</span>
+  </header>
+  <div id="container">
+    <div id="map"></div>
+    <div id="sidebar">
+      <div class="card">
+        <h3>Holat: <span id="status-text" style="color:#22c55e;">🟢 YASHIL (Maktabda)</span></h3>
+        <p style="margin-top:8px;">Batareya: <b id="bat-text">88%</b></p>
+        <p>Yurak urishi: <b id="hr-text">78 bpm</b></p>
+      </div>
+      <div class="card">
+        <h4>Test Simulyatsiyasi:</h4>
+        <button class="btn" style="width:100%; margin-top:8px;" onclick="sendSim('inside')">📍 Maktab ichida (Yashil)</button>
+        <button class="btn" style="width:100%; margin-top:6px; background:#f97316;" onclick="sendSim('outside')">🚶 Maktabdan chiqdi (Qizil)</button>
+        <button class="btn" style="width:100%; margin-top:6px; background:#ef4444;" onclick="sendSim('sos')">🚨 SOS Yuborish</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([41.311081, 69.240562], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.circle([41.311081, 69.240562], { color: '#22c55e', radius: 250 }).addTo(map).bindPopup("21-maktab hududi");
+    let marker = L.marker([41.311081, 69.240562]).addTo(map);
+
+    function sendSim(type) {
+      let lat = 41.311081 + (type === 'outside' ? 0.004 : 0);
+      let isSos = type === 'sos';
+      fetch(isSos ? '/api/v1/sos' : '/api/v1/telemetry', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ device_id: 'SM-R920', latitude: lat, longitude: 69.240562, battery_level: 85, heart_rate: isSos ? 130 : 80 })
+      }).then(() => refresh());
+    }
+
+    function refresh() {
+      fetch('/api/v1/status').then(r => r.json()).then(d => {
+        if (d.devices && d.devices.length > 0) {
+          const dev = d.devices[d.devices.length - 1];
+          marker.setLatLng([dev.latitude, dev.longitude]);
+          map.panTo([dev.latitude, dev.longitude]);
+          document.getElementById('status-text').innerText = dev.is_sos ? "🚨 SOS!" : (dev.geofenceStatus === 'INSIDE' ? "🟢 YASHIL (Maktabda)" : "🔴 QIZIL (Tashqarida)");
+          document.getElementById('status-text').style.color = dev.is_sos || dev.geofenceStatus !== 'INSIDE' ? '#ef4444' : '#22c55e';
+          document.getElementById('bat-text').innerText = (dev.battery_level || 85) + "%";
+          document.getElementById('hr-text').innerText = (dev.heart_rate || 78) + " bpm";
+        }
+      });
+    }
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>

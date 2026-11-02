@@ -416,6 +416,17 @@
     .map-container { flex: 1; height: 100%; position: relative; }
     #main-map { width: 100%; height: 100%; background: var(--bg-base); }
 
+    /* OpenStreetMap Dark Mode Tile Styling & Seamless Fallback Handling */
+    [data-theme="dark"] .leaflet-tile-pane {
+      filter: brightness(0.68) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.35);
+    }
+    .leaflet-tile-pane {
+      transition: filter 0.3s ease;
+    }
+    .leaflet-container {
+      background-color: var(--bg-base) !important;
+    }
+
     /* Interactive Drawing Toolbar Overlay (Section 2) */
     .drawing-toolbar {
       position: absolute;
@@ -1846,20 +1857,87 @@
       updateParentMapTiles(document.documentElement.getAttribute('data-theme') || 'dark');
     }
 
+    let serverConfig = { mapApiKey: '', mapboxToken: '', googleMapsApiKey: '' };
+
+    // Robust Tile Provider Resolver (Eliminates 'API KEY REQUIRED' watermarks)
+    function getTileConfig(theme) {
+      // 1. If an explicit API key is provided via Render Environment Variables
+      if (serverConfig.mapApiKey && serverConfig.mapApiKey.trim().length > 5) {
+        const key = encodeURIComponent(serverConfig.mapApiKey.trim());
+        return {
+          url: theme === 'dark' 
+            ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${key}`
+            : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${key}`,
+          options: {
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c', 'd'],
+            attribution: '&copy; CartoDB &copy; OpenStreetMap'
+          }
+        };
+      }
+
+      // 2. Safe Global Fallback: Standard OpenStreetMap (100% Free, NO API Key needed, Zero Watermarks)
+      return {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        options: {
+          maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+        }
+      };
+    }
+
     function updateMapTiles(theme) {
       if (tileLayer) map.removeLayer(tileLayer);
-      const url = theme === 'dark' 
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-      tileLayer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
+      const cfg = getTileConfig(theme);
+      tileLayer = L.tileLayer(cfg.url, cfg.options).addTo(map);
+
+      // Automated fallback on tile error
+      tileLayer.on('tileerror', function() {
+        if (!tileLayer._hasFallenBack) {
+          tileLayer._hasFallenBack = true;
+          map.removeLayer(tileLayer);
+          tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c'],
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+        }
+      });
     }
 
     function updateParentMapTiles(theme) {
       if (parentTileLayer) parentMap.removeLayer(parentTileLayer);
-      const url = theme === 'dark' 
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-      parentTileLayer = L.tileLayer(url, { maxZoom: 19 }).addTo(parentMap);
+      const cfg = getTileConfig(theme);
+      parentTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(parentMap);
+
+      parentTileLayer.on('tileerror', function() {
+        if (!parentTileLayer._hasFallenBack) {
+          parentTileLayer._hasFallenBack = true;
+          parentMap.removeLayer(parentTileLayer);
+          parentTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c'],
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(parentMap);
+        }
+      });
+    }
+
+    function fetchConfig() {
+      fetch('/api/v1/config')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.success) {
+            serverConfig = data;
+            if (serverConfig.mapApiKey && serverConfig.mapApiKey.trim().length > 5) {
+              const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+              updateMapTiles(currentTheme);
+              updateParentMapTiles(currentTheme);
+            }
+          }
+        })
+        .catch(() => {});
     }
 
     // --- INTERACTIVE BOUNDARY DRAWING SYSTEM (Section 2) ---
@@ -2835,6 +2913,7 @@
 
     // App Initialization on DOM Load
     window.addEventListener('DOMContentLoaded', () => {
+      fetchConfig();
       initMaps();
       fetchSchoolsAndRender();
       setupSSE();

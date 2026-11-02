@@ -290,6 +290,15 @@ class SmartChildHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
 
+        if path == '/api/v1/config':
+            self._send_json({
+                "success": True,
+                "mapApiKey": os.environ.get("MAP_API_KEY", "") or os.environ.get("CARTO_API_KEY", ""),
+                "mapboxToken": os.environ.get("MAPBOX_ACCESS_TOKEN", ""),
+                "googleMapsApiKey": os.environ.get("GOOGLE_MAPS_API_KEY", "")
+            })
+            return
+
         if path == '/api/v1/schools':
             schools = []
             for sch in db["schools"]:

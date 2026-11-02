@@ -50,3 +50,18 @@ Ushbu loyihani internetga joylashning 3 ta eng qulay va sinovdan o'tgan usuli ma
    docker compose up -d
    ```
 3. Server avtomatik ravishda fonda (background) 24/7 ishlab turadi va kompyuter qayta yoqilganda ham o'zi avtomatik qayta ishga tushadi.
+
+---
+
+## 🗺️ Render.com da Environment Variables (Xarita API Kalitlari) Sozlamalari
+
+Xaritada **"API KEY REQUIRED"** xatosi chiqmasligi uchun tizim avtomatik ravishda mutlaqo **BEPUL va cheklovlarsiz OpenStreetMap (OSM)** qatlamiga o'tadi (hech qanday API kalit talab qilinmaydi!).
+
+Agar siz kelajakda xususiy CartoDB yoki Mapbox kalitini qo'shmoqchi bo'lsangiz:
+1. [dashboard.render.com](https://dashboard.render.com) ga kiring.
+2. O'zingizning Web Servisingiz ustiga bosing (`maktab-nazorati`).
+3. Chap menyudan **"Environment"** bo'limiga o'ting.
+4. **"Add Environment Variable"** tugmasini bosing:
+   - **Key:** `MAP_API_KEY`
+   - **Value:** `sizning_kalitingiz`
+5. **"Save Changes"** tugmasini bosing. Render avtomatik qayta ishga tushiradi (redeploy).

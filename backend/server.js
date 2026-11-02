@@ -523,6 +523,17 @@ function evaluateStrictSchoolAttendance(student, lat, lng, accuracy) {
 // REST API ENDPOINTS
 // ====================================================================
 
+// 0. Configuration (Maps & Service Environment)
+app.get('/api/v1/config', (req, res) => {
+  res.json({
+    success: true,
+    mapApiKey: process.env.MAP_API_KEY || process.env.CARTO_API_KEY || '',
+    mapboxToken: process.env.MAPBOX_ACCESS_TOKEN || '',
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+    env: process.env.NODE_ENV || 'production'
+  });
+});
+
 // 1. Real-Time SSE
 app.get('/api/v1/stream', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');

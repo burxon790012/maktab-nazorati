@@ -1,72 +1,2844 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>Maktab Nazorati — Kali Linux Monitoring</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMART CHILD — GPS Child Safety, Health Monitoring & Multi-School Attendance Platform</title>
+  <meta name="description" content="SMART CHILD — Enterprise multi-school platform for real-time GPS child tracking, smartwatch health monitoring, automatic geofence attendance, and parent safety alerts.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:sans-serif; }
-    body { background:#0f172a; color:#fff; display:flex; flex-direction:column; height:100vh; }
-    header { background:#1e293b; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
-    #container { display:flex; flex:1; }
-    #map { flex:1; height:100%; }
-    #sidebar { width:340px; background:#1e293b; padding:16px; display:flex; flex-direction:column; gap:12px; }
-    .card { background:#0f172a; padding:14px; border-radius:8px; border:1px solid #334155; }
-    .btn { background:#0284c7; color:#fff; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; }
+    :root {
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Dark Theme (Default) */
+      --bg-base: #070a13;
+      --bg-surface: #0e1526;
+      --bg-card: #131d33;
+      --bg-card-hover: #192745;
+      --border: #1f3052;
+      --border-light: rgba(255, 255, 255, 0.08);
+
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.28);
+
+      --accent: #06b6d4;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.28);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.28);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.35);
+      --purple: #8b5cf6;
+
+      --glass: rgba(14, 21, 38, 0.88);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --border: #e2e8f0;
+      --border-light: rgba(0, 0, 0, 0.06);
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.16);
+
+      --glass: rgba(255, 255, 255, 0.92);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* TOP NAVBAR */
+    header {
+      height: 64px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      flex-shrink: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--success), var(--primary));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 14px var(--success-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #38bdf8;
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Role & School Selectors */
+    .header-middle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .selector-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .selector-box select {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 12.5px;
+      font-weight: 700;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .role-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+    .role-super { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); }
+    .role-school { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .role-teacher { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .role-parent { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--bg-card);
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--text-main); background: var(--bg-card-hover); }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .btn-action:hover { background: var(--bg-card-hover); border-color: var(--primary); }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .btn-success { background: var(--success); border-color: var(--success); color: white; }
+    .btn-warning { background: var(--warning); border-color: var(--warning); color: #1e293b; }
+    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+
+    .notif-bell-btn {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .notif-bell-btn:hover { border-color: var(--primary); }
+    .notif-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: var(--danger);
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px var(--danger-glow);
+      animation: pulse 1.8s infinite;
+    }
+
+    /* MAIN APP BODY */
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tab-content {
+      flex: 1;
+      display: none;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .tab-content.active { display: flex; }
+
+    /* TAB 1: MAP LAYOUT */
+    .map-layout { width: 100%; height: 100%; display: flex; position: relative; }
+
+    .map-sidebar {
+      width: 360px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 500;
+      box-shadow: var(--shadow-md);
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-header h2 {
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .student-search {
+      margin-top: 8px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 7px 11px;
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 12px;
+      outline: none;
+    }
+    .student-search:focus { border-color: var(--primary); }
+
+    .student-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .student-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .student-card:hover, .student-card.selected {
+      border-color: var(--primary);
+      background: var(--bg-card-hover);
+      transform: translateX(2px);
+    }
+
+    .student-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .status-badge-green {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge-red {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge-yellow {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge-gray {
+      background: rgba(100, 116, 139, 0.15);
+      color: var(--text-dim);
+      border: 1px solid rgba(100, 116, 139, 0.4);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .map-container { flex: 1; height: 100%; position: relative; }
+    #main-map { width: 100%; height: 100%; background: var(--bg-base); }
+
+    /* Interactive Drawing Toolbar Overlay (Section 2) */
+    .drawing-toolbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 1000;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .school-search-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 8px;
+    }
+    .school-search-input {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 12px;
+      outline: none;
+      width: 170px;
+    }
+
+    .drawing-info {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .drawing-count-badge {
+      background: var(--success);
+      color: white;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    /* Top-Right Floating Metrics HUD */
+    .map-floating-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .floating-card {
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .map-stat { display: flex; flex-direction: column; align-items: center; }
+    .map-stat-val { font-size: 18px; font-weight: 800; font-family: var(--font-mono); line-height: 1; }
+    .map-stat-lbl { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; margin-top: 3px; }
+    .divider { width: 1px; height: 24px; background: var(--border); }
+
+    /* Live Walk Simulator Bar (Section 5, 12) */
+    .walk-simulator-hud {
+      position: absolute;
+      bottom: 24px;
+      right: 14px;
+      z-index: 1000;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Status Color Legend (Section 12) */
+    .status-legend-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 14px;
+      z-index: 1000;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* GENERIC TABLE & DASHBOARD LAYOUT */
+    .dashboard-layout {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+
+    .kpi-icon-wrap {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .kpi-title { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+    .kpi-val { font-size: 26px; font-weight: 800; font-family: var(--font-mono); }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12.5px;
+    }
+
+    th {
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-dim);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    tr:hover td { background: var(--bg-card-hover); }
+
+    /* PARENT MOBILE SIMULATOR FRAME (Section 6) */
+    .parent-mobile-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 20px;
+      background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.08), transparent 70%);
+      overflow-y: auto;
+    }
+
+    .phone-mockup {
+      width: 410px;
+      height: 820px;
+      max-height: 94vh;
+      background: var(--bg-surface);
+      border: 8px solid #1e293b;
+      border-radius: 42px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-speaker-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: #334155;
+      border-radius: 4px;
+      z-index: 2000;
+    }
+
+    .phone-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--bg-base);
+    }
+
+    .parent-app-header {
+      padding: 24px 18px 14px 18px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .child-selector-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 12px;
+    }
+
+    /* NOTIFICATION DRAWER */
+    .notif-drawer {
+      position: fixed;
+      top: 64px;
+      right: -380px;
+      width: 360px;
+      height: calc(100vh - 64px);
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border);
+      z-index: 2000;
+      box-shadow: var(--shadow-lg);
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .notif-drawer.open { right: 0; }
+
+    .notif-drawer-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notif-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .notif-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 560px;
+      max-width: 92vw;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: modalPop 0.25s ease-out;
+    }
+    @keyframes modalPop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .modal-header { display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h3 { font-size: 16px; font-weight: 800; }
+    .modal-close { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
+    .form-input, .form-select, textarea {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-family: inherit;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, textarea:focus { border-color: var(--primary); }
+
+    /* TOAST */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 4000; display: flex; flex-direction: column; gap: 10px; }
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      box-shadow: var(--shadow-lg);
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastSlide 0.3s ease;
+    }
+    @keyframes toastSlide { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Animations */
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.35); opacity: 0.2; } }
+    @keyframes sirenFlashing { 0%, 100% { background: rgba(239, 68, 68, 0.2); } 50% { background: rgba(239, 68, 68, 0.5); } }
   </style>
 </head>
 <body>
+
+  <!-- TOP HEADER -->
   <header>
-    <h2>Maktab Nazorati (Kali Linux)</h2>
-    <span style="color:#22c55e;">● Server Faol (Port 3000)</span>
-  </header>
-  <div id="container">
-    <div id="map"></div>
-    <div id="sidebar">
-      <div class="card">
-        <h3>Holat: <span id="status-text" style="color:#22c55e;">🟢 YASHIL (Maktabda)</span></h3>
-        <p style="margin-top:8px;">Batareya: <b id="bat-text">88%</b></p>
-        <p>Yurak urishi: <b id="hr-text">78 bpm</b></p>
+    <!-- Brand -->
+    <a href="#" class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div class="brand-text">
+        <h1>SMART CHILD</h1>
+        <span id="txt-brand-sub">GPS Safety & Attendance Platform</span>
       </div>
-      <div class="card">
-        <h4>Test Simulyatsiyasi:</h4>
-        <button class="btn" style="width:100%; margin-top:8px;" onclick="sendSim('inside')">📍 Maktab ichida (Yashil)</button>
-        <button class="btn" style="width:100%; margin-top:6px; background:#f97316;" onclick="sendSim('outside')">🚶 Maktabdan chiqdi (Qizil)</button>
-        <button class="btn" style="width:100%; margin-top:6px; background:#ef4444;" onclick="sendSim('sos')">🚨 SOS Yuborish</button>
+    </a>
+
+    <!-- Role Switcher & School Switcher (Section 1, 10, 11) -->
+    <div class="header-middle">
+      <!-- Role Switcher -->
+      <div class="selector-box">
+        <span style="font-size: 13px;">👤</span>
+        <select id="role-selector" title="Tizim rolini almashtirish">
+          <option value="SUPER_ADMIN">👑 Super Admin (Sardor Alimov)</option>
+          <option value="SCHOOL_ADMIN">🏫 Maktab Admini (SCH001)</option>
+          <option value="TEACHER">👩‍🏫 O'qituvchi (5-B Sinf)</option>
+          <option value="PARENT">📱 Ota-ona (Jasur Bekmirzayev)</option>
+        </select>
+        <span class="role-badge role-super" id="role-badge-label">SUPER_ADMIN</span>
+      </div>
+
+      <!-- School Switcher -->
+      <div class="selector-box" id="school-box-wrapper">
+        <span style="font-size: 13px;">🏫</span>
+        <select id="school-selector" title="Maktabni tanlash">
+          <option value="ALL">🌐 Barcha Maktablar</option>
+          <option value="SCH001" selected>SCH001: 1-Sonli Namunaviy Maktab</option>
+          <option value="SCH002">SCH002: 21-Sonli Ixtisoslashtirilgan Maktab</option>
+          <option value="SCH003">SCH003: Al-Xorazmiy IT Maktabi</option>
+        </select>
+        <button class="btn-action" style="padding: 3px 7px; font-size: 11px;" id="btn-add-school-modal" title="Yangi maktab ro'yxatdan o'tkazish">
+          ➕ Maktab
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-map">
+        <span>🗺️</span> <span id="nav-tab-map">Xarita & Chegara</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-superadmin" id="btn-tab-superadmin">
+        <span>👑</span> <span id="nav-tab-super">Super Admin</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-attendance">
+        <span>📋</span> <span id="nav-tab-att">Aqlli Davomat</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-students">
+        <span>👥</span> <span id="nav-tab-std">O'quvchilar</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-health">
+        <span>❤️</span> <span id="nav-tab-health">Salomatlik</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-parent">
+        <span>📱</span> <span id="nav-tab-parent">Ota-ona Ilovasi</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-reports">
+        <span>📊</span> <span id="nav-tab-reports">Hisobotlar</span>
+      </button>
+    </nav>
+
+    <!-- Right Controls -->
+    <div class="nav-actions">
+      <!-- Notification Bell -->
+      <button class="notif-bell-btn" id="btn-toggle-notif" title="Xabarlar paneli">
+        <span>🔔</span>
+        <span class="notif-badge" id="notif-unread-count">1</span>
+      </button>
+
+      <!-- Walk Test Simulator -->
+      <button class="btn-action btn-primary" id="btn-walk-test" title="Bolaning maktabga kirish va chiqishini sinab ko'rish">
+        <span>🚶‍♂️</span> <span id="txt-walk-test">GPS Sinov</span>
+      </button>
+
+      <!-- Language Switcher -->
+      <select class="form-select" style="padding: 5px 8px; font-size: 12px; font-weight: bold;" id="lang-switch">
+        <option value="uz">🇺🇿 UZ</option>
+        <option value="ru">🇷🇺 RU</option>
+        <option value="en">🇬🇧 EN</option>
+      </select>
+
+      <!-- Theme Button -->
+      <button class="btn-action" id="theme-btn" title="Yorug'/Tungi rejim">🌙</button>
+    </div>
+  </header>
+
+  <!-- MAIN TAB WRAPPER -->
+  <main>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 1: LIVE MAP & GPS BOUNDARY DRAWING SYSTEM (Section 2 & 12)       -->
+    <!-- ==================================================================== -->
+    <section class="tab-content active" id="tab-map">
+      <div class="map-layout">
+        
+        <!-- Left: Students & Status Sidebar -->
+        <aside class="map-sidebar">
+          <div class="sidebar-header">
+            <h2>
+              <span id="txt-students-list">O'quvchilar Nazorati</span>
+              <span style="font-size: 11px; color: var(--text-dim);" id="online-counter">3 ta faol</span>
+            </h2>
+            <input type="text" class="student-search" id="map-search" placeholder="Ism yoki ID bo'yicha qidiruv...">
+          </div>
+
+          <div class="student-list" id="map-students-container">
+            <!-- Dynamically populated -->
+          </div>
+        </aside>
+
+        <!-- Right: Map Container -->
+        <div class="map-container">
+          <div id="main-map"></div>
+
+          <!-- SCHOOL GPS BOUNDARY DRAWING TOOLBAR (Section 2) -->
+          <div class="drawing-toolbar">
+            <!-- Location Search (Geocoding) -->
+            <div class="school-search-box">
+              <span>🔍</span>
+              <input type="text" class="school-search-input" id="map-search-place" placeholder="Maktab manzilini qidirish...">
+            </div>
+
+            <!-- Start Drawing Button -->
+            <button class="btn-action btn-success" id="btn-start-draw">
+              <span>✏️</span> <span id="txt-draw-btn">Yashil Chegara Chizish</span>
+            </button>
+
+            <!-- Drawing Info & Coordinates Count -->
+            <div class="drawing-info" id="draw-info" style="display: none;">
+              <span id="txt-draw-prompt">Xaritaga bosing:</span>
+              <span class="drawing-count-badge" id="draw-count">0 nuqta</span>
+            </div>
+
+            <!-- Save Boundary Button -->
+            <button class="btn-action btn-primary" id="btn-finish-draw" style="display: none;">
+              <span>💾</span> <span id="txt-save-boundary">Chegarani Saqlash</span>
+            </button>
+
+            <!-- Cancel Button -->
+            <button class="btn-action btn-danger" id="btn-cancel-draw" style="display: none;">
+              <span>✖</span> <span id="txt-cancel-draw">Bekor qilish</span>
+            </button>
+          </div>
+
+          <!-- Top-Right Floating Metrics HUD -->
+          <div class="map-floating-panel">
+            <div class="floating-card">
+              <div class="map-stat">
+                <div class="map-stat-val" id="float-total-students">3</div>
+                <div class="map-stat-lbl" id="lbl-total">Jami</div>
+              </div>
+              <div class="divider"></div>
+              <div class="map-stat">
+                <div class="map-stat-val" style="color: var(--success);" id="float-inside-count">2</div>
+                <div class="map-stat-lbl" id="lbl-inside">Maktabda</div>
+              </div>
+              <div class="divider"></div>
+              <div class="map-stat">
+                <div class="map-stat-val" style="color: var(--danger);" id="float-outside-count">1</div>
+                <div class="map-stat-lbl" id="lbl-outside">Tashqarida</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Walk Simulation Quick Controller (Section 5) -->
+          <div class="walk-simulator-hud" id="walk-hud">
+            <span style="font-size: 13px;">🚶‍♂️</span>
+            <span style="font-size: 11.5px; font-weight: 700;" id="txt-sim-label">Harakat Sinovi:</span>
+            <button class="btn-action btn-success" style="padding: 4px 9px; font-size: 11px;" onclick="simulateWalkStage('ENTER_SCHOOL')">
+              🟢 Maktabga kirish
+            </button>
+            <button class="btn-action btn-danger" style="padding: 4px 9px; font-size: 11px;" onclick="simulateWalkStage('LEAVE_SCHOOL')">
+              🔴 Chiqib ketish
+            </button>
+            <button class="btn-action btn-warning" style="padding: 4px 9px; font-size: 11px;" onclick="simulateWalkStage('APPROACHING_GATE')">
+              🟡 GPS Tekshiruv
+            </button>
+          </div>
+
+          <!-- Status Color Legend (Section 12) -->
+          <div class="status-legend-bar">
+            <span style="color: #10b981;">🟢 PRESENT – INSIDE SCHOOL</span>
+            <span style="color: #ef4444;">🔴 LEFT SCHOOL – OUTSIDE</span>
+            <span style="color: #f59e0b;">🟡 GPS VERIFICATION</span>
+            <span style="color: #64748b;">⚪ UNKNOWN / OFFLINE</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 2: SUPER ADMIN DASHBOARD (Section 1)                             -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-superadmin">
+      <div class="dashboard-layout">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800;" id="txt-super-title">Super Admin Boshqaruv Paneli</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;" id="txt-super-sub">
+              Barcha maktablar, unikal School ID va Geofence chegaralari, ma'murlar va platforma xavfsizligi
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-primary" onclick="openModal('modal-add-school')">
+              <span>🏫</span> <span>Yangi Maktab Qo'shish</span>
+            </button>
+            <button class="btn-action btn-success" onclick="openModal('modal-add-user')">
+              <span>👤</span> <span>Admin / O'qituvchi Qo'shish</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Super Admin KPI Metrics -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="kpi-title">Ro'yxatdagi Maktablar</span>
+              <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: var(--primary);">🏫</div>
+            </div>
+            <div class="kpi-val" id="kpi-schools-count">3</div>
+            <span style="font-size: 11px; color: var(--success);">Barchasi GPS Geofence bilan ta'minlangan</span>
+          </div>
+          <div class="kpi-card">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="kpi-title">Jami O'quvchilar</span>
+              <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">👥</div>
+            </div>
+            <div class="kpi-val" id="kpi-students-count">4</div>
+            <span style="font-size: 11px; color: var(--text-dim);">Qat'iy maktab-poligon biriktiruvi</span>
+          </div>
+          <div class="kpi-card">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="kpi-title">Umumiy Davomat Ko'rsatkichi</span>
+              <div class="kpi-icon-wrap" style="background: rgba(6, 182, 212, 0.15); color: var(--accent);">📈</div>
+            </div>
+            <div class="kpi-val" style="color: var(--accent);" id="kpi-attendance-rate">100%</div>
+            <span style="font-size: 11px; color: var(--success);">O'z vaqtida kelish darajasi yuqori</span>
+          </div>
+          <div class="kpi-card">
+            <div style="display: flex; justify-content: space-between;">
+              <span class="kpi-title">Uzluksiz Soatlar (Watch5 Pro)</span>
+              <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">⌚</div>
+            </div>
+            <div class="kpi-val" style="color: var(--warning);">4</div>
+            <span style="font-size: 11px; color: var(--text-dim);">Telemetriya va puls monitoringi faol</span>
+          </div>
+        </div>
+
+        <!-- Schools Management Registry -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3 style="font-size: 15px; font-weight: 800;">🏫 Ro'yxatdan O'tgan Maktablar va GPS Chegaralari</h3>
+            <button class="btn-action" onclick="fetchSchoolsAndRender()">🔄 Yangilash</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>School ID</th>
+                <th>Maktab Nomi</th>
+                <th>Geofence ID</th>
+                <th>Koordinatalar (Markaz)</th>
+                <th>Dars Vaqti</th>
+                <th>GPS Nuqtalar</th>
+                <th>O'quvchilar</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="super-schools-table">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Platform Users & Roles Table -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3 style="font-size: 15px; font-weight: 800;">👤 Foydalanuvchilar va Ruxsatlar Boshqaruvi</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Foydalanuvchi ID</th>
+                <th>F.I.O</th>
+                <th>Email / Telefon</th>
+                <th>Rol</th>
+                <th>Biriktirilgan Maktab</th>
+                <th>Sinf</th>
+              </tr>
+            </thead>
+            <tbody id="super-users-table">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 3: SMART ATTENDANCE (Section 4, 5 & 10)                          -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-attendance">
+      <div class="dashboard-layout">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800;" id="txt-att-title">Aqlli GPS Maktab Davomati</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;" id="txt-att-sub">
+              Qat'iy Maktab-O'quvchi Geofence tekshiruvi. O'quvchi boshqa maktab hududiga kirsa, unga davomat yozilmaydi!
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-primary" id="btn-export-csv">
+              <span>📥</span> <span>Excel (CSV) Yuklash</span>
+            </button>
+            <button class="btn-action" onclick="window.print()">
+              <span>🖨️</span> <span>Chop etish (PDF)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <input type="text" class="student-search" style="margin-top:0; width: 250px;" id="att-search" placeholder="O'quvchi ismi yoki ID...">
+            <div style="display: flex; gap: 10px;">
+              <select class="form-select" id="att-class-filter">
+                <option value="ALL">Barcha Sinflar</option>
+                <option value="5-B">5-B Sinf</option>
+                <option value="9-A">9-A Sinf</option>
+                <option value="7-A">7-A Sinf</option>
+              </select>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>O'quvchi</th>
+                <th>Rasmiy Maktab ID</th>
+                <th>Sinf</th>
+                <th>Kelgan Vaqti</th>
+                <th>Ketgan Vaqti</th>
+                <th>Davomat Holati</th>
+                <th>GPS Holati</th>
+                <th>O'qituvchi Amali</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 4: STUDENTS & BULK CSV IMPORT (Section 3 & 4)                    -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-students">
+      <div class="dashboard-layout">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800;" id="txt-std-title">O'quvchilar va Maktab Biriktiruvi</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;" id="txt-std-sub">
+              Har bir o'quvchi o'zining rasmiy maktabiga va o'sha maktabning GPS poligoniga biriktiriladi
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-primary" onclick="openModal('modal-add-single-student')">
+              <span>➕</span> <span>Yakka O'quvchi</span>
+            </button>
+            <button class="btn-action btn-success" onclick="openModal('modal-bulk-students')">
+              <span>📊</span> <span>Ommaviy CSV/Excel Import</span>
+            </button>
+            <button class="btn-action btn-warning" onclick="openModal('modal-transfer-student')">
+              <span>🔄</span> <span>Maktab O'tkazish (Transfer)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <input type="text" class="student-search" style="margin-top:0; width: 250px;" id="std-search-input" placeholder="O'quvchini qidirish...">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>F.I.O</th>
+                <th>Biriktirilgan Maktab</th>
+                <th>Sinf</th>
+                <th>Smartwatch Device ID</th>
+                <th>Ota-onasi</th>
+                <th>Telefon</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="students-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 5: HEALTH MONITORING (Section 8)                                 -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-health">
+      <div class="dashboard-layout">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 800;" id="txt-health-title">Salomatlik & Biosensorlar Monitoringi</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;" id="txt-health-sub">
+            Samsung Galaxy Watch5 Pro orqali haqiqiy sensor ko'rsatkichlari (Puls / BPM, Tana harorati, Batareya quvvati)
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;" id="health-cards-container">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Medical Disclaimer Banner (Section 8) -->
+        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+          <span style="font-size: 28px;">ℹ️</span>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+            <b style="color: var(--primary);">Tibbiy Ogohlantirish (Medical Disclaimer):</b><br>
+            Smartwatch ko'rsatkichlari (yurak urishi, tana harorati va qadamlar) bolalar xavfsizligi, jismoniy faolligi va umumiy holatini masofadan kuzatish uchun xizmat qiladi. Ushbu ma'lumotlar professional tibbiy tashxis (medical diagnosis) hisoblanmaydi.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 6: PARENT MOBILE APPLICATION PORTAL (Section 6 & 7)              -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-parent">
+      <div class="parent-mobile-wrapper">
+        <!-- Phone Simulator Frame -->
+        <div class="phone-mockup">
+          <div class="phone-speaker-notch"></div>
+          
+          <div class="phone-screen">
+            <!-- App Header in Mobile -->
+            <div class="parent-app-header">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">🛡️</span>
+                  <div>
+                    <h3 style="font-size: 14px; font-weight: 800; color: #38bdf8;">SMART CHILD</h3>
+                    <span style="font-size: 10px; color: var(--text-dim);">Ota-onalar Ilovasi</span>
+                  </div>
+                </div>
+                <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="openModal('modal-parent-add-child')">
+                  ➕ Farzand qo'shish
+                </button>
+              </div>
+
+              <!-- Child Selector Pill -->
+              <div class="child-selector-pill">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img src="https://images.unsplash.com/photo-1544717305-2782549b5136?w=100&auto=format&fit=crop&q=80" style="width: 34px; height: 34px; border-radius: 8px; object-fit: cover;" id="parent-child-avatar">
+                  <div>
+                    <b style="font-size: 13px;" id="parent-child-name">Ali Valiyev</b>
+                    <div style="font-size: 10.5px; color: var(--text-dim);" id="parent-child-school">5-B • 1-Sonli Namunaviy Maktab (SCH001)</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+                  <span style="font-size: 10.5px; font-weight: bold; color: var(--success);" id="parent-watch-battery">89%</span>
+                </div>
+              </div>
+
+              <!-- Main Attendance Status Banner -->
+              <div id="parent-status-card" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <span style="font-size: 10px; font-weight: 800; color: var(--text-dim); text-transform: uppercase;">Davomat Holati</span>
+                  <div style="font-size: 14px; font-weight: 800; color: var(--success);" id="parent-status-text">🟢 PRESENT – INSIDE SCHOOL</div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="parent-time-text">Kelgan vaqti: 08:18:24</div>
+                </div>
+                <span style="font-size: 28px;">🏫</span>
+              </div>
+            </div>
+
+            <!-- Mini Map in Parent App -->
+            <div style="height: 220px; width: 100%; position: relative;">
+              <div id="parent-mini-map" style="width: 100%; height: 100%;"></div>
+            </div>
+
+            <!-- Interactive Route History Playback Controller (Section 6) -->
+            <div style="padding: 12px 16px; background: var(--bg-surface); border-bottom: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <b style="font-size: 12px;">📍 Bugungi Harakat Tarixi</b>
+                <button class="btn-action" style="padding: 2px 7px; font-size: 10px;" id="btn-play-route">▶ Harakatni ko'rish</button>
+              </div>
+              <input type="range" min="0" max="4" value="4" style="width: 100%; accent-color: var(--primary);" id="route-slider">
+              <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
+                <span>07:55 (Uy)</span>
+                <span>08:10 (Ko'cha)</span>
+                <span>08:18 (Maktab)</span>
+              </div>
+            </div>
+
+            <!-- Health & Device Telemetry Grid -->
+            <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px;">
+                  <span style="font-size: 11px; color: var(--text-dim);">Yurak urishi (BPM)</span>
+                  <div style="font-size: 20px; font-weight: 800; color: var(--primary); font-family: var(--font-mono); margin-top: 2px;" id="parent-bpm-val">78 BPM</div>
+                </div>
+                <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px;">
+                  <span style="font-size: 11px; color: var(--text-dim);">Tana harorati</span>
+                  <div style="font-size: 20px; font-weight: 800; color: var(--success); font-family: var(--font-mono); margin-top: 2px;" id="parent-temp-val">36.6°C</div>
+                </div>
+              </div>
+
+              <!-- Safe Zone Card -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 12px; font-weight: 700;">🟢 Xavfsiz Hudud: Maktab</div>
+                  <div style="font-size: 11px; color: var(--text-dim);">1-Sonli Namunaviy Maktab Hududida</div>
+                </div>
+                <span style="font-size: 18px;">🛡️</span>
+              </div>
+
+              <!-- Emergency SOS Button (Section 6 & 7) -->
+              <button class="btn-action btn-danger" style="justify-content: center; padding: 12px; font-size: 14px; font-weight: 800;" id="btn-trigger-sos">
+                🚨 SOS FAVQULODDA SIGNAL
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 7: REPORTS & AUDIT LOGS (Section 10, 11, 13 & 15)                -->
+    <!-- ==================================================================== -->
+    <section class="tab-content" id="tab-reports">
+      <div class="dashboard-layout">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 800;" id="txt-rep-title">Tizim Hisobotlari va Xavfsizlik Auditi</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;" id="txt-rep-sub">
+            Kunlik, haftalik va oylik davomat hisobotlari hamda tizim xavfsizlik loglari
+          </p>
+        </div>
+
+        <!-- Weekly Trend Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-title">Dushanba</span>
+            <div class="kpi-val" style="color: var(--success); font-size: 20px;">100% Davomat</div>
+            <span style="font-size: 11px; color: var(--text-dim);">Barcha o'quvchilar o'z vaqtida kelgan</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">Seshanba</span>
+            <div class="kpi-val" style="color: var(--success); font-size: 20px;">100% Davomat</div>
+            <span style="font-size: 11px; color: var(--warning);">1 nafar kechikkan</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">Chorshanba</span>
+            <div class="kpi-val" style="color: var(--success); font-size: 20px;">100% Davomat</div>
+            <span style="font-size: 11px; color: var(--text-dim);">O'z vaqtida kelgan</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">Payshanba</span>
+            <div class="kpi-val" style="color: var(--primary); font-size: 20px;">75% Davomat</div>
+            <span style="font-size: 11px; color: var(--danger);">1 nafar sababsiz kelmagan</span>
+          </div>
+        </div>
+
+        <!-- Audit Log Table (Section 10 & 15) -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h3 style="font-size: 15px; font-weight: 800;">🔒 Tizim Harakatlari va Xavfsizlik Auditi (Audit Logs)</h3>
+            <span style="font-size: 11px; color: var(--success); font-weight: bold;">✓ O'zgartirishlar doimiy qayd etiladi</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Vaqt</th>
+                <th>Foydalanuvchi</th>
+                <th>Rol</th>
+                <th>Amal (Action)</th>
+                <th>Obyekt</th>
+                <th>Tafsilotlar</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PUSH NOTIFICATION DRAWER (Section 9) -->
+  <aside class="notif-drawer" id="notif-drawer">
+    <div class="notif-drawer-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🔔</span>
+        <b style="font-size: 14px;" id="txt-notif-title">Bildirishnomalar (Push)</b>
+      </div>
+      <button class="modal-close" id="btn-close-notif">&times;</button>
+    </div>
+    <div style="padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 11px; color: var(--text-dim);">Firebase Cloud Messaging (FCM)</span>
+      <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" id="btn-send-test-push">Test Push</button>
+    </div>
+    <div class="notif-feed" id="notif-feed-container">
+      <!-- Dynamically populated -->
+    </div>
+  </aside>
+
+  <!-- MODAL: ADD NEW SCHOOL (Section 1) -->
+  <div class="modal-overlay" id="modal-add-school">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🏫 Yangi Maktab Ro'yxatdan O'tkazish</h3>
+        <button class="modal-close" onclick="closeModal('modal-add-school')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Maktab Nomi:</label>
+        <input type="text" class="form-input" id="new-sch-name" placeholder="Masalan: 45-Sonli Umumiy O'rta Ta'lim Maktabi">
+      </div>
+      <div class="form-group">
+        <label>Unikal School ID (masalan: SCH004):</label>
+        <input type="text" class="form-input" id="new-sch-code" placeholder="SCH004">
+      </div>
+      <div class="form-group">
+        <label>Manzil:</label>
+        <input type="text" class="form-input" id="new-sch-address" placeholder="Toshkent sh., Yunusobod tumani">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group">
+          <label>Dars Boshlanishi:</label>
+          <input type="time" class="form-input" id="new-sch-start" value="08:30">
+        </div>
+        <div class="form-group">
+          <label>Dars Tugashi:</label>
+          <input type="time" class="form-input" id="new-sch-end" value="13:30">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-add-school')">Bekor qilish</button>
+        <button class="btn-action btn-primary" id="btn-save-school">Saqlash</button>
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([41.311081, 69.240562], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    L.circle([41.311081, 69.240562], { color: '#22c55e', radius: 250 }).addTo(map).bindPopup("21-maktab hududi");
-    let marker = L.marker([41.311081, 69.240562]).addTo(map);
 
-    function sendSim(type) {
-      let lat = 41.311081 + (type === 'outside' ? 0.004 : 0);
-      let isSos = type === 'sos';
-      fetch(isSos ? '/api/v1/sos' : '/api/v1/telemetry', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ device_id: 'SM-R920', latitude: lat, longitude: 69.240562, battery_level: 85, heart_rate: isSos ? 130 : 80 })
-      }).then(() => refresh());
+  <!-- MODAL: ADD NEW USER / ADMIN (Section 1) -->
+  <div class="modal-overlay" id="modal-add-user">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>👤 Yangi Foydalanuvchi / Maktab Ma'muri</h3>
+        <button class="modal-close" onclick="closeModal('modal-add-user')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>To'liq F.I.O:</label>
+        <input type="text" class="form-input" id="new-user-name" placeholder="Masalan: Sanjar Karimov">
+      </div>
+      <div class="form-group">
+        <label>Rol:</label>
+        <select class="form-select" id="new-user-role">
+          <option value="SCHOOL_ADMIN">🏫 Maktab Administratori</option>
+          <option value="TEACHER">👩‍🏫 O'qituvchi</option>
+          <option value="PARENT">📱 Ota-ona</option>
+          <option value="SUPER_ADMIN">👑 Super Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Biriktiriladigan Maktab ID:</label>
+        <select class="form-select" id="new-user-school">
+          <option value="SCH001">SCH001: 1-Sonli Namunaviy Maktab</option>
+          <option value="SCH002">SCH002: 21-Sonli Ixtisoslashtirilgan Maktab</option>
+          <option value="SCH003">SCH003: Al-Xorazmiy IT Maktabi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Telefon raqam:</label>
+        <input type="text" class="form-input" id="new-user-phone" placeholder="+998901234567">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-add-user')">Bekor qilish</button>
+        <button class="btn-action btn-success" id="btn-save-user">Yaratish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD SINGLE STUDENT (Section 3) -->
+  <div class="modal-overlay" id="modal-add-single-student">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>➕ Yakka O'quvchini Ro'yxatdan O'tkazish</h3>
+        <button class="modal-close" onclick="closeModal('modal-add-single-student')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Unikal Student ID (masalan: 10005):</label>
+        <input type="text" class="form-input" id="single-std-id" placeholder="10005">
+      </div>
+      <div class="form-group">
+        <label>O'quvchi F.I.O:</label>
+        <input type="text" class="form-input" id="single-std-name" placeholder="Masalan: Behruz Aliyev">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group">
+          <label>Maktab:</label>
+          <select class="form-select" id="single-std-school">
+            <option value="SCH001">SCH001: 1-Sonli Maktab</option>
+            <option value="SCH002">SCH002: 21-Sonli Maktab</option>
+            <option value="SCH003">SCH003: Al-Xorazmiy Maktabi</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sinf:</label>
+          <input type="text" class="form-input" id="single-std-class" value="5-B">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ota-onasi Telefon Raqami:</label>
+        <input type="text" class="form-input" id="single-std-phone" placeholder="+998901234567">
+      </div>
+      <div class="form-group">
+        <label>Smartwatch Device ID:</label>
+        <input type="text" class="form-input" id="single-std-device" placeholder="watch-5pro-05">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-add-single-student')">Bekor qilish</button>
+        <button class="btn-action btn-primary" id="btn-save-single-student">Ro'yxatga Olish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BULK CSV / EXCEL STUDENT REGISTRATION (Section 3) -->
+  <div class="modal-overlay" id="modal-bulk-students">
+    <div class="modal-box" style="width: 620px;">
+      <div class="modal-header">
+        <h3>📊 Ommaviy O'quvchilarni Import Qilish (CSV / Excel)</h3>
+        <button class="modal-close" onclick="closeModal('modal-bulk-students')">&times;</button>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Barcha o'quvchilar tanlangan School ID ga va o'sha maktabning rasmiy GPS poligoniga avtomatik biriktiriladi.
+      </p>
+      <div class="form-group">
+        <label>Biriktiriladigan Maktab:</label>
+        <select class="form-select" id="bulk-sch-id">
+          <option value="SCH001">SCH001: 1-Sonli Namunaviy Maktab</option>
+          <option value="SCH002">SCH002: 21-Sonli Ixtisoslashtirilgan Maktab</option>
+          <option value="SCH003">SCH003: Al-Xorazmiy IT Maktabi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>CSV Ma'lumotlarni kiriting (Student ID, Ism, Sinf, Telefon, Soat ID):</label>
+        <textarea rows="6" id="bulk-csv-text" placeholder="10004, Sardor Mirzayev, 5-B, +998901112233, watch-5pro-04
+10005, Nodira Karimova, 5-B, +998902223344, watch-5pro-05
+10006, Bekzod Toshmatov, 9-A, +998903334455, watch-5pro-06"></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-bulk-students')">Bekor qilish</button>
+        <button class="btn-action btn-success" id="btn-save-bulk">Import Qilish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STUDENT SCHOOL TRANSFER (Section 4) -->
+  <div class="modal-overlay" id="modal-transfer-student">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🔄 O'quvchini Boshqa Maktabga Ko'chirish (School Transfer)</h3>
+        <button class="modal-close" onclick="closeModal('modal-transfer-student')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Ko'chiriladigan O'quvchi:</label>
+        <select class="form-select" id="transfer-student-select">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Yangi Maktab (Yangi GPS poligoni):</label>
+        <select class="form-select" id="transfer-target-school">
+          <option value="SCH002">SCH002: 21-Sonli Ixtisoslashtirilgan Maktab</option>
+          <option value="SCH003">SCH003: Al-Xorazmiy IT Maktabi</option>
+          <option value="SCH001">SCH001: 1-Sonli Namunaviy Maktab</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ko'chirish Sababi:</label>
+        <input type="text" class="form-input" id="transfer-reason" placeholder="Ota-ona arizasiga ko'ra yashash joyi o'zgardi">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-transfer-student')">Bekor qilish</button>
+        <button class="btn-action btn-warning" id="btn-submit-transfer">Ko'chirishni Tasdiqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANUAL ATTENDANCE CORRECTION (Section 10) -->
+  <div class="modal-overlay" id="modal-correction">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>✏️ O'qituvchi Tomonidan Davomatni Tuzatish</h3>
+        <button class="modal-close" onclick="closeModal('modal-correction')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>O'quvchi:</label>
+        <input type="text" class="form-input" id="correct-std-name" readonly style="opacity: 0.8;">
+        <input type="hidden" id="correct-std-id">
+      </div>
+      <div class="form-group">
+        <label>Yangi Davomat Holati:</label>
+        <select class="form-select" id="correct-status">
+          <option value="PRESENT">🟢 PRESENT – INSIDE SCHOOL (Kelgan)</option>
+          <option value="LATE">🟡 PRESENT – INSIDE SCHOOL (Kechikkan)</option>
+          <option value="ABSENT">🔴 LEFT SCHOOL – OUTSIDE SCHOOL (Kelmagan)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tuzatish Sababi (Audit jurnali uchun majburiy):</label>
+        <input type="text" class="form-input" id="correct-reason" placeholder="Masalan: Darsda qatnashdi, soat quvvati tugagan">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-correction')">Bekor qilish</button>
+        <button class="btn-action btn-primary" id="btn-submit-correction">Tuzatishni Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PARENT ADDS CHILD (Section 6) -->
+  <div class="modal-overlay" id="modal-parent-add-child">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>📱 Farzandni Ota-ona Profiliga Ulash</h3>
+        <button class="modal-close" onclick="closeModal('modal-parent-add-child')">&times;</button>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Maktab ma'muriyati tomonidan berilgan unikal Student ID raqamini kiriting.
+      </p>
+      <div class="form-group">
+        <label>Student ID:</label>
+        <input type="text" class="form-input" id="parent-input-child-id" placeholder="Masalan: 10003">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button class="btn-action" onclick="closeModal('modal-parent-add-child')">Bekor qilish</button>
+        <button class="btn-action btn-primary" id="btn-submit-parent-child">Ulash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Leaflet JS Library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- APPLICATION CORE SCRIPT -->
+  <script>
+    // --- STATE MANAGEMENT ---
+    let appSchools = [];
+    let appStudents = [];
+    let appAttendance = [];
+    let appUsers = [];
+    let appNotifications = [];
+    let appAuditLogs = [];
+    let currentRole = 'SUPER_ADMIN';
+    let currentSchoolId = 'SCH001';
+    let activeLang = 'uz';
+
+    // Map State
+    let map, parentMap, tileLayer, parentTileLayer;
+    let schoolPolygonLayers = {}, studentMarkers = {}, parentMarker = null;
+    let isDrawing = false;
+    let drawnPoints = [];
+    let drawingMarkers = [];
+    let drawingPolyline = null;
+    let drawingPolygon = null;
+
+    // --- AUDIO SYNTHESIS SOUND EFFECTS (Section 9: Push & SOS) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function playSound(type) {
+      try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'arrival') {
+          // Pleasant high chime
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880, now + 0.12); // A5
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'departure') {
+          // Warning low alert
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(330, now + 0.15);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        } else if (type === 'sos') {
+          // Loud siren
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(700, now);
+          osc.frequency.linearRampToValueAtTime(950, now + 0.15);
+          osc.frequency.linearRampToValueAtTime(700, now + 0.3);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+          osc.start(now);
+          osc.stop(now + 0.6);
+        }
+      } catch (_) {}
     }
 
-    function refresh() {
-      fetch('/api/v1/status').then(r => r.json()).then(d => {
-        if (d.devices && d.devices.length > 0) {
-          const dev = d.devices[d.devices.length - 1];
-          marker.setLatLng([dev.latitude, dev.longitude]);
-          map.panTo([dev.latitude, dev.longitude]);
-          document.getElementById('status-text').innerText = dev.is_sos ? "🚨 SOS!" : (dev.geofenceStatus === 'INSIDE' ? "🟢 YASHIL (Maktabda)" : "🔴 QIZIL (Tashqarida)");
-          document.getElementById('status-text').style.color = dev.is_sos || dev.geofenceStatus !== 'INSIDE' ? '#ef4444' : '#22c55e';
-          document.getElementById('bat-text').innerText = (dev.battery_level || 85) + "%";
-          document.getElementById('hr-text').innerText = (dev.heart_rate || 78) + " bpm";
+    // --- MULTILINGUAL DICTIONARY (Section 16: UZ, RU, EN) ---
+    const I18N = {
+      uz: {
+        brand_sub: "Multi-Maktab GPS Xavfsizlik & Davomat Platformasi",
+        nav_map: "Xarita & Chegara",
+        nav_super: "Super Admin",
+        nav_att: "Aqlli Davomat",
+        nav_std: "O'quvchilar",
+        nav_health: "Salomatlik",
+        nav_parent: "Ota-ona Ilovasi",
+        nav_reports: "Hisobotlar",
+        walk_test: "GPS Sinov",
+        draw_btn: "Yashil Chegara Chizish",
+        save_boundary: "Chegarani Saqlash",
+        cancel_draw: "Bekor qilish",
+        students_list: "O'quvchilar Nazorati",
+        inside_school: "PRESENT – INSIDE SCHOOL",
+        outside_school: "LEFT SCHOOL – OUTSIDE SCHOOL",
+        gps_verifying: "GPS TEKSHIRILMOQDA",
+        unknown: "NOMA'LUM"
+      },
+      ru: {
+        brand_sub: "Мультишкольная Платформа GPS Безопасности и Посещаемости",
+        nav_map: "Карта и Границы",
+        nav_super: "Супер Админ",
+        nav_att: "Посещаемость",
+        nav_std: "Ученики",
+        nav_health: "Здоровье",
+        nav_parent: "Приложение Родителя",
+        nav_reports: "Отчеты",
+        walk_test: "GPS Тест",
+        draw_btn: "Нарисовать Зеленую Границу",
+        save_boundary: "Сохранить Границу",
+        cancel_draw: "Отмена",
+        students_list: "Список Учеников",
+        inside_school: "В ШКОЛЕ (ПРИСУТСТВУЕТ)",
+        outside_school: "ВНЕ ШКОЛЫ (УШЕЛ)",
+        gps_verifying: "ПРОВЕРКА GPS",
+        unknown: "НЕИЗВЕСТНО"
+      },
+      en: {
+        brand_sub: "Multi-School GPS Child Safety & Smart Attendance Platform",
+        nav_map: "Map & Boundary",
+        nav_super: "Super Admin",
+        nav_att: "Smart Attendance",
+        nav_std: "Students",
+        nav_health: "Health",
+        nav_parent: "Parent App",
+        nav_reports: "Reports",
+        walk_test: "GPS Walk Test",
+        draw_btn: "Draw Green Boundary",
+        save_boundary: "Save Boundary",
+        cancel_draw: "Cancel",
+        students_list: "Student Directory",
+        inside_school: "PRESENT – INSIDE SCHOOL",
+        outside_school: "LEFT SCHOOL – OUTSIDE SCHOOL",
+        gps_verifying: "GPS VERIFYING",
+        unknown: "UNKNOWN"
+      }
+    };
+
+    function applyLanguage(lang) {
+      activeLang = lang;
+      const dict = I18N[lang] || I18N.uz;
+      document.getElementById('txt-brand-sub').textContent = dict.brand_sub;
+      document.getElementById('nav-tab-map').textContent = dict.nav_map;
+      document.getElementById('nav-tab-super').textContent = dict.nav_super;
+      document.getElementById('nav-tab-att').textContent = dict.nav_att;
+      document.getElementById('nav-tab-std').textContent = dict.nav_std;
+      document.getElementById('nav-tab-health').textContent = dict.nav_health;
+      document.getElementById('nav-tab-parent').textContent = dict.nav_parent;
+      document.getElementById('nav-tab-reports').textContent = dict.nav_reports;
+      document.getElementById('txt-walk-test').textContent = dict.walk_test;
+      document.getElementById('txt-draw-btn').textContent = dict.draw_btn;
+      document.getElementById('txt-save-boundary').textContent = dict.save_boundary;
+      document.getElementById('txt-cancel-draw').textContent = dict.cancel_draw;
+      document.getElementById('txt-students-list').textContent = dict.students_list;
+    }
+
+    // --- INITIALIZE LEAFLET MAPS ---
+    function initMaps() {
+      // Main Control Map
+      map = L.map('main-map', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([41.311081, 69.240562], 15);
+
+      updateMapTiles(document.documentElement.getAttribute('data-theme') || 'dark');
+
+      // Boundary drawing click handler (Section 2)
+      map.on('click', function(e) {
+        if (!isDrawing) return;
+
+        const pt = [e.latlng.lat, e.latlng.lng];
+        drawnPoints.push(pt);
+
+        // Marker for drawn vertex
+        const marker = L.circleMarker(pt, {
+          color: '#10b981',
+          fillColor: '#10b981',
+          fillOpacity: 1,
+          radius: 6
+        }).addTo(map);
+        drawingMarkers.push(marker);
+
+        // Connect with green polygon line
+        if (drawingPolyline) map.removeLayer(drawingPolyline);
+        drawingPolyline = L.polyline(drawnPoints, {
+          color: '#10b981',
+          weight: 3.5,
+          dashArray: '5, 5'
+        }).addTo(map);
+
+        document.getElementById('draw-count').textContent = `${drawnPoints.length} ta GPS nuqta`;
+      });
+
+      // Mini Map in Parent App
+      parentMap = L.map('parent-mini-map', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([41.311120, 69.240610], 16);
+
+      updateParentMapTiles(document.documentElement.getAttribute('data-theme') || 'dark');
+    }
+
+    function updateMapTiles(theme) {
+      if (tileLayer) map.removeLayer(tileLayer);
+      const url = theme === 'dark' 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      tileLayer = L.tileLayer(url, { maxZoom: 19 }).addTo(map);
+    }
+
+    function updateParentMapTiles(theme) {
+      if (parentTileLayer) parentMap.removeLayer(parentTileLayer);
+      const url = theme === 'dark' 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      parentTileLayer = L.tileLayer(url, { maxZoom: 19 }).addTo(parentMap);
+    }
+
+    // --- INTERACTIVE BOUNDARY DRAWING SYSTEM (Section 2) ---
+    document.getElementById('btn-start-draw').addEventListener('click', () => {
+      // Check permissions: Teachers cannot modify boundaries (Section 10)
+      if (currentRole === 'TEACHER') {
+        alert("Ruxsat yo'q: O'qituvchilar maktab GPS chegaralarini o'zgartira olmaydi (10-qoida)!");
+        return;
+      }
+
+      isDrawing = true;
+      drawnPoints = [];
+      clearDrawingLayers();
+
+      document.getElementById('btn-start-draw').style.display = 'none';
+      document.getElementById('draw-info').style.display = 'flex';
+      document.getElementById('btn-finish-draw').style.display = 'flex';
+      document.getElementById('btn-cancel-draw').style.display = 'flex';
+
+      showToast("✏️ Xarita ustiga bosib, maktab hududi bo'ylab kamida 4 ta yashil nuqta qo'ying", "info");
+    });
+
+    document.getElementById('btn-cancel-draw').addEventListener('click', () => {
+      cancelDrawing();
+    });
+
+    function cancelDrawing() {
+      isDrawing = false;
+      clearDrawingLayers();
+      document.getElementById('btn-start-draw').style.display = 'flex';
+      document.getElementById('draw-info').style.display = 'none';
+      document.getElementById('btn-finish-draw').style.display = 'none';
+      document.getElementById('btn-cancel-draw').style.display = 'none';
+    }
+
+    function clearDrawingLayers() {
+      drawingMarkers.forEach(m => map.removeLayer(m));
+      drawingMarkers = [];
+      if (drawingPolyline) { map.removeLayer(drawingPolyline); drawingPolyline = null; }
+      if (drawingPolygon) { map.removeLayer(drawingPolygon); drawingPolygon = null; }
+      drawnPoints = [];
+      document.getElementById('draw-count').textContent = '0 nuqta';
+    }
+
+    document.getElementById('btn-finish-draw').addEventListener('click', () => {
+      if (drawnPoints.length < 3) {
+        alert("Chegara hosil qilish uchun kamida 3-4 ta GPS nuqta belgilashingiz kerak!");
+        return;
+      }
+
+      const schSelect = document.getElementById('school-selector');
+      const targetSchoolId = schSelect.value === 'ALL' ? 'SCH001' : schSelect.value;
+
+      fetch(`/api/v1/schools/${targetSchoolId}/geofence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ polygon: drawnPoints })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          showToast(`✅ ${data.message}`, "success");
+          cancelDrawing();
+          fetchSchoolsAndRender();
+        } else {
+          alert(data.message);
+        }
+      });
+    });
+
+    // School Location Search (Geocoding via Nominatim)
+    document.getElementById('map-search-place').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (!query) return;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+          .then(r => r.json())
+          .then(results => {
+            if (results && results.length > 0) {
+              const best = results[0];
+              map.flyTo([parseFloat(best.lat), parseFloat(best.lon)], 16);
+              showToast(`Topildi: ${best.display_name}`, 'info');
+            } else {
+              showToast("Manzil topilmadi", 'warning');
+            }
+          })
+          .catch(() => showToast("Qidiruvda xatolik", 'warning'));
+      }
+    });
+
+    // --- DATA FETCHING & RENDERING ENGINE ---
+    function fetchSchoolsAndRender() {
+      fetch('/api/v1/schools')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success) return;
+          appSchools = data.schools;
+
+          // Render green boundaries on map
+          Object.values(schoolPolygonLayers).forEach(l => map.removeLayer(l));
+          schoolPolygonLayers = {};
+
+          appSchools.forEach(sch => {
+            if (sch.polygon && sch.polygon.length >= 3) {
+              const poly = L.polygon(sch.polygon, {
+                color: '#10b981', // Strict GREEN boundary (Section 2 & 12)
+                weight: 2.5,
+                fillColor: '#10b981',
+                fillOpacity: 0.18,
+                dashArray: '5, 5'
+              }).addTo(map);
+
+              poly.bindPopup(`
+                <b>🏫 ${sch.name}</b><br>
+                <b>School ID:</b> <code>${sch.id}</code><br>
+                <b>Geofence ID:</b> <code>${sch.geofenceId || 'GEO001'}</code><br>
+                <b>GPS Nuqtalar:</b> ${sch.polygon.length} ta koordinata<br>
+                <i>Barcha biriktirilgan o'quvchilar ushbu chegaraga amal qiladi.</i>
+              `);
+              schoolPolygonLayers[sch.id] = poly;
+
+              // Also render on parent mini map
+              if (sch.id === 'SCH001') {
+                L.polygon(sch.polygon, {
+                  color: '#10b981',
+                  weight: 2,
+                  fillColor: '#10b981',
+                  fillOpacity: 0.2
+                }).addTo(parentMap);
+              }
+            }
+          });
+
+          renderSuperAdminSchoolsTable();
+          fetchStudentsAndAttendance();
+        });
+    }
+
+    function fetchStudentsAndAttendance() {
+      const schId = document.getElementById('school-selector').value;
+
+      fetch(`/api/v1/students?schoolId=${schId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            appStudents = data.students;
+            renderStudentsSidebar();
+            renderStudentsTable();
+            renderHealthDashboard();
+            updateMapMarkers();
+            populateTransferDropdown();
+          }
+        });
+
+      fetch(`/api/v1/attendance/today?schoolId=${schId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            appAttendance = data.attendance;
+            renderAttendanceTable();
+            updateSummaryCounters(data.summary);
+          }
+        });
+
+      fetch('/api/v1/audit-logs')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            appAuditLogs = data.auditLogs;
+            renderAuditLogsTable();
+          }
+        });
+
+      fetch('/api/v1/users')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            appUsers = data.users;
+            renderSuperUsersTable();
+          }
+        });
+
+      fetch('/api/v1/notifications')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            appNotifications = data.notifications;
+            renderNotifications();
+          }
+        });
+    }
+
+    // Render Student Sidebar Cards (Section 12)
+    function renderStudentsSidebar() {
+      const container = document.getElementById('map-students-container');
+      const search = document.getElementById('map-search').value.toLowerCase();
+      container.innerHTML = '';
+
+      let inside = 0, outside = 0;
+
+      appStudents.forEach(std => {
+        if (search && !std.name.toLowerCase().includes(search) && !std.uniqueId.toLowerCase().includes(search)) return;
+
+        const isGreen = std.todayAttendance.statusColor === 'GREEN';
+        if (isGreen) inside++; else outside++;
+
+        const card = document.createElement('div');
+        card.className = 'student-card';
+        card.innerHTML = `
+          <img src="${std.photo}" class="student-avatar" alt="${std.name}">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 13px; font-weight: 700;">${std.name}</span>
+              <span class="${isGreen ? 'status-badge-green' : 'status-badge-red'}">
+                ${isGreen ? 'PRESENT' : 'OUTSIDE'}
+              </span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between;">
+              <span>${std.schoolId} • ${std.className} • ID: ${std.uniqueId}</span>
+              <span>❤️ ${std.telemetry.heartRate || 75} BPM</span>
+            </div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+              ⌚ ${std.telemetry.batteryLevel || 88}% Quvvat | ${std.deviceModel || 'Galaxy Watch5 Pro'}
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.student-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          if (std.telemetry.latitude && std.telemetry.longitude) {
+            map.flyTo([std.telemetry.latitude, std.telemetry.longitude], 17);
+            if (studentMarkers[std.id]) studentMarkers[std.id].openPopup();
+          }
+        });
+
+        container.appendChild(card);
+      });
+
+      document.getElementById('float-total-students').textContent = appStudents.length;
+      document.getElementById('float-inside-count').textContent = inside;
+      document.getElementById('float-outside-count').textContent = outside;
+      document.getElementById('online-counter').textContent = `${appStudents.length} ta faol`;
+      document.getElementById('kpi-students-count').textContent = appStudents.length;
+    }
+
+    // Map Markers with Green/Red Pulsing Halo
+    function updateMapMarkers() {
+      appStudents.forEach(std => {
+        const telem = std.telemetry;
+        if (!telem.latitude || !telem.longitude) return;
+
+        const isGreen = telem.statusColor === 'GREEN';
+        const isYellow = telem.statusColor === 'YELLOW';
+        const color = isGreen ? '#10b981' : (isYellow ? '#f59e0b' : '#ef4444');
+
+        const customHtml = `
+          <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+            <div style="position: absolute; width: 42px; height: 42px; border-radius: 50%; background: ${color}; opacity: 0.35; animation: pulse 1.6s infinite;"></div>
+            <img src="${std.photo}" style="width: 36px; height: 36px; border-radius: 50%; border: 3px solid ${color}; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            <div style="position: absolute; top: -3px; right: -3px; background: ${color}; color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1.5px solid #070a13;">
+              ${isGreen ? '✓' : '✕'}
+            </div>
+          </div>
+        `;
+
+        const icon = L.divIcon({
+          className: 'student-marker-icon',
+          html: customHtml,
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
+        });
+
+        if (studentMarkers[std.id]) {
+          studentMarkers[std.id].setLatLng([telem.latitude, telem.longitude]);
+          studentMarkers[std.id].setIcon(icon);
+        } else {
+          const marker = L.marker([telem.latitude, telem.longitude], { icon }).addTo(map);
+          marker.bindPopup(`
+            <div style="min-width: 200px;">
+              <b>${std.name} (${std.className})</b><br>
+              <b>Student ID:</b> <code>${std.uniqueId}</code><br>
+              <b>Biriktirilgan Maktab:</b> ${std.schoolName} (<code>${std.schoolId}</code>)<br>
+              <hr style="margin: 6px 0; border: none; border-top: 1px solid var(--border);">
+              <b>Holati:</b> <span style="color: ${color}; font-weight: 800;">${telem.statusDisplay || 'OUTSIDE'}</span><br>
+              <b>Yurak urishi:</b> ${telem.heartRate || 78} BPM<br>
+              <b>Tana harorati:</b> ${(telem.bodyTemperature || 36.6).toFixed(1)}°C<br>
+              <b>Batareya:</b> ${telem.batteryLevel || 88}% (Samsung Watch5 Pro)
+            </div>
+          `);
+          studentMarkers[std.id] = marker;
+        }
+
+        // Parent app marker
+        if (std.id === '10001') {
+          if (!parentMarker) {
+            parentMarker = L.marker([telem.latitude, telem.longitude], { icon }).addTo(parentMap);
+          } else {
+            parentMarker.setLatLng([telem.latitude, telem.longitude]);
+            parentMarker.setIcon(icon);
+          }
+          parentMap.setView([telem.latitude, telem.longitude], 16);
+          document.getElementById('parent-status-text').textContent = telem.statusDisplay || 'PRESENT – INSIDE SCHOOL';
+          document.getElementById('parent-status-text').style.color = color;
+          document.getElementById('parent-bpm-val').textContent = `${telem.heartRate || 78} BPM`;
+          document.getElementById('parent-temp-val').textContent = `${(telem.bodyTemperature || 36.6).toFixed(1)}°C`;
+          document.getElementById('parent-watch-battery').textContent = `${telem.batteryLevel || 88}%`;
         }
       });
     }
-    setInterval(refresh, 3000);
+
+    // Render Attendance Table (Section 4, 5 & 10)
+    function renderAttendanceTable() {
+      const tbody = document.getElementById('attendance-table-body');
+      const search = document.getElementById('att-search').value.toLowerCase();
+      const classFilter = document.getElementById('att-class-filter').value;
+      tbody.innerHTML = '';
+
+      appAttendance.forEach(att => {
+        if (search && !att.studentName.toLowerCase().includes(search) && !att.uniqueId.toLowerCase().includes(search)) return;
+        if (classFilter !== 'ALL' && att.className !== classFilter) return;
+
+        const isGreen = att.statusColor === 'GREEN';
+        const isYellow = att.statusColor === 'YELLOW';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="${att.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+              <div>
+                <b>${att.studentName}</b>
+                <div style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">ID: ${att.uniqueId}</div>
+              </div>
+            </div>
+          </td>
+          <td><span style="font-family: var(--font-mono); font-weight: bold; color: var(--primary);">${att.schoolId}</span> • ${att.schoolName}</td>
+          <td><b>${att.className}</b></td>
+          <td style="font-family: var(--font-mono); font-weight: bold; color: ${att.arrivalTime ? 'var(--success)' : 'inherit'};">${att.arrivalTime || '—'}</td>
+          <td style="font-family: var(--font-mono);">${att.departureTime || '—'}</td>
+          <td>
+            <span class="${isGreen ? 'status-badge-green' : (isYellow ? 'status-badge-yellow' : 'status-badge-red')}">
+              ${att.statusDisplay || 'LEFT SCHOOL – OUTSIDE SCHOOL'}
+            </span>
+          </td>
+          <td>
+            <span style="color: ${isGreen ? 'var(--success)' : (isYellow ? 'var(--warning)' : 'var(--danger)')}; font-weight: 800; font-size: 11px;">
+              ${isGreen ? '🟢 GREEN' : (isYellow ? '🟡 YELLOW' : '🔴 RED')}
+            </span>
+          </td>
+          <td>
+            <button class="btn-action" style="padding: 4px 8px; font-size: 11px;" onclick="openCorrection('${att.studentId}', '${att.studentName}', '${att.status}')">
+              ✏️ Tuzatish
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Students Registry (Section 3)
+    function renderStudentsTable() {
+      const tbody = document.getElementById('students-table-body');
+      const search = document.getElementById('std-search-input').value.toLowerCase();
+      tbody.innerHTML = '';
+
+      appStudents.forEach(std => {
+        if (search && !std.name.toLowerCase().includes(search) && !std.uniqueId.toLowerCase().includes(search)) return;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: var(--font-mono); font-weight: bold; color: var(--primary);">${std.uniqueId}</td>
+          <td><b>${std.name}</b></td>
+          <td><code>${std.schoolId}</code> • ${std.schoolName}</td>
+          <td><b>${std.className}</b></td>
+          <td style="font-family: var(--font-mono); font-size: 11px;">${std.deviceId}</td>
+          <td>${std.parentName}</td>
+          <td style="font-family: var(--font-mono);">${std.parentPhone}</td>
+          <td>
+            <button class="btn-action btn-danger" style="padding: 3px 7px; font-size: 11px;" onclick="deleteStudent('${std.id}')">
+              🗑️ O'chirish
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Super Admin Schools Table (Section 1)
+    function renderSuperAdminSchoolsTable() {
+      const tbody = document.getElementById('super-schools-table');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      document.getElementById('kpi-schools-count').textContent = appSchools.length;
+
+      appSchools.forEach(sch => {
+        const studentCount = appStudents.filter(s => s.schoolId === sch.id).length;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code style="font-weight: 800; color: var(--primary); font-size: 13px;">${sch.id}</code></td>
+          <td><b>${sch.name}</b><br><span style="font-size: 10.5px; color: var(--text-dim);">${sch.address}</span></td>
+          <td><code style="color: var(--success); font-weight: bold;">${sch.geofenceId || 'GEO001'}</code></td>
+          <td style="font-family: var(--font-mono); font-size: 11px;">[${(sch.lat || 41.311).toFixed(4)}, ${(sch.lng || 69.240).toFixed(4)}]</td>
+          <td>${sch.startTime} - ${sch.endTime}</td>
+          <td><span class="status-badge-green">${sch.polygon ? sch.polygon.length : 4} ta GPS nuqta</span></td>
+          <td><b>${studentCount} nafar</b></td>
+          <td>
+            <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="flyToSchool('${sch.id}')">
+              🗺️ Xaritada ko'rish
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Users Table (Super Admin)
+    function renderSuperUsersTable() {
+      const tbody = document.getElementById('super-users-table');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      appUsers.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${u.id}</code></td>
+          <td><b>${u.name}</b></td>
+          <td>${u.email} <br><span style="font-family: var(--font-mono); font-size: 11px;">${u.phone}</span></td>
+          <td><span class="role-badge role-${u.role === 'SUPER_ADMIN' ? 'super' : (u.role === 'SCHOOL_ADMIN' ? 'school' : (u.role === 'TEACHER' ? 'teacher' : 'parent'))}">${u.role}</span></td>
+          <td>${u.schoolId || '—'}</td>
+          <td>${u.classId || '—'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Health Dashboard (Section 8)
+    function renderHealthDashboard() {
+      const container = document.getElementById('health-cards-container');
+      container.innerHTML = '';
+
+      appStudents.forEach(std => {
+        const telem = std.telemetry;
+        const bpm = telem.heartRate || 76;
+        const temp = telem.bodyTemperature || 36.6;
+        const isBpmHigh = bpm > 120;
+        const isBpmLow = bpm < 55;
+
+        const card = document.createElement('div');
+        card.style.background = 'var(--bg-card)';
+        card.style.border = '1px solid var(--border)';
+        card.style.borderRadius = '14px';
+        card.style.padding = '18px';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.gap = '12px';
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="${std.photo}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover;">
+              <div>
+                <b>${std.name}</b>
+                <div style="font-size: 11px; color: var(--text-dim);">${std.schoolName} (${std.schoolId}) • ${std.className}</div>
+              </div>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim);">ID: ${std.uniqueId}</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: var(--bg-surface); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; color: var(--text-dim);">Puls (BPM)</span>
+                <span>💓</span>
+              </div>
+              <div style="font-size: 24px; font-weight: 800; color: ${isBpmHigh ? 'var(--danger)' : (isBpmLow ? 'var(--warning)' : 'var(--primary)')}; font-family: var(--font-mono); margin-top: 4px;">
+                ${bpm}
+              </div>
+              <span style="font-size: 10px; color: ${isBpmHigh || isBpmLow ? 'var(--danger)' : 'var(--success)'}; font-weight: 700;">
+                ${isBpmHigh ? '⚠️ Yuqori Puls!' : (isBpmLow ? '⚠️ Past Puls' : '✓ Normal (60-100)')}
+              </span>
+            </div>
+
+            <div style="background: var(--bg-surface); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; color: var(--text-dim);">Tana Harorati</span>
+                <span>🌡️</span>
+              </div>
+              <div style="font-size: 24px; font-weight: 800; color: var(--success); font-family: var(--font-mono); margin-top: 4px;">
+                ${temp.toFixed(1)}°C
+              </div>
+              <span style="font-size: 10px; color: var(--success); font-weight: 700;">
+                ✓ Me'yorda (36.1 - 37.2°C)
+              </span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: 8px;">
+            <span>⌚ ${std.deviceModel || 'Galaxy Watch5 Pro'}: <b>${telem.batteryLevel || 88}%</b></span>
+            <span>Qadamlar: <b>${telem.stepCount || 3410} ta</b></span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Render Security Audit Logs (Section 10, 13 & 15)
+    function renderAuditLogsTable() {
+      const tbody = document.getElementById('audit-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      appAuditLogs.forEach(l => {
+        const tr = document.createElement('tr');
+        const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleTimeString() : '—';
+        tr.innerHTML = `
+          <td style="font-family: var(--font-mono); font-size: 11px;">${timeStr}</td>
+          <td><b>${l.user || 'Sardor Alimov'}</b></td>
+          <td><span class="role-badge role-${l.role === 'SUPER_ADMIN' ? 'super' : (l.role === 'TEACHER' ? 'teacher' : 'school')}">${l.role || 'ADMIN'}</span></td>
+          <td><code style="color: var(--primary); font-weight: bold;">${l.action}</code></td>
+          <td><code>${l.target}</code></td>
+          <td style="font-size: 11.5px;">${l.details}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Notifications Drawer Feed (Section 9)
+    function renderNotifications() {
+      const container = document.getElementById('notif-feed-container');
+      container.innerHTML = '';
+      document.getElementById('notif-unread-count').textContent = appNotifications.length;
+
+      appNotifications.forEach(n => {
+        const card = document.createElement('div');
+        card.className = 'notif-card';
+        card.innerHTML = `
+          <span style="font-size: 20px;">${n.type === 'ARRIVAL' ? '🟢' : (n.type === 'DEPARTURE' ? '🔴' : (n.type === 'SOS' ? '🚨' : '🔔'))}</span>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <b style="font-size: 12px;">${n.title}</b>
+              <span style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">${n.time || '08:18'}</span>
+            </div>
+            <div style="color: var(--text-muted); line-height: 1.4;">${n.message}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateSummaryCounters(summary) {
+      if (!summary) return;
+      document.getElementById('float-total-students').textContent = summary.total;
+      document.getElementById('float-inside-count').textContent = summary.present;
+      document.getElementById('float-outside-count').textContent = summary.absent + summary.left;
+    }
+
+    function populateTransferDropdown() {
+      const select = document.getElementById('transfer-student-select');
+      if (!select) return;
+      select.innerHTML = '';
+      appStudents.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.name} (${s.uniqueId}) — Hozirgi maktabi: ${s.schoolName}`;
+        select.appendChild(opt);
+      });
+    }
+
+    // --- WALK SIMULATOR ENGINE (Section 5, 6 & 12) ---
+    window.simulateWalkStage = function(stage) {
+      fetch('/api/v1/telemetry/simulate-walk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: '10001', stage })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          if (stage === 'ENTER_SCHOOL') playSound('arrival');
+          else if (stage === 'LEAVE_SCHOOL') playSound('departure');
+
+          showToast(`🚶‍♂️ ${res.description}: ${res.statusDisplay} (${res.statusColor})`, 'success');
+          fetchStudentsAndAttendance();
+        }
+      });
+    };
+
+    document.getElementById('btn-walk-test').addEventListener('click', () => {
+      // Toggle walk sequence
+      simulateWalkStage('ENTER_SCHOOL');
+    });
+
+    // --- PARENT ROUTE HISTORY PLAYBACK (Section 6) ---
+    document.getElementById('btn-play-route').addEventListener('click', () => {
+      fetch('/api/v1/students/10001/route-history')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success || !data.points) return;
+          const points = data.points;
+          let idx = 0;
+          const interval = setInterval(() => {
+            if (idx >= points.length) {
+              clearInterval(interval);
+              showToast("Harakat tarixi ko'rsatib bo'lindi", "info");
+              return;
+            }
+            const p = points[idx];
+            document.getElementById('route-slider').value = idx;
+            parentMarker.setLatLng([p.lat, p.lng]);
+            parentMap.panTo([p.lat, p.lng]);
+            idx++;
+          }, 800);
+        });
+    });
+
+    // --- ROLE SWITCHER LOGIC ---
+    document.getElementById('role-selector').addEventListener('change', (e) => {
+      const role = e.target.value;
+      currentRole = role;
+
+      const badge = document.getElementById('role-badge-label');
+      badge.textContent = role;
+      badge.className = `role-badge role-${role === 'SUPER_ADMIN' ? 'super' : (role === 'SCHOOL_ADMIN' ? 'school' : (role === 'TEACHER' ? 'teacher' : 'parent'))}`;
+
+      // Adjust Tab Access
+      const superTabBtn = document.getElementById('btn-tab-superadmin');
+      const addSchoolBtn = document.getElementById('btn-add-school-modal');
+
+      if (role === 'SUPER_ADMIN') {
+        superTabBtn.style.display = 'flex';
+        addSchoolBtn.style.display = 'inline-flex';
+        showToast("👑 Super Admin rejimi faollashdi: Barcha maktablar va foydalanuvchilar ochiq", "info");
+      } else if (role === 'SCHOOL_ADMIN') {
+        superTabBtn.style.display = 'none';
+        addSchoolBtn.style.display = 'none';
+        showToast("🏫 Maktab Administratori rejimi: GPS chegarani tahrirlash va o'quvchilar importi", "info");
+      } else if (role === 'TEACHER') {
+        superTabBtn.style.display = 'none';
+        addSchoolBtn.style.display = 'none';
+        showToast("👩‍🏫 O'qituvchi rejimi: Faqat o'z sinfi davomati (GPS chegara tahriri cheklangan)", "info");
+      } else if (role === 'PARENT') {
+        superTabBtn.style.display = 'none';
+        addSchoolBtn.style.display = 'none';
+        // Switch to parent app tab
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-tab="tab-parent"]').classList.add('active');
+        document.getElementById('tab-parent').classList.add('active');
+        setTimeout(() => parentMap.invalidateSize(), 200);
+        showToast("📱 Ota-ona rejimi: Farzandingiz xaritasi va salomatligi", "info");
+      }
+    });
+
+    // --- MODAL HELPERS ---
+    window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
+    window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
+
+    // Single Student Add
+    document.getElementById('btn-save-single-student').addEventListener('click', () => {
+      const studentId = document.getElementById('single-std-id').value;
+      const name = document.getElementById('single-std-name').value;
+      const schoolId = document.getElementById('single-std-school').value;
+      const className = document.getElementById('single-std-class').value;
+      const parentPhone = document.getElementById('single-std-phone').value;
+      const deviceId = document.getElementById('single-std-device').value;
+
+      fetch('/api/v1/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, name, schoolId, className, parentPhone, deviceId })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'success');
+          closeModal('modal-add-single-student');
+          fetchStudentsAndAttendance();
+        }
+      });
+    });
+
+    // Bulk CSV Student Import (Section 3)
+    document.getElementById('btn-save-bulk').addEventListener('click', () => {
+      const schId = document.getElementById('bulk-sch-id').value;
+      const text = document.getElementById('bulk-csv-text').value.trim();
+      if (!text) return alert("Iltimos, CSV matnini kiriting!");
+
+      const lines = text.split('\n');
+      const students = [];
+      lines.forEach(line => {
+        const parts = line.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+          students.push({
+            studentId: parts[0],
+            name: parts[1],
+            className: parts[2] || "5-B",
+            parentPhone: parts[3] || "+998901112233",
+            deviceId: parts[4] || `watch-5pro-${parts[0]}`
+          });
+        }
+      });
+
+      fetch('/api/v1/students/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schoolId: schId, students })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, "success");
+          closeModal('modal-bulk-students');
+          fetchSchoolsAndRender();
+        }
+      });
+    });
+
+    // Add School Save
+    document.getElementById('btn-save-school').addEventListener('click', () => {
+      const name = document.getElementById('new-sch-name').value;
+      const code = document.getElementById('new-sch-code').value;
+      const address = document.getElementById('new-sch-address').value;
+      const startTime = document.getElementById('new-sch-start').value;
+      const endTime = document.getElementById('new-sch-end').value;
+
+      fetch('/api/v1/schools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, code, address, startTime, endTime })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast("Yangi maktab muvaffaqiyatli ro'yxatdan o'tdi", "success");
+          closeModal('modal-add-school');
+          fetchSchoolsAndRender();
+        }
+      });
+    });
+
+    // Add User Save
+    document.getElementById('btn-save-user').addEventListener('click', () => {
+      const name = document.getElementById('new-user-name').value;
+      const role = document.getElementById('new-user-role').value;
+      const schoolId = document.getElementById('new-user-school').value;
+      const phone = document.getElementById('new-user-phone').value;
+
+      fetch('/api/v1/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, role, schoolId, phone })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, "success");
+          closeModal('modal-add-user');
+          fetchStudentsAndAttendance();
+        }
+      });
+    });
+
+    // Submit Student School Transfer (Section 4)
+    document.getElementById('btn-submit-transfer').addEventListener('click', () => {
+      const studentId = document.getElementById('transfer-student-select').value;
+      const toSchoolId = document.getElementById('transfer-target-school').value;
+      const reason = document.getElementById('transfer-reason').value;
+
+      fetch(`/api/v1/students/${studentId}/transfer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toSchoolId, reason })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, "success");
+          closeModal('modal-transfer-student');
+          fetchSchoolsAndRender();
+        }
+      });
+    });
+
+    // Teacher Attendance Correction (Section 10)
+    window.openCorrection = function(studentId, name, currentStatus) {
+      document.getElementById('correct-std-id').value = studentId;
+      document.getElementById('correct-std-name').value = `${name} (${studentId})`;
+      document.getElementById('correct-status').value = currentStatus || 'PRESENT';
+      openModal('modal-correction');
+    };
+
+    document.getElementById('btn-submit-correction').addEventListener('click', () => {
+      const studentId = document.getElementById('correct-std-id').value;
+      const status = document.getElementById('correct-status').value;
+      const reason = document.getElementById('correct-reason').value;
+      if (!reason) return alert("Iltimos, o'zgartirish sababini yozing!");
+
+      fetch('/api/v1/attendance/correct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, status, reason, teacherId: "Dilnoza Karimova (O'qituvchi)" })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast("Davomat muvaffaqiyatli tuzatildi va auditga yozildi", "success");
+          closeModal('modal-correction');
+          fetchStudentsAndAttendance();
+        }
+      });
+    });
+
+    // Delete Student
+    window.deleteStudent = function(studentId) {
+      if (!confirm("O'quvchini tizimdan o'chirishga ishonchingiz komilmi?")) return;
+      fetch(`/api/v1/students/${studentId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(res => {
+          showToast(res.message, 'info');
+          fetchStudentsAndAttendance();
+        });
+    };
+
+    // Fly To School on Map
+    window.flyToSchool = function(schoolId) {
+      const sch = appSchools.find(s => s.id === schoolId);
+      if (sch && sch.lat && sch.lng) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-tab="tab-map"]').classList.add('active');
+        document.getElementById('tab-map').classList.add('active');
+        setTimeout(() => {
+          map.invalidateSize();
+          map.flyTo([sch.lat, sch.lng], 16);
+        }, 150);
+      }
+    };
+
+    // Emergency SOS Trigger
+    document.getElementById('btn-trigger-sos').addEventListener('click', () => {
+      playSound('sos');
+      fetch('/api/v1/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: 'watch-5pro-01', latitude: 41.311120, longitude: 69.240610 })
+      })
+      .then(r => r.json())
+      .then(res => {
+        showToast("🚨 SOS FAVQULODDA SIGNAL YUBORILDI! Ota-ona va maktabga yetkazildi!", "error");
+        fetchStudentsAndAttendance();
+      });
+    });
+
+    // Test Push Notification Dispatcher (Section 9)
+    document.getElementById('btn-send-test-push').addEventListener('click', () => {
+      fetch('/api/v1/notifications/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: "SMART CHILD Xabarnoma",
+          message: "Farzandingiz soat 08:18 da maktab hududiga xavfsiz yetib keldi.",
+          studentId: "10001",
+          type: "ARRIVAL"
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        showToast("FCM Push bildirishnoma yuborildi!", 'success');
+        fetchStudentsAndAttendance();
+      });
+    });
+
+    // Parent Connects Child By ID (Section 6)
+    document.getElementById('btn-submit-parent-child').addEventListener('click', () => {
+      const studentId = document.getElementById('parent-input-child-id').value.trim();
+      if (!studentId) return alert("Student ID ni kiriting!");
+
+      fetch('/api/v1/parents/children/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'success');
+          closeModal('modal-parent-add-child');
+          fetchStudentsAndAttendance();
+        } else {
+          alert(res.message);
+        }
+      });
+    });
+
+    // Notification Drawer Toggle
+    document.getElementById('btn-toggle-notif').addEventListener('click', () => {
+      document.getElementById('notif-drawer').classList.toggle('open');
+    });
+    document.getElementById('btn-close-notif').addEventListener('click', () => {
+      document.getElementById('notif-drawer').classList.remove('open');
+    });
+
+    // CSV Export
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      const schId = document.getElementById('school-selector').value;
+      window.location.href = `/api/v1/attendance/export/csv?schoolId=${schId}`;
+    });
+
+    // Theme Switcher
+    document.getElementById('theme-btn').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const target = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', target);
+      document.getElementById('theme-btn').textContent = target === 'dark' ? '🌙' : '☀️';
+      updateMapTiles(target);
+      updateParentMapTiles(target);
+    });
+
+    // Language Switcher
+    document.getElementById('lang-switch').addEventListener('change', (e) => {
+      applyLanguage(e.target.value);
+    });
+
+    // Tab Buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        document.getElementById(targetTab).classList.add('active');
+        if (targetTab === 'tab-map') setTimeout(() => map.invalidateSize(), 200);
+        if (targetTab === 'tab-parent') setTimeout(() => parentMap.invalidateSize(), 200);
+      });
+    });
+
+    // School Selector Filter Change
+    document.getElementById('school-selector').addEventListener('change', () => {
+      fetchStudentsAndAttendance();
+    });
+
+    // Search inputs in tables
+    document.getElementById('map-search').addEventListener('input', renderStudentsSidebar);
+    document.getElementById('att-search').addEventListener('input', renderAttendanceTable);
+    document.getElementById('att-class-filter').addEventListener('change', renderAttendanceTable);
+    document.getElementById('std-search-input').addEventListener('input', renderStudentsTable);
+
+    // Toast Utility
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : (type === 'error' ? '🚨' : (type === 'warning' ? '⚠️' : '🔔'))}</span> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Real-Time Server-Sent Events (SSE)
+    function setupSSE() {
+      const evtSource = new EventSource('/api/v1/stream');
+      evtSource.onmessage = function(e) {
+        try {
+          const d = JSON.parse(e.data);
+          if (d.event === 'telemetry' || d.event === 'attendance_updated' || d.event === 'geofence_updated' || d.event === 'student_added' || d.event === 'student_transferred') {
+            fetchStudentsAndAttendance();
+          } else if (d.event === 'notification') {
+            showToast(d.payload.message, 'info');
+            playSound(d.payload.type === 'ARRIVAL' ? 'arrival' : (d.payload.type === 'DEPARTURE' ? 'departure' : 'sos'));
+          }
+        } catch (_) {}
+      };
+    }
+
+    // App Initialization on DOM Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initMaps();
+      fetchSchoolsAndRender();
+      setupSSE();
+    });
   </script>
 </body>
 </html>

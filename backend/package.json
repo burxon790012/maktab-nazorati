@@ -1,0 +1,13 @@
+{
+  "name": "maktab-nazorati-backend",
+  "version": "1.0.0",
+  "description": "Maktab nazorati va bolalar xavfsizligi backend serveri",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

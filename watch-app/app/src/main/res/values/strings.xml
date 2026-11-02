@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Maktab Nazorati</string>
+    <string name="tracking_active">Xavfsizlik xizmati faol</string>
+    <string name="sos_title">SOS Favqulodda Signal</string>
+    <string name="sos_hold">SOS ni 3 soniya bosing</string>
+    <string name="device_online">Online</string>
+    <string name="device_offline">Oflayn (Keshda)</string>
+</resources>

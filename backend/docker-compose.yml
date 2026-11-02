@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  maktab-nazorati-server:
+    build: .
+    container_name: maktab_watch_server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data

@@ -6,72 +6,74 @@
   <title>SMART CHILD — GPS Child Safety, Health Monitoring & Multi-School Attendance Platform</title>
   <meta name="description" content="SMART CHILD — Enterprise multi-school platform for real-time GPS child tracking, smartwatch health monitoring, automatic geofence attendance, and parent safety alerts.">
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Inter & JetBrains Mono (shadcn/ui style) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
   <style>
     :root {
-      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-main: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      /* Dark Theme (Default) */
-      --bg-base: #070a13;
-      --bg-surface: #0e1526;
-      --bg-card: #131d33;
-      --bg-card-hover: #192745;
-      --border: #1f3052;
+      /* Authentic shadcn/ui Zinc & Emerald Palette */
+      --bg-base: #09090b;
+      --bg-surface: #0e0e11;
+      --bg-card: #121215;
+      --bg-card-hover: #18181b;
+      --border: #27272a;
       --border-light: rgba(255, 255, 255, 0.08);
 
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
 
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --primary-glow: rgba(59, 130, 246, 0.28);
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --primary-glow: rgba(16, 185, 129, 0.25);
 
       --accent: #06b6d4;
       --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.28);
+      --success-glow: rgba(16, 185, 129, 0.25);
       --warning: #f59e0b;
-      --warning-glow: rgba(245, 158, 11, 0.28);
+      --warning-glow: rgba(245, 158, 11, 0.25);
       --danger: #ef4444;
-      --danger-glow: rgba(239, 68, 68, 0.35);
+      --danger-glow: rgba(239, 68, 68, 0.3);
       --purple: #8b5cf6;
 
-      --glass: rgba(14, 21, 38, 0.88);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+      --glass: rgba(18, 18, 21, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+      --shadow-md: 0 4px 16px -2px rgb(0 0 0 / 0.4);
+      --shadow-lg: 0 12px 32px -4px rgb(0 0 0 / 0.6);
+      --radius: 0.75rem;
     }
 
     [data-theme="light"] {
-      --bg-base: #f8fafc;
+      --bg-base: #fafafa;
       --bg-surface: #ffffff;
       --bg-card: #ffffff;
-      --bg-card-hover: #f1f5f9;
-      --border: #e2e8f0;
+      --bg-card-hover: #f4f4f5;
+      --border: #e4e4e7;
       --border-light: rgba(0, 0, 0, 0.06);
 
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-dim: #94a3b8;
+      --text-main: #09090b;
+      --text-muted: #52525b;
+      --text-dim: #a1a1aa;
 
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --primary-glow: rgba(37, 99, 235, 0.16);
+      --primary: #059669;
+      --primary-hover: #047857;
+      --primary-glow: rgba(5, 150, 105, 0.16);
 
       --glass: rgba(255, 255, 255, 0.92);
       --glass-border: rgba(0, 0, 0, 0.08);
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+      --radius: 0.75rem;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -175,39 +177,55 @@
     .role-teacher { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
     .role-parent { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 
-    /* Navigation Tabs */
+    /* Navigation Tabs — shadcn/ui kit */
     .nav-tabs {
-      display: flex;
+      display: inline-flex;
+      height: 38px;
       align-items: center;
-      gap: 3px;
+      justify-content: center;
+      border-radius: 8px;
       background: var(--bg-card);
       padding: 3px;
-      border-radius: 10px;
       border: 1px solid var(--border);
     }
 
     .tab-btn {
-      padding: 6px 12px;
-      border-radius: 7px;
-      border: none;
+      height: 32px;
+      padding: 0 13px;
+      border-radius: 6px;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 500;
       font-family: inherit;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       white-space: nowrap;
     }
 
-    .tab-btn:hover { color: var(--text-main); background: var(--bg-card-hover); }
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+    }
+
     .tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 2px 8px var(--primary-glow);
+      background: #18181b;
+      color: #fafafa;
+      border-color: #27272a;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      font-weight: 600;
+    }
+
+    [data-theme="light"] .tab-btn.active {
+      background: #ffffff;
+      color: #09090b;
+      border-color: #e4e4e7;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
     .nav-actions {
@@ -216,32 +234,103 @@
       gap: 8px;
     }
 
+    /* Buttons — shadcn/ui kit */
     .btn-action {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      height: 34px;
+      padding: 0 12px;
       gap: 6px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
+      cursor: pointer;
       border: 1px solid var(--border);
       background: var(--bg-card);
       color: var(--text-main);
     }
 
-    .btn-action:hover { background: var(--bg-card-hover); border-color: var(--primary); }
-    .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
-    .btn-success { background: var(--success); border-color: var(--success); color: white; }
-    .btn-warning { background: var(--warning); border-color: var(--warning); color: #1e293b; }
-    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+    .btn-action:hover {
+      background: var(--bg-card-hover);
+      border-color: #3f3f46;
+    }
+
+    .btn-action:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: #10b981;
+      border-color: #10b981;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: #059669;
+      border-color: #059669;
+    }
+
+    .btn-secondary {
+      background: #27272a;
+      border-color: #27272a;
+      color: #fafafa;
+    }
+
+    .btn-secondary:hover {
+      background: #3f3f46;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-muted);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .btn-success {
+      background: #10b981;
+      border-color: #10b981;
+      color: white;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      border-color: #f59e0b;
+      color: #09090b;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
 
     .notif-bell-btn {
       position: relative;
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg-card);

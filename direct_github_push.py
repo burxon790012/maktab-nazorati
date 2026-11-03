@@ -3,7 +3,7 @@ import json
 import base64
 import os
 
-TOKEN = "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"
+TOKEN = os.environ.get("GITHUB_TOKEN", "")
 OWNER = "burxon790012"
 REPO = "maktab-nazorati"
 

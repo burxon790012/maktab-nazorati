@@ -794,6 +794,88 @@ class SmartChildHandler(http.server.SimpleHTTPRequestHandler):
 
         self._send_json({"success": False, "message": "Noma'lum API yo'nalishi"}, 404)
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+    def do_PUT(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+        length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(length).decode('utf-8') if length > 0 else '{}'
+        try:
+            data = json.loads(body)
+        except Exception:
+            data = {}
+
+        if path.startswith('/api/v1/schools/'):
+            sch_id = path.replace('/api/v1/schools/', '').strip()
+            school = next((s for s in db["schools"] if s["id"] == sch_id or s.get("code") == sch_id), None)
+            if not school:
+                self._send_json({"success": False, "message": "Maktab topilmadi"}, 404)
+                return
+            
+            old_name = school["name"]
+            if data.get("name"):
+                school["name"] = data["name"].strip()
+                for std in db["students"]:
+                    if std.get("schoolId") == school["id"]:
+                        std["schoolName"] = school["name"]
+            if "address" in data:
+                school["address"] = data["address"].strip()
+            if "startTime" in data:
+                school["startTime"] = data["startTime"]
+            if "endTime" in data:
+                school["endTime"] = data["endTime"]
+
+            if "auditLogs" not in db: db["auditLogs"] = []
+            db["auditLogs"].insert(0, {
+                "id": f"log-{int(time.time()*1000)}",
+                "timestamp": datetime.now().isoformat(),
+                "user": "Super Admin",
+                "role": "SUPER_ADMIN",
+                "action": "SCHOOL_UPDATED",
+                "target": school["id"],
+                "details": f"Maktab tahrirlandi: \"{old_name}\" -> \"{school['name']}\" ({school['id']})"
+            })
+            save_db()
+            print(f"🏫 [PYTHON BACKEND] Maktab tahrirlandi: {school['id']} -> {school['name']}")
+            self._send_json({"success": True, "message": "Maktab nomi va ma'lumotlari muvaffaqiyatli yangilandi", "school": school})
+            return
+
+        self._send_json({"success": False, "message": "Noma'lum API yo'nalishi"}, 404)
+
+    def do_DELETE(self):
+        parsed = urllib.parse.urlparse(self.path)
+        path = parsed.path
+
+        if path.startswith('/api/v1/schools/'):
+            sch_id = path.replace('/api/v1/schools/', '').strip()
+            idx = next((i for i, s in enumerate(db["schools"]) if s["id"] == sch_id or s.get("code") == sch_id), -1)
+            if idx == -1:
+                self._send_json({"success": False, "message": "Maktab topilmadi"}, 404)
+                return
+            removed = db["schools"].pop(idx)
+            save_db()
+            self._send_json({"success": True, "message": f"{removed['name']} tizimdan o'chirildi"})
+            return
+
+        elif path.startswith('/api/v1/students/'):
+            st_id = path.replace('/api/v1/students/', '').strip()
+            idx = next((i for i, s in enumerate(db["students"]) if s["id"] == st_id or s.get("uniqueId") == st_id), -1)
+            if idx == -1:
+                self._send_json({"success": False, "message": "O'quvchi topilmadi"}, 404)
+                return
+            removed = db["students"].pop(idx)
+            save_db()
+            self._send_json({"success": True, "message": f"{removed['name']} tizimdan o'chirildi"})
+            return
+
+        self._send_json({"success": False, "message": "Noma'lum API yo'nalishi"}, 404)
+
 if __name__ == '__main__':
     server_address = ('', PORT)
     httpd = http.server.HTTPServer(server_address, SmartChildHandler)

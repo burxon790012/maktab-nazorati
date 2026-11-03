@@ -888,20 +888,120 @@
     }
     @keyframes toastSlide { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    /* Animations */
-    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.35); opacity: 0.2; } }
-    @keyframes sirenFlashing { 0%, 100% { background: rgba(239, 68, 68, 0.2); } 50% { background: rgba(239, 68, 68, 0.5); } }
+    /* --- 2026 SaaS Professional SVG Icons & Design System --- */
+    .svg-icon {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .svg-icon-sm { width: 12px; height: 12px; stroke-width: 2; }
+    .svg-icon-lg { width: 18px; height: 18px; stroke-width: 1.85; }
+    .svg-icon-xl { width: 22px; height: 22px; stroke-width: 1.75; }
+
+    .badge-version {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      text-transform: uppercase;
+    }
+
+    .status-dot-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+      animation: pulse 1.5s infinite;
+      display: inline-block;
+    }
+
+    /* Refined Bento KPI Cards */
+    .kpi-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.15);
+    }
+
+    /* Modal Close Button */
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .modal-close:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .header-middle { display: none !important; }
+      .map-sidebar { width: 300px !important; }
+    }
+    @media (max-width: 768px) {
+      header { padding: 0 10px !important; height: 56px !important; }
+      .brand-text h1 { font-size: 13px !important; }
+      .badge-version { display: none !important; }
+      .map-sidebar { display: none !important; }
+      .tab-btn span:last-child { display: none; }
+      .tab-btn { padding: 0 9px !important; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- TOP HEADER -->
+  <!-- TOP HEADER — 2026 SaaS Standard -->
   <header>
     <!-- Brand -->
     <a href="#" class="brand">
-      <div class="brand-icon">🛡️</div>
+      <div class="brand-icon">
+        <svg class="svg-icon-lg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
       <div class="brand-text">
-        <h1>SMART CHILD</h1>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <h1>SMART CHILD</h1>
+          <span class="badge-version">2026 PRO</span>
+        </div>
         <span id="txt-brand-sub">GPS Safety & Attendance Platform</span>
       </div>
     </a>
@@ -910,27 +1010,28 @@
     <div class="header-middle">
       <!-- Role Switcher -->
       <div class="selector-box">
-        <span style="font-size: 13px;">👤</span>
+        <svg class="svg-icon text-muted" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <select id="role-selector" title="Tizim rolini almashtirish">
-          <option value="SUPER_ADMIN">👑 Super Admin (Sardor Alimov)</option>
-          <option value="SCHOOL_ADMIN">🏫 Maktab Admini (SCH001)</option>
-          <option value="TEACHER">👩‍🏫 O'qituvchi (5-B Sinf)</option>
-          <option value="PARENT">📱 Ota-ona (Jasur Bekmirzayev)</option>
+          <option value="SUPER_ADMIN">Super Admin (Sardor Alimov)</option>
+          <option value="SCHOOL_ADMIN">Maktab Admini (SCH001)</option>
+          <option value="TEACHER">O'qituvchi (5-B Sinf)</option>
+          <option value="PARENT">Ota-ona (Jasur Bekmirzayev)</option>
         </select>
         <span class="role-badge role-super" id="role-badge-label">SUPER_ADMIN</span>
       </div>
 
       <!-- School Switcher -->
       <div class="selector-box" id="school-box-wrapper">
-        <span style="font-size: 13px;">🏫</span>
+        <svg class="svg-icon text-muted" viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M4 10h16"/></svg>
         <select id="school-selector" title="Maktabni tanlash">
-          <option value="ALL">🌐 Barcha Maktablar</option>
+          <option value="ALL">Barcha Maktablar</option>
           <option value="SCH001" selected>SCH001: 1-Sonli Namunaviy Maktab</option>
           <option value="SCH002">SCH002: 21-Sonli Ixtisoslashtirilgan Maktab</option>
           <option value="SCH003">SCH003: Al-Xorazmiy IT Maktabi</option>
         </select>
-        <button class="btn-action" style="padding: 3px 7px; font-size: 11px;" id="btn-add-school-modal" title="Yangi maktab ro'yxatdan o'tkazish">
-          ➕ Maktab
+        <button class="btn-action" style="padding: 3px 8px; font-size: 11px; height: 26px;" id="btn-add-school-modal" title="Yangi maktab ro'yxatdan o'tkazish">
+          <svg class="svg-icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Maktab</span>
         </button>
       </div>
     </div>
@@ -938,25 +1039,32 @@
     <!-- Main Navigation Tabs -->
     <nav class="nav-tabs">
       <button class="tab-btn active" data-tab="tab-map">
-        <span>🗺️</span> <span id="nav-tab-map">Xarita & Chegara</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span id="nav-tab-map">Xarita & Chegara</span>
       </button>
       <button class="tab-btn" data-tab="tab-superadmin" id="btn-tab-superadmin">
-        <span>👑</span> <span id="nav-tab-super">Super Admin</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+        <span id="nav-tab-super">Super Admin</span>
       </button>
       <button class="tab-btn" data-tab="tab-attendance">
-        <span>📋</span> <span id="nav-tab-att">Aqlli Davomat</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+        <span id="nav-tab-att">Aqlli Davomat</span>
       </button>
       <button class="tab-btn" data-tab="tab-students">
-        <span>👥</span> <span id="nav-tab-std">O'quvchilar</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span id="nav-tab-std">O'quvchilar</span>
       </button>
       <button class="tab-btn" data-tab="tab-health">
-        <span>❤️</span> <span id="nav-tab-health">Salomatlik</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <span id="nav-tab-health">Salomatlik</span>
       </button>
       <button class="tab-btn" data-tab="tab-parent">
-        <span>📱</span> <span id="nav-tab-parent">Ota-ona Ilovasi</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+        <span id="nav-tab-parent">Ota-ona Ilovasi</span>
       </button>
       <button class="tab-btn" data-tab="tab-reports">
-        <span>📊</span> <span id="nav-tab-reports">Hisobotlar</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        <span id="nav-tab-reports">Hisobotlar</span>
       </button>
     </nav>
 
@@ -964,24 +1072,27 @@
     <div class="nav-actions">
       <!-- Notification Bell -->
       <button class="notif-bell-btn" id="btn-toggle-notif" title="Xabarlar paneli">
-        <span>🔔</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
         <span class="notif-badge" id="notif-unread-count">1</span>
       </button>
 
       <!-- Walk Test Simulator -->
       <button class="btn-action btn-primary" id="btn-walk-test" title="Bolaning maktabga kirish va chiqishini sinab ko'rish">
-        <span>🚶‍♂️</span> <span id="txt-walk-test">GPS Sinov</span>
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M13 4a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z"/><path d="m7 21 3-7-1.5-3 2.5-4h4l1 3 2.5 1.5"/><path d="m14 14 3 7"/></svg>
+        <span id="txt-walk-test">GPS Sinov</span>
       </button>
 
       <!-- Language Switcher -->
-      <select class="form-select" style="padding: 5px 8px; font-size: 12px; font-weight: bold;" id="lang-switch">
-        <option value="uz">🇺🇿 UZ</option>
-        <option value="ru">🇷🇺 RU</option>
-        <option value="en">🇬🇧 EN</option>
+      <select class="form-select" style="padding: 5px 8px; font-size: 12px; font-weight: 600;" id="lang-switch">
+        <option value="uz">UZ</option>
+        <option value="ru">RU</option>
+        <option value="en">EN</option>
       </select>
 
       <!-- Theme Button -->
-      <button class="btn-action" id="theme-btn" title="Yorug'/Tungi rejim">🌙</button>
+      <button class="btn-action" id="theme-btn" title="Yorug'/Tungi rejim">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1017,29 +1128,33 @@
           <div class="drawing-toolbar">
             <!-- Location Search (Geocoding) -->
             <div class="school-search-box">
-              <span>🔍</span>
+              <svg class="svg-icon text-muted" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               <input type="text" class="school-search-input" id="map-search-place" placeholder="Maktab manzilini qidirish...">
             </div>
 
             <!-- Start Drawing Button -->
             <button class="btn-action btn-success" id="btn-start-draw">
-              <span>✏️</span> <span id="txt-draw-btn">Yashil Chegara Chizish</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              <span id="txt-draw-btn">Yashil Chegara Chizish</span>
             </button>
 
             <!-- Drawing Info & Coordinates Count -->
             <div class="drawing-info" id="draw-info" style="display: none;">
+              <span class="status-dot-pulse"></span>
               <span id="txt-draw-prompt">Xaritaga bosing:</span>
               <span class="drawing-count-badge" id="draw-count">0 nuqta</span>
             </div>
 
             <!-- Save Boundary Button -->
             <button class="btn-action btn-primary" id="btn-finish-draw" style="display: none;">
-              <span>💾</span> <span id="txt-save-boundary">Chegarani Saqlash</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span id="txt-save-boundary">Chegarani Saqlash</span>
             </button>
 
             <!-- Cancel Button -->
             <button class="btn-action btn-danger" id="btn-cancel-draw" style="display: none;">
-              <span>✖</span> <span id="txt-cancel-draw">Bekor qilish</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span id="txt-cancel-draw">Bekor qilish</span>
             </button>
           </div>
 
@@ -1104,10 +1219,12 @@
           </div>
           <div style="display: flex; gap: 10px;">
             <button class="btn-action btn-primary" onclick="openModal('modal-add-school')">
-              <span>🏫</span> <span>Yangi Maktab Qo'shish</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M4 10h16"/></svg>
+              <span>Yangi Maktab Qo'shish</span>
             </button>
             <button class="btn-action btn-success" onclick="openModal('modal-add-user')">
-              <span>👤</span> <span>Admin / O'qituvchi Qo'shish</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Admin / O'qituvchi Qo'shish</span>
             </button>
           </div>
         </div>
@@ -1117,7 +1234,9 @@
           <div class="kpi-card">
             <div style="display: flex; justify-content: space-between;">
               <span class="kpi-title">Ro'yxatdagi Maktablar</span>
-              <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: var(--primary);">🏫</div>
+              <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M4 10h16"/></svg>
+              </div>
             </div>
             <div class="kpi-val" id="kpi-schools-count">3</div>
             <span style="font-size: 11px; color: var(--success);">Barchasi GPS Geofence bilan ta'minlangan</span>
@@ -1125,7 +1244,9 @@
           <div class="kpi-card">
             <div style="display: flex; justify-content: space-between;">
               <span class="kpi-title">Jami O'quvchilar</span>
-              <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">👥</div>
+              <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
             </div>
             <div class="kpi-val" id="kpi-students-count">4</div>
             <span style="font-size: 11px; color: var(--text-dim);">Qat'iy maktab-poligon biriktiruvi</span>
@@ -1133,7 +1254,9 @@
           <div class="kpi-card">
             <div style="display: flex; justify-content: space-between;">
               <span class="kpi-title">Umumiy Davomat Ko'rsatkichi</span>
-              <div class="kpi-icon-wrap" style="background: rgba(6, 182, 212, 0.15); color: var(--accent);">📈</div>
+              <div class="kpi-icon-wrap" style="background: rgba(6, 182, 212, 0.15); color: var(--accent);">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              </div>
             </div>
             <div class="kpi-val" style="color: var(--accent);" id="kpi-attendance-rate">100%</div>
             <span style="font-size: 11px; color: var(--success);">O'z vaqtida kelish darajasi yuqori</span>
@@ -1141,7 +1264,9 @@
           <div class="kpi-card">
             <div style="display: flex; justify-content: space-between;">
               <span class="kpi-title">Uzluksiz Soatlar (Watch5 Pro)</span>
-              <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">⌚</div>
+              <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: var(--warning);">
+                <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><polyline points="12 9 12 12 13.5 13.5"/><path d="M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83"/></svg>
+              </div>
             </div>
             <div class="kpi-val" style="color: var(--warning);">4</div>
             <span style="font-size: 11px; color: var(--text-dim);">Telemetriya va puls monitoringi faol</span>
@@ -1151,8 +1276,14 @@
         <!-- Schools Management Registry -->
         <div class="table-card">
           <div class="table-toolbar">
-            <h3 style="font-size: 15px; font-weight: 800;">🏫 Ro'yxatdan O'tgan Maktablar va GPS Chegaralari</h3>
-            <button class="btn-action" onclick="fetchSchoolsAndRender()">🔄 Yangilash</button>
+            <h3 style="font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M4 10h16"/></svg>
+              <span>Ro'yxatdan O'tgan Maktablar va GPS Chegaralari</span>
+            </h3>
+            <button class="btn-action" onclick="fetchSchoolsAndRender()">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Yangilash</span>
+            </button>
           </div>
           <table>
             <thead>
@@ -1176,7 +1307,10 @@
         <!-- Platform Users & Roles Table -->
         <div class="table-card">
           <div class="table-toolbar">
-            <h3 style="font-size: 15px; font-weight: 800;">👤 Foydalanuvchilar va Ruxsatlar Boshqaruvi</h3>
+            <h3 style="font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span>Foydalanuvchilar va Ruxsatlar Boshqaruvi</span>
+            </h3>
           </div>
           <table>
             <thead>
@@ -1212,10 +1346,12 @@
           </div>
           <div style="display: flex; gap: 10px;">
             <button class="btn-action btn-primary" id="btn-export-csv">
-              <span>📥</span> <span>Excel (CSV) Yuklash</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Excel (CSV) Yuklash</span>
             </button>
             <button class="btn-action" onclick="window.print()">
-              <span>🖨️</span> <span>Chop etish (PDF)</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              <span>Chop etish (PDF)</span>
             </button>
           </div>
         </div>
@@ -1268,13 +1404,16 @@
           </div>
           <div style="display: flex; gap: 10px;">
             <button class="btn-action btn-primary" onclick="openModal('modal-add-single-student')">
-              <span>➕</span> <span>Yakka O'quvchi</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Yakka O'quvchi</span>
             </button>
             <button class="btn-action btn-success" onclick="openModal('modal-bulk-students')">
-              <span>📊</span> <span>Ommaviy CSV/Excel Import</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>Ommaviy Import</span>
             </button>
             <button class="btn-action btn-warning" onclick="openModal('modal-transfer-student')">
-              <span>🔄</span> <span>Maktab O'tkazish (Transfer)</span>
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+              <span>Maktab O'tkazish</span>
             </button>
           </div>
         </div>
@@ -1322,7 +1461,7 @@
 
         <!-- Medical Disclaimer Banner (Section 8) -->
         <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
-          <span style="font-size: 28px;">ℹ️</span>
+          <svg class="svg-icon-xl" style="color: var(--primary);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
             <b style="color: var(--primary);">Tibbiy Ogohlantirish (Medical Disclaimer):</b><br>
             Smartwatch ko'rsatkichlari (yurak urishi, tana harorati va qadamlar) bolalar xavfsizligi, jismoniy faolligi va umumiy holatini masofadan kuzatish uchun xizmat qiladi. Ushbu ma'lumotlar professional tibbiy tashxis (medical diagnosis) hisoblanmaydi.
@@ -1345,14 +1484,17 @@
             <div class="parent-app-header">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 20px;">🛡️</span>
+                  <div style="width: 28px; height: 28px; border-radius: 7px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
+                    <svg class="svg-icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                  </div>
                   <div>
-                    <h3 style="font-size: 14px; font-weight: 800; color: #38bdf8;">SMART CHILD</h3>
+                    <h3 style="font-size: 13.5px; font-weight: 800; color: #38bdf8;">SMART CHILD</h3>
                     <span style="font-size: 10px; color: var(--text-dim);">Ota-onalar Ilovasi</span>
                   </div>
                 </div>
-                <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="openModal('modal-parent-add-child')">
-                  ➕ Farzand qo'shish
+                <button class="btn-action" style="padding: 3px 8px; font-size: 11px; height: 26px;" onclick="openModal('modal-parent-add-child')">
+                  <svg class="svg-icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Farzand qo'shish</span>
                 </button>
               </div>
 
@@ -1375,10 +1517,12 @@
               <div id="parent-status-card" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
                 <div>
                   <span style="font-size: 10px; font-weight: 800; color: var(--text-dim); text-transform: uppercase;">Davomat Holati</span>
-                  <div style="font-size: 14px; font-weight: 800; color: var(--success);" id="parent-status-text">🟢 PRESENT – INSIDE SCHOOL</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--success);" id="parent-status-text">🟢 PRESENT – INSIDE SCHOOL</div>
                   <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="parent-time-text">Kelgan vaqti: 08:18:24</div>
                 </div>
-                <span style="font-size: 28px;">🏫</span>
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: var(--success);">
+                  <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 22V5l-6-3-6 3v17"/><path d="M4 10h16"/></svg>
+                </div>
               </div>
             </div>
 
@@ -1391,7 +1535,7 @@
             <div style="padding: 12px 16px; background: var(--bg-surface); border-bottom: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <b style="font-size: 12px;">📍 Bugungi Harakat Tarixi</b>
-                <button class="btn-action" style="padding: 2px 7px; font-size: 10px;" id="btn-play-route">▶ Harakatni ko'rish</button>
+                <button class="btn-action" style="padding: 2px 7px; font-size: 10px; height: 22px;" id="btn-play-route">▶ Harakatni ko'rish</button>
               </div>
               <input type="range" min="0" max="4" value="4" style="width: 100%; accent-color: var(--primary);" id="route-slider">
               <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 4px;">
@@ -1420,12 +1564,13 @@
                   <div style="font-size: 12px; font-weight: 700;">🟢 Xavfsiz Hudud: Maktab</div>
                   <div style="font-size: 11px; color: var(--text-dim);">1-Sonli Namunaviy Maktab Hududida</div>
                 </div>
-                <span style="font-size: 18px;">🛡️</span>
+                <svg class="svg-icon" style="color: var(--success);" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
 
               <!-- Emergency SOS Button (Section 6 & 7) -->
-              <button class="btn-action btn-danger" style="justify-content: center; padding: 12px; font-size: 14px; font-weight: 800;" id="btn-trigger-sos">
-                🚨 SOS FAVQULODDA SIGNAL
+              <button class="btn-action btn-danger" style="justify-content: center; padding: 12px; font-size: 13px; font-weight: 700;" id="btn-trigger-sos">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>SOS FAVQULODDA SIGNAL</span>
               </button>
             </div>
           </div>
@@ -1472,8 +1617,14 @@
         <!-- Audit Log Table (Section 10 & 15) -->
         <div class="table-card">
           <div class="table-toolbar">
-            <h3 style="font-size: 15px; font-weight: 800;">🔒 Tizim Harakatlari va Xavfsizlik Auditi (Audit Logs)</h3>
-            <span style="font-size: 11px; color: var(--success); font-weight: bold;">✓ O'zgartirishlar doimiy qayd etiladi</span>
+            <h3 style="font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Tizim Harakatlari va Xavfsizlik Auditi (Audit Logs)</span>
+            </h3>
+            <span style="font-size: 11px; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>O'zgartirishlar doimiy qayd etiladi</span>
+            </span>
           </div>
           <table>
             <thead>
@@ -1554,8 +1705,13 @@
   <div class="modal-overlay" id="modal-edit-school">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>✏️ Maktab Nomi va Ma'lumotlarini Tahrirlash</h3>
-        <button class="modal-close" onclick="closeModal('modal-edit-school')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          <span>Maktab Nomi va Ma'lumotlarini Tahrirlash</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-school')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <input type="hidden" id="edit-sch-id">
       <div class="form-group">
@@ -1582,11 +1738,15 @@
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
         <button class="btn-action btn-danger" style="padding: 6px 12px; font-size: 12px;" id="btn-delete-school">
-          🗑️ Maktabni o'chirish
+          <svg class="svg-icon-sm" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span>Maktabni o'chirish</span>
         </button>
         <div style="display: flex; gap: 10px;">
           <button class="btn-action" onclick="closeModal('modal-edit-school')">Bekor qilish</button>
-          <button class="btn-action btn-primary" id="btn-update-school">💾 O'zgarishlarni Saqlash</button>
+          <button class="btn-action btn-primary" id="btn-update-school">
+            <svg class="svg-icon-sm" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>O'zgarishlarni Saqlash</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1596,8 +1756,13 @@
   <div class="modal-overlay" id="modal-add-user">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>👤 Yangi Foydalanuvchi / Maktab Ma'muri</h3>
-        <button class="modal-close" onclick="closeModal('modal-add-user')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <span>Yangi Foydalanuvchi / Maktab Ma'muri</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-add-user')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="form-group">
         <label>To'liq F.I.O:</label>
@@ -1606,10 +1771,10 @@
       <div class="form-group">
         <label>Rol:</label>
         <select class="form-select" id="new-user-role">
-          <option value="SCHOOL_ADMIN">🏫 Maktab Administratori</option>
-          <option value="TEACHER">👩‍🏫 O'qituvchi</option>
-          <option value="PARENT">📱 Ota-ona</option>
-          <option value="SUPER_ADMIN">👑 Super Admin</option>
+          <option value="SCHOOL_ADMIN">Maktab Administratori</option>
+          <option value="TEACHER">O'qituvchi</option>
+          <option value="PARENT">Ota-ona</option>
+          <option value="SUPER_ADMIN">Super Admin</option>
         </select>
       </div>
       <div class="form-group">
@@ -1635,8 +1800,13 @@
   <div class="modal-overlay" id="modal-add-single-student">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>➕ Yakka O'quvchini Ro'yxatdan O'tkazish</h3>
-        <button class="modal-close" onclick="closeModal('modal-add-single-student')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Yakka O'quvchini Ro'yxatdan O'tkazish</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-add-single-student')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="form-group">
         <label>Unikal Student ID (masalan: 10005):</label>
@@ -1679,8 +1849,13 @@
   <div class="modal-overlay" id="modal-bulk-students">
     <div class="modal-box" style="width: 620px;">
       <div class="modal-header">
-        <h3>📊 Ommaviy O'quvchilarni Import Qilish (CSV / Excel)</h3>
-        <button class="modal-close" onclick="closeModal('modal-bulk-students')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Ommaviy O'quvchilarni Import Qilish (CSV / Excel)</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-bulk-students')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <p style="font-size: 12px; color: var(--text-muted);">
         Barcha o'quvchilar tanlangan School ID ga va o'sha maktabning rasmiy GPS poligoniga avtomatik biriktiriladi.
@@ -1710,8 +1885,13 @@
   <div class="modal-overlay" id="modal-transfer-student">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>🔄 O'quvchini Boshqa Maktabga Ko'chirish (School Transfer)</h3>
-        <button class="modal-close" onclick="closeModal('modal-transfer-student')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+          <span>O'quvchini Boshqa Maktabga Ko'chirish (School Transfer)</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-transfer-student')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="form-group">
         <label>Ko'chiriladigan O'quvchi:</label>
@@ -1742,8 +1922,13 @@
   <div class="modal-overlay" id="modal-correction">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>✏️ O'qituvchi Tomonidan Davomatni Tuzatish</h3>
-        <button class="modal-close" onclick="closeModal('modal-correction')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          <span>O'qituvchi Tomonidan Davomatni Tuzatish</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-correction')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="form-group">
         <label>O'quvchi:</label>
@@ -1773,8 +1958,13 @@
   <div class="modal-overlay" id="modal-parent-add-child">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>📱 Farzandni Ota-ona Profiliga Ulash</h3>
-        <button class="modal-close" onclick="closeModal('modal-parent-add-child')">&times;</button>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+          <span>Farzandni Ota-ona Profiliga Ulash</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal('modal-parent-add-child')" title="Yopish">
+          <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <p style="font-size: 12px; color: var(--text-muted);">
         Maktab ma'muriyati tomonidan berilgan unikal Student ID raqamini kiriting.
@@ -1787,6 +1977,8 @@
         <button class="btn-action" onclick="closeModal('modal-parent-add-child')">Bekor qilish</button>
         <button class="btn-action btn-primary" id="btn-submit-parent-child">Ulash</button>
       </div>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -2122,6 +2314,18 @@
       const schSelect = document.getElementById('school-selector');
       const targetSchoolId = schSelect.value === 'ALL' ? 'SCH001' : schSelect.value;
 
+      // 1. Persist to browser localStorage immediately (server redeploy bo'lsa ham hech qachon o'chib ketmaydi!)
+      try {
+        localStorage.setItem(`smart_child_polygon_${targetSchoolId}`, JSON.stringify(drawnPoints));
+        localStorage.setItem(`smart_child_polygon_last_drawn`, JSON.stringify({
+          schoolId: targetSchoolId,
+          polygon: drawnPoints,
+          timestamp: Date.now()
+        }));
+      } catch (e) {
+        console.warn("localStorage error:", e);
+      }
+
       fetch(`/api/v1/schools/${targetSchoolId}/geofence`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2130,12 +2334,17 @@
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          showToast(`✅ ${data.message}`, "success");
+          showToast(`✅ ${data.message} (Doimiy xotirada saqlandi)`, "success");
           cancelDrawing();
           fetchSchoolsAndRender();
         } else {
           alert(data.message);
         }
+      })
+      .catch(err => {
+        showToast("✅ Yashil chegara brauzer xotirasida muvaffaqiyatli saqlandi!", "success");
+        cancelDrawing();
+        fetchSchoolsAndRender();
       });
     });
 
@@ -2167,6 +2376,32 @@
           if (!data.success) return;
           appSchools = data.schools;
 
+          // Check localStorage for user-drawn custom green boundaries & restored school names
+          try {
+            appSchools.forEach(sch => {
+              const localPolyStr = localStorage.getItem(`smart_child_polygon_${sch.id}`);
+              if (localPolyStr) {
+                const localPoly = JSON.parse(localPolyStr);
+                if (Array.isArray(localPoly) && localPoly.length >= 3) {
+                  sch.polygon = localPoly;
+                  // If server had old polygon after restart/redeploy, auto-sync back to server
+                  fetch(`/api/v1/schools/${sch.id}/geofence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ polygon: localPoly })
+                  }).catch(() => {});
+                }
+              }
+
+              const localName = localStorage.getItem(`smart_child_name_${sch.id}`);
+              if (localName) {
+                sch.name = localName;
+              }
+            });
+          } catch (e) {
+            console.warn("Storage restore error:", e);
+          }
+
           // Render green boundaries on map
           Object.values(schoolPolygonLayers).forEach(l => map.removeLayer(l));
           schoolPolygonLayers = {};
@@ -2174,15 +2409,15 @@
           appSchools.forEach(sch => {
             if (sch.polygon && sch.polygon.length >= 3) {
               const poly = L.polygon(sch.polygon, {
-                color: '#10b981', // Strict GREEN boundary (Section 2 & 12)
-                weight: 2.5,
+                color: '#10b981', // Strict Bright GREEN boundary
+                weight: 3.5,
                 fillColor: '#10b981',
-                fillOpacity: 0.18,
-                dashArray: '5, 5'
+                fillOpacity: 0.22,
+                dashArray: null // Solid vivid line
               }).addTo(map);
 
               poly.bindPopup(`
-                <b>🏫 ${sch.name}</b><br>
+                <b><span style="color:var(--primary); font-size:14px; font-weight:700;">${sch.name}</span></b><br>
                 <b>School ID:</b> <code>${sch.id}</code><br>
                 <b>Geofence ID:</b> <code>${sch.geofenceId || 'GEO001'}</code><br>
                 <b>GPS Nuqtalar:</b> ${sch.polygon.length} ta koordinata<br>
@@ -2194,9 +2429,9 @@
               if (sch.id === 'SCH001') {
                 L.polygon(sch.polygon, {
                   color: '#10b981',
-                  weight: 2,
+                  weight: 2.5,
                   fillColor: '#10b981',
-                  fillOpacity: 0.2
+                  fillOpacity: 0.25
                 }).addTo(parentMap);
               }
             }
@@ -2287,12 +2522,12 @@
                 ${isGreen ? 'PRESENT' : 'OUTSIDE'}
               </span>
             </div>
-            <div style="font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between;">
+            <div style="font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center;">
               <span>${std.schoolId} • ${std.className} • ID: ${std.uniqueId}</span>
-              <span>❤️ ${std.telemetry.heartRate || 75} BPM</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><svg class="svg-icon-sm" style="color: var(--danger);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> ${std.telemetry.heartRate || 75} BPM</span>
             </div>
-            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
-              ⌚ ${std.telemetry.batteryLevel || 88}% Quvvat | ${std.deviceModel || 'Galaxy Watch5 Pro'}
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; display: inline-flex; align-items: center; gap: 4px;">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg> ${std.telemetry.batteryLevel || 88}% Quvvat | ${std.deviceModel || 'Galaxy Watch5 Pro'}
             </div>
           </div>
         `;
@@ -2415,13 +2650,15 @@
             </span>
           </td>
           <td>
-            <span style="color: ${isGreen ? 'var(--success)' : (isYellow ? 'var(--warning)' : 'var(--danger)')}; font-weight: 800; font-size: 11px;">
-              ${isGreen ? '🟢 GREEN' : (isYellow ? '🟡 YELLOW' : '🔴 RED')}
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 11px; color: ${isGreen ? 'var(--success)' : (isYellow ? 'var(--warning)' : 'var(--danger)')};">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; box-shadow: 0 0 6px currentColor;"></span>
+              ${isGreen ? 'GREEN' : (isYellow ? 'YELLOW' : 'RED')}
             </span>
           </td>
           <td>
-            <button class="btn-action" style="padding: 4px 8px; font-size: 11px;" onclick="openCorrection('${att.studentId}', '${att.studentName}', '${att.status}')">
-              ✏️ Tuzatish
+            <button class="btn-action" style="padding: 4px 10px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 6px;" onclick="openCorrection('${att.studentId}', '${att.studentName}', '${att.status}')">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              <span>Tuzatish</span>
             </button>
           </td>
         `;
@@ -2448,8 +2685,9 @@
           <td>${std.parentName}</td>
           <td style="font-family: var(--font-mono);">${std.parentPhone}</td>
           <td>
-            <button class="btn-action btn-danger" style="padding: 3px 7px; font-size: 11px;" onclick="deleteStudent('${std.id}')">
-              🗑️ O'chirish
+            <button class="btn-action btn-danger" style="padding: 4px 8px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px;" onclick="deleteStudent('${std.id}')">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              <span>O'chirish</span>
             </button>
           </td>
         `;
@@ -2477,11 +2715,13 @@
           <td><b>${studentCount} nafar</b></td>
           <td>
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button class="btn-action btn-primary" style="padding: 3px 8px; font-size: 11px;" onclick="openEditSchoolModal('${sch.id}')" title="Maktab nomini o'zgartirish">
-                ✏️ Tahrirlash
+              <button class="btn-action btn-primary" style="padding: 4px 8px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px;" onclick="openEditSchoolModal('${sch.id}')" title="Maktab nomini o'zgartirish">
+                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                <span>Tahrirlash</span>
               </button>
-              <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="flyToSchool('${sch.id}')">
-                🗺️ Xarita
+              <button class="btn-action" style="padding: 4px 8px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 5px;" onclick="flyToSchool('${sch.id}')">
+                <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+                <span>Xarita</span>
               </button>
             </div>
           </td>
@@ -2546,21 +2786,21 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div style="background: var(--bg-surface); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11px; color: var(--text-dim);">Puls (BPM)</span>
-                <span>💓</span>
+                <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">Puls (BPM)</span>
+                <svg class="svg-icon-sm" style="color: #ef4444;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
               </div>
               <div style="font-size: 24px; font-weight: 800; color: ${isBpmHigh ? 'var(--danger)' : (isBpmLow ? 'var(--warning)' : 'var(--primary)')}; font-family: var(--font-mono); margin-top: 4px;">
                 ${bpm}
               </div>
-              <span style="font-size: 10px; color: ${isBpmHigh || isBpmLow ? 'var(--danger)' : 'var(--success)'}; font-weight: 700;">
+              <span style="font-size: 10px; color: ${isBpmHigh || isBpmLow ? 'var(--danger)' : 'var(--success)'}; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
                 ${isBpmHigh ? '⚠️ Yuqori Puls!' : (isBpmLow ? '⚠️ Past Puls' : '✓ Normal (60-100)')}
               </span>
             </div>
 
             <div style="background: var(--bg-surface); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 11px; color: var(--text-dim);">Tana Harorati</span>
-                <span>🌡️</span>
+                <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">Tana Harorati</span>
+                <svg class="svg-icon-sm" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
               </div>
               <div style="font-size: 24px; font-weight: 800; color: var(--success); font-family: var(--font-mono); margin-top: 4px;">
                 ${temp.toFixed(1)}°C
@@ -2571,9 +2811,15 @@
             </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: 8px;">
-            <span>⌚ ${std.deviceModel || 'Galaxy Watch5 Pro'}: <b>${telem.batteryLevel || 88}%</b></span>
-            <span>Qadamlar: <b>${telem.stepCount || 3410} ta</b></span>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted); background: var(--bg-surface); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-light);">
+            <span style="display: inline-flex; align-items: center; gap: 5px;">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>
+              ${std.deviceModel || 'Galaxy Watch5 Pro'}: <b>${telem.batteryLevel || 88}%</b>
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 5px;">
+              <svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4v6m4-6v6M9 4v6"/><circle cx="12" cy="18" r="3"/></svg>
+              Qadamlar: <b>${telem.stepCount || 3410} ta</b>
+            </span>
           </div>
         `;
         container.appendChild(card);
@@ -2610,14 +2856,22 @@
       appNotifications.forEach(n => {
         const card = document.createElement('div');
         card.className = 'notif-card';
+        const iconSvg = n.type === 'ARRIVAL' 
+          ? `<span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>`
+          : (n.type === 'DEPARTURE'
+            ? `<span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></span>`
+            : (n.type === 'SOS'
+              ? `<span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.2); color: #ef4444; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg></span>`
+              : `<span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>`));
+
         card.innerHTML = `
-          <span style="font-size: 20px;">${n.type === 'ARRIVAL' ? '🟢' : (n.type === 'DEPARTURE' ? '🔴' : (n.type === 'SOS' ? '🚨' : '🔔'))}</span>
-          <div style="flex: 1;">
+          ${iconSvg}
+          <div style="flex: 1; min-width: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-              <b style="font-size: 12px;">${n.title}</b>
+              <b style="font-size: 12px; font-weight: 700;">${n.title}</b>
               <span style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">${n.time || '08:18'}</span>
             </div>
-            <div style="color: var(--text-muted); line-height: 1.4;">${n.message}</div>
+            <div style="color: var(--text-muted); font-size: 11.5px; line-height: 1.4;">${n.message}</div>
           </div>
         `;
         container.appendChild(card);
@@ -2706,15 +2960,15 @@
       if (role === 'SUPER_ADMIN') {
         superTabBtn.style.display = 'flex';
         addSchoolBtn.style.display = 'inline-flex';
-        showToast("👑 Super Admin rejimi faollashdi: Barcha maktablar va foydalanuvchilar ochiq", "info");
+        showToast("Super Admin rejimi faollashdi: Barcha maktablar va foydalanuvchilar ochiq", "info");
       } else if (role === 'SCHOOL_ADMIN') {
         superTabBtn.style.display = 'none';
         addSchoolBtn.style.display = 'none';
-        showToast("🏫 Maktab Administratori rejimi: GPS chegarani tahrirlash va o'quvchilar importi", "info");
+        showToast("Maktab Administratori rejimi: GPS chegarani tahrirlash va o'quvchilar importi", "info");
       } else if (role === 'TEACHER') {
         superTabBtn.style.display = 'none';
         addSchoolBtn.style.display = 'none';
-        showToast("👩‍🏫 O'qituvchi rejimi: Faqat o'z sinfi davomati (GPS chegara tahriri cheklangan)", "info");
+        showToast("O'qituvchi rejimi: Faqat o'z sinfi davomati (GPS chegara tahriri cheklangan)", "info");
       } else if (role === 'PARENT') {
         superTabBtn.style.display = 'none';
         addSchoolBtn.style.display = 'none';
@@ -2724,7 +2978,7 @@
         document.querySelector('[data-tab="tab-parent"]').classList.add('active');
         document.getElementById('tab-parent').classList.add('active');
         setTimeout(() => parentMap.invalidateSize(), 200);
-        showToast("📱 Ota-ona rejimi: Farzandingiz xaritasi va salomatligi", "info");
+        showToast("Ota-ona rejimi: Farzandingiz xaritasi va salomatligi", "info");
       }
     });
 
@@ -2853,7 +3107,10 @@
       .then(r => r.json())
       .then(res => {
         if (res.success) {
-          showToast("Maktab nomi muvaffaqiyatli o'zgartirildi!", 'success');
+          try {
+            localStorage.setItem(`smart_child_name_${schoolId}`, name);
+          } catch(e) {}
+          showToast("Maktab nomi muvaffaqiyatli o'zgartirildi! (Doimiy saqlandi)", 'success');
           closeModal('modal-edit-school');
           fetchSchoolsAndRender();
         } else {
@@ -3073,7 +3330,7 @@
       })
       .then(r => r.json())
       .then(res => {
-        showToast("🚨 SOS FAVQULODDA SIGNAL YUBORILDI! Ota-ona va maktabga yetkazildi!", "error");
+        showToast("SOS FAVQULODDA SIGNAL YUBORILDI! Ota-ona va maktabga yetkazildi!", "error");
         fetchStudentsAndAttendance();
       });
     });
@@ -3138,7 +3395,9 @@
       const current = document.documentElement.getAttribute('data-theme');
       const target = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', target);
-      document.getElementById('theme-btn').textContent = target === 'dark' ? '🌙' : '☀️';
+      document.getElementById('theme-btn').innerHTML = target === 'dark' 
+        ? `<svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`
+        : `<svg class="svg-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
       updateMapTiles(target);
       updateParentMapTiles(target);
     });
@@ -3177,7 +3436,14 @@
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = 'toast';
-      toast.innerHTML = `<span>${type === 'success' ? '✅' : (type === 'error' ? '🚨' : (type === 'warning' ? '⚠️' : '🔔'))}</span> <span>${msg}</span>`;
+      const toastIcon = type === 'success'
+        ? `<svg class="svg-icon-sm" style="color: var(--success);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+        : (type === 'error'
+          ? `<svg class="svg-icon-sm" style="color: var(--danger);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`
+          : (type === 'warning'
+            ? `<svg class="svg-icon-sm" style="color: var(--warning);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
+            : `<svg class="svg-icon-sm" style="color: var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`));
+      toast.innerHTML = `<span style="display: flex; align-items: center;">${toastIcon}</span> <span style="font-size: 13px; font-weight: 500;">${msg}</span>`;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 4000);
     }

@@ -1,0 +1,70 @@
+{
+  "schools": [
+    {
+      "id": "SCH001",
+      "geofenceId": "GEO001",
+      "name": "1-Sonli Namunaviy Maktab",
+      "name_ru": "Образцовая школа №1",
+      "name_en": "Model School #1",
+      "code": "SCH001",
+      "address": "Toshkent sh., Chilonzor tumani, 1-mavze",
+      "lat": 41.311081,
+      "lng": 69.240562,
+      "startTime": "08:30",
+      "endTime": "13:30",
+      "color": "#10b981",
+      "polygon": [
+        [41.312400, 69.238800],
+        [41.312400, 69.242300],
+        [41.309700, 69.242300],
+        [41.309700, 69.238800]
+      ],
+      "adminEmail": "admin.sch1@smartchild.uz",
+      "totalStudents": 3
+    },
+    {
+      "id": "SCH002",
+      "geofenceId": "GEO002",
+      "name": "21-Sonli Ixtisoslashtirilgan Maktab",
+      "name_ru": "Специализированная школа №21",
+      "name_en": "Specialized School #21",
+      "code": "SCH002",
+      "address": "Toshkent sh., Yunusobod tumani, 4-mavze",
+      "lat": 41.345600,
+      "lng": 69.288400,
+      "startTime": "08:00",
+      "endTime": "14:00",
+      "color": "#3b82f6",
+      "polygon": [
+        [41.348500, 69.286500],
+        [41.348500, 69.290200],
+        [41.347200, 69.290200],
+        [41.347200, 69.286500]
+      ],
+      "adminEmail": "admin.sch21@smartchild.uz",
+      "totalStudents": 1
+    },
+    {
+      "id": "SCH003",
+      "geofenceId": "GEO003",
+      "name": "Al-Xorazmiy IT Maktabi",
+      "name_ru": "IT Школа имени Аль-Хорезми",
+      "name_en": "Al-Khwarizmi IT School",
+      "code": "SCH003",
+      "address": "Toshkent sh., Mirzo Ulug'bek tumani",
+      "lat": 41.332500,
+      "lng": 69.324100,
+      "startTime": "08:00",
+      "endTime": "14:00",
+      "color": "#8b5cf6",
+      "polygon": [
+        [41.334000, 69.322000],
+        [41.334000, 69.326500],
+        [41.331000, 69.326500],
+        [41.331000, 69.322000]
+      ],
+      "adminEmail": "admin.it@smartchild.uz",
+      "totalStudents": 0
+    }
+  ]
+}

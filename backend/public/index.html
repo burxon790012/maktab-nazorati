@@ -1461,6 +1461,48 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT SCHOOL (Section 1) -->
+  <div class="modal-overlay" id="modal-edit-school">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>✏️ Maktab Nomi va Ma'lumotlarini Tahrirlash</h3>
+        <button class="modal-close" onclick="closeModal('modal-edit-school')">&times;</button>
+      </div>
+      <input type="hidden" id="edit-sch-id">
+      <div class="form-group">
+        <label>School ID:</label>
+        <input type="text" class="form-input" id="edit-sch-code" readonly style="opacity: 0.7; cursor: not-allowed; background: var(--bg-hover);">
+      </div>
+      <div class="form-group">
+        <label>Maktab Nomi (Tahrirlash):</label>
+        <input type="text" class="form-input" id="edit-sch-name" placeholder="Masalan: 45-Sonli Umumiy O'rta Ta'lim Maktabi" style="font-weight: 700; border-color: var(--primary);">
+      </div>
+      <div class="form-group">
+        <label>Manzil:</label>
+        <input type="text" class="form-input" id="edit-sch-address" placeholder="Toshkent sh.">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group">
+          <label>Dars Boshlanishi:</label>
+          <input type="time" class="form-input" id="edit-sch-start">
+        </div>
+        <div class="form-group">
+          <label>Dars Tugashi:</label>
+          <input type="time" class="form-input" id="edit-sch-end">
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <button class="btn-action btn-danger" style="padding: 6px 12px; font-size: 12px;" id="btn-delete-school">
+          🗑️ Maktabni o'chirish
+        </button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-action" onclick="closeModal('modal-edit-school')">Bekor qilish</button>
+          <button class="btn-action btn-primary" id="btn-update-school">💾 O'zgarishlarni Saqlash</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADD NEW USER / ADMIN (Section 1) -->
   <div class="modal-overlay" id="modal-add-user">
     <div class="modal-box">
@@ -2072,6 +2114,7 @@
           });
 
           renderSuperAdminSchoolsTable();
+          populateSchoolDropdowns();
           fetchStudentsAndAttendance();
         });
     }
@@ -2344,9 +2387,14 @@
           <td><span class="status-badge-green">${sch.polygon ? sch.polygon.length : 4} ta GPS nuqta</span></td>
           <td><b>${studentCount} nafar</b></td>
           <td>
-            <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="flyToSchool('${sch.id}')">
-              🗺️ Xaritada ko'rish
-            </button>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn-action btn-primary" style="padding: 3px 8px; font-size: 11px;" onclick="openEditSchoolModal('${sch.id}')" title="Maktab nomini o'zgartirish">
+                ✏️ Tahrirlash
+              </button>
+              <button class="btn-action" style="padding: 3px 8px; font-size: 11px;" onclick="flyToSchool('${sch.id}')">
+                🗺️ Xarita
+              </button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
@@ -2663,20 +2711,170 @@
       const startTime = document.getElementById('new-sch-start').value;
       const endTime = document.getElementById('new-sch-end').value;
 
+      if (!name || !name.trim()) return alert("Iltimos, yangi maktab nomini kiriting!");
+
       fetch('/api/v1/schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, code, address, startTime, endTime })
+        body: JSON.stringify({ name: name.trim(), code, address, startTime, endTime })
       })
       .then(r => r.json())
       .then(res => {
         if (res.success) {
           showToast("Yangi maktab muvaffaqiyatli ro'yxatdan o'tdi", "success");
           closeModal('modal-add-school');
+          // Clear inputs
+          document.getElementById('new-sch-name').value = '';
+          document.getElementById('new-sch-code').value = '';
+          document.getElementById('new-sch-address').value = '';
           fetchSchoolsAndRender();
+        } else {
+          alert(res.message || "Xatolik yuz berdi");
         }
       });
     });
+
+    // Edit School Modal & Actions
+    window.openEditSchoolModal = function(schoolId) {
+      const sch = appSchools.find(s => s.id === schoolId || s.code === schoolId);
+      if (!sch) return alert("Maktab topilmadi");
+      document.getElementById('edit-sch-id').value = sch.id;
+      document.getElementById('edit-sch-code').value = sch.id;
+      document.getElementById('edit-sch-name').value = sch.name || '';
+      document.getElementById('edit-sch-address').value = sch.address || '';
+      document.getElementById('edit-sch-start').value = sch.startTime || '08:30';
+      document.getElementById('edit-sch-end').value = sch.endTime || '13:30';
+      openModal('modal-edit-school');
+    };
+
+    document.getElementById('btn-update-school').addEventListener('click', () => {
+      const schoolId = document.getElementById('edit-sch-id').value;
+      const name = document.getElementById('edit-sch-name').value.trim();
+      const address = document.getElementById('edit-sch-address').value.trim();
+      const startTime = document.getElementById('edit-sch-start').value;
+      const endTime = document.getElementById('edit-sch-end').value;
+
+      if (!name) return alert("Iltimos, maktab nomini kiriting!");
+
+      fetch(`/api/v1/schools/${schoolId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, address, startTime, endTime })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast("Maktab nomi muvaffaqiyatli o'zgartirildi!", 'success');
+          closeModal('modal-edit-school');
+          fetchSchoolsAndRender();
+        } else {
+          alert(res.message || "Xatolik yuz berdi");
+        }
+      })
+      .catch(err => {
+        alert("Server bilan bog'lanishda xatolik: " + err);
+      });
+    });
+
+    document.getElementById('btn-delete-school').addEventListener('click', () => {
+      const schoolId = document.getElementById('edit-sch-id').value;
+      const sch = appSchools.find(s => s.id === schoolId);
+      if (!confirm(`Haqiqatan ham "${sch ? sch.name : schoolId}" maktabini o'chirmoqchimisiz?`)) return;
+
+      fetch(`/api/v1/schools/${schoolId}`, { method: 'DELETE' })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(res.message, 'info');
+          closeModal('modal-edit-school');
+          fetchSchoolsAndRender();
+        } else {
+          alert(res.message);
+        }
+      });
+    });
+
+    // Dynamic School Dropdowns Populator (keeps all selectors updated when school names change)
+    function populateSchoolDropdowns() {
+      // 1. Header school selector
+      const schSelector = document.getElementById('school-selector');
+      if (schSelector) {
+        const currentSelected = schSelector.value;
+        schSelector.innerHTML = '<option value="ALL">🌐 Barcha Maktablar</option>';
+        appSchools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.id}: ${s.name}`;
+          schSelector.appendChild(opt);
+        });
+        if (appSchools.some(s => s.id === currentSelected)) {
+          schSelector.value = currentSelected;
+        } else if (currentSelected === 'ALL') {
+          schSelector.value = 'ALL';
+        } else if (appSchools.length > 0) {
+          schSelector.value = appSchools[0].id;
+        }
+      }
+
+      // 2. Single student modal school select
+      const singleSch = document.getElementById('single-std-school');
+      if (singleSch) {
+        singleSch.innerHTML = '';
+        appSchools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.id}: ${s.name}`;
+          singleSch.appendChild(opt);
+        });
+      }
+
+      // 3. New user modal school select
+      const userSch = document.getElementById('new-user-school');
+      if (userSch) {
+        userSch.innerHTML = '';
+        appSchools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.id}: ${s.name}`;
+          userSch.appendChild(opt);
+        });
+      }
+
+      // 4. Bulk import modal school select
+      const bulkSch = document.getElementById('bulk-sch-id');
+      if (bulkSch) {
+        bulkSch.innerHTML = '';
+        appSchools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.id}: ${s.name}`;
+          bulkSch.appendChild(opt);
+        });
+      }
+
+      // 5. Transfer student modal school select
+      const transferSch = document.getElementById('transfer-target-school');
+      if (transferSch) {
+        transferSch.innerHTML = '';
+        appSchools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = `${s.id}: ${s.name}`;
+          transferSch.appendChild(opt);
+        });
+      }
+    }
+
+    // Top-bar ➕ Maktab Button
+    const topAddSchoolBtn = document.getElementById('btn-add-school-modal');
+    if (topAddSchoolBtn) {
+      topAddSchoolBtn.addEventListener('click', () => {
+        document.getElementById('new-sch-name').value = '';
+        document.getElementById('new-sch-code').value = '';
+        document.getElementById('new-sch-address').value = '';
+        openModal('modal-add-school');
+      });
+    }
 
     // Add User Save
     document.getElementById('btn-save-user').addEventListener('click', () => {
@@ -2903,6 +3101,8 @@
           const d = JSON.parse(e.data);
           if (d.event === 'telemetry' || d.event === 'attendance_updated' || d.event === 'geofence_updated' || d.event === 'student_added' || d.event === 'student_transferred') {
             fetchStudentsAndAttendance();
+          } else if (d.event === 'school_added' || d.event === 'school_updated' || d.event === 'school_deleted') {
+            fetchSchoolsAndRender();
           } else if (d.event === 'notification') {
             showToast(d.payload.message, 'info');
             playSound(d.payload.type === 'ARRIVAL' ? 'arrival' : (d.payload.type === 'DEPARTURE' ? 'departure' : 'sos'));

@@ -568,13 +568,13 @@ app.post('/api/v1/schools', (req, res) => {
   if (!name) return res.status(400).json({ success: false, message: "Maktab nomi kiritilishi shart" });
 
   const count = db.schools.length + 1;
-  const schoolId = code ? code.toUpperCase() : `SCH${count.toString().padLeft(3, '0')}`;
-  const geofenceId = `GEO${count.toString().padLeft(3, '0')}`;
+  const schoolId = code ? code.toUpperCase() : `SCH${count.toString().padStart(3, '0')}`;
+  const geofenceId = `GEO${count.toString().padStart(3, '0')}`;
 
   const newSchool = {
     id: schoolId,
     geofenceId,
-    name,
+    name: name.trim(),
     code: schoolId,
     address: address || "Toshkent sh.",
     lat: parseFloat(lat) || 41.311081,
@@ -592,9 +592,82 @@ app.post('/api/v1/schools', (req, res) => {
   };
 
   db.schools.push(newSchool);
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: "Super Admin",
+    role: "SUPER_ADMIN",
+    action: "SCHOOL_CREATED",
+    target: newSchool.id,
+    details: `Yangi maktab ro'yxatdan o'tkazildi: ${newSchool.name} (${newSchool.id})`
+  });
+
   saveDb();
   broadcast('school_added', newSchool);
   res.json({ success: true, message: "Yangi maktab muvaffaqiyatli ro'yxatdan o'tdi", school: newSchool });
+});
+
+// 3.1 Super Admin: Update / Edit School Name & Details
+app.put('/api/v1/schools/:id', (req, res) => {
+  const schoolId = req.params.id;
+  const { name, address, startTime, endTime } = req.body;
+
+  const school = db.schools.find(s => s.id === schoolId || s.code === schoolId);
+  if (!school) return res.status(404).json({ success: false, message: "Maktab topilmadi" });
+
+  const oldName = school.name;
+  if (name && name.trim()) {
+    school.name = name.trim();
+    // Update student records linked to this school
+    db.students.forEach(std => {
+      if (std.schoolId === school.id) {
+        std.schoolName = school.name;
+      }
+    });
+  }
+  if (address !== undefined) school.address = address.trim();
+  if (startTime) school.startTime = startTime;
+  if (endTime) school.endTime = endTime;
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: "Super Admin",
+    role: "SUPER_ADMIN",
+    action: "SCHOOL_UPDATED",
+    target: school.id,
+    details: `Maktab ma'lumotlari tahrirlandi: "${oldName}" -> "${school.name}" (${school.id})`
+  });
+
+  saveDb();
+  broadcast('school_updated', school);
+  console.log(`🏫 [SCHOOL UPDATED] ${school.id}: "${oldName}" -> "${school.name}"`);
+  res.json({ success: true, message: "Maktab nomi va ma'lumotlari muvaffaqiyatli yangilandi", school });
+});
+
+// 3.2 Super Admin: Delete School
+app.delete('/api/v1/schools/:id', (req, res) => {
+  const schoolId = req.params.id;
+  const idx = db.schools.findIndex(s => s.id === schoolId || s.code === schoolId);
+  if (idx === -1) return res.status(404).json({ success: false, message: "Maktab topilmadi" });
+
+  const removed = db.schools.splice(idx, 1)[0];
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: "Super Admin",
+    role: "SUPER_ADMIN",
+    action: "SCHOOL_DELETED",
+    target: removed.id,
+    details: `Maktab o'chirildi: ${removed.name} (${removed.id})`
+  });
+
+  saveDb();
+  broadcast('school_deleted', { schoolId: removed.id });
+  res.json({ success: true, message: `${removed.name} tizimdan o'chirildi` });
 });
 
 // 4. Interactive School GPS Boundary Drawing System: Save Drawn Polygon

@@ -6,7 +6,7 @@ import urllib.request
 import urllib.error
 import subprocess
 
-TOKEN = "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"
+TOKEN = "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"
 USERNAME = "burxon790012"
 REPO_NAME = "maktab-nazorati"
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -5,18 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Search, Download, Printer, CheckCircle, Clock, AlertTriangle, Edit2 } from 'lucide-react';
+import { Search, Download, Printer, CheckCircle, Clock, AlertTriangle, Edit2, MapPin } from 'lucide-react';
 
 interface AttendanceTabProps {
   students: Student[];
   selectedSchoolId: string;
   onOpenCorrection: (student: Student) => void;
+  onViewOnMap?: (student: Student) => void;
 }
 
 export const AttendanceTab: React.FC<AttendanceTabProps> = ({
   students,
   selectedSchoolId,
   onOpenCorrection,
+  onViewOnMap,
 }) => {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
@@ -151,16 +153,30 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onOpenCorrection(std)}
-                      className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
-                      title="O'qituvchi tomonidan tuzatish"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                      Tuzatish
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      {onViewOnMap && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onViewOnMap(std)}
+                          className="h-7 text-xs px-2 gap-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 font-semibold"
+                          title="GPS Xaritada ko'rish"
+                        >
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Xarita</span>
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onOpenCorrection(std)}
+                        className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
+                        title="O'qituvchi tomonidan tuzatish"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                        Tuzatish
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );

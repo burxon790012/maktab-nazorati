@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Users, UserPlus, FileSpreadsheet, ArrowLeftRight, Trash2, Search } from 'lucide-react';
+import { Users, UserPlus, FileSpreadsheet, ArrowLeftRight, Trash2, Search, MapPin } from 'lucide-react';
 
 interface StudentsTabProps {
   students: Student[];
@@ -13,6 +13,7 @@ interface StudentsTabProps {
   onOpenBulkImport: () => void;
   onOpenTransfer: () => void;
   onDeleteStudent: (id: string) => Promise<void>;
+  onViewOnMap?: (student: Student) => void;
 }
 
 export const StudentsTab: React.FC<StudentsTabProps> = ({
@@ -21,6 +22,7 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
   onOpenBulkImport,
   onOpenTransfer,
   onDeleteStudent,
+  onViewOnMap,
 }) => {
   const [search, setSearch] = useState('');
 
@@ -115,19 +117,33 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
                 <TableCell className="text-xs">{std.parentName || "Ota-ona"}</TableCell>
                 <TableCell className="font-mono text-xs">{std.parentPhone || "—"}</TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm(`${std.name} o'quvchisini tizimdan o'chirishga ishonchingiz komilmi?`)) {
-                        onDeleteStudent(std.id);
-                      }
-                    }}
-                    className="h-7 text-xs px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
-                    title="O'quvchini o'chirish"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="flex items-center justify-end gap-1">
+                    {onViewOnMap && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onViewOnMap(std)}
+                        className="h-7 text-xs px-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 font-semibold gap-1"
+                        title="GPS Xaritada ko'rish"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Xarita</span>
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        if (confirm(`${std.name} o'quvchisini tizimdan o'chirishga ishonchingiz komilmi?`)) {
+                          onDeleteStudent(std.id);
+                        }
+                      }}
+                      className="h-7 text-xs px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                      title="O'quvchini o'chirish"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

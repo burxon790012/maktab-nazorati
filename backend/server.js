@@ -385,12 +385,21 @@ let db = { ...defaultState };
 if (fs.existsSync(DB_FILE)) {
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    db = JSON.parse(raw);
-    if (!db.auditLogs) db.auditLogs = [...defaultState.auditLogs];
-    if (!db.routeHistory) db.routeHistory = { ...defaultState.routeHistory };
-    if (!db.safeZones) db.safeZones = [...defaultState.safeZones];
-    if (!db.classes) db.classes = [...defaultState.classes];
-    if (!db.users) db.users = [...defaultState.users];
+    const loaded = JSON.parse(raw);
+    db = {
+      ...defaultState,
+      ...loaded,
+      schools: (loaded.schools && loaded.schools.length) ? loaded.schools : defaultState.schools,
+      students: (loaded.students && loaded.students.length) ? loaded.students : defaultState.students,
+      attendance: loaded.attendance || defaultState.attendance,
+      telemetryState: loaded.telemetryState || defaultState.telemetryState,
+      users: (loaded.users && loaded.users.length) ? loaded.users : defaultState.users,
+      classes: (loaded.classes && loaded.classes.length) ? loaded.classes : defaultState.classes,
+      auditLogs: loaded.auditLogs || defaultState.auditLogs,
+      notifications: loaded.notifications || defaultState.notifications,
+      routeHistory: loaded.routeHistory || defaultState.routeHistory,
+      safeZones: loaded.safeZones || defaultState.safeZones
+    };
     console.log("✅ SMART CHILD multi-maktab bazasi yuklandi:", DB_FILE);
   } catch (e) {
     console.warn("⚠️ Baza yuklashda xatolik:", e.message);

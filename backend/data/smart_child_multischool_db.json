@@ -14,10 +14,22 @@
       "endTime": "13:30",
       "color": "#10b981",
       "polygon": [
-        [41.312400, 69.238800],
-        [41.312400, 69.242300],
-        [41.309700, 69.242300],
-        [41.309700, 69.238800]
+        [
+          41.3124,
+          69.2388
+        ],
+        [
+          41.3124,
+          69.2423
+        ],
+        [
+          41.3097,
+          69.2423
+        ],
+        [
+          41.3097,
+          69.2388
+        ]
       ],
       "adminEmail": "admin.sch1@smartchild.uz",
       "totalStudents": 3
@@ -30,16 +42,28 @@
       "name_en": "Specialized School #21",
       "code": "SCH002",
       "address": "Toshkent sh., Yunusobod tumani, 4-mavze",
-      "lat": 41.345600,
-      "lng": 69.288400,
+      "lat": 41.3456,
+      "lng": 69.2884,
       "startTime": "08:00",
       "endTime": "14:00",
       "color": "#3b82f6",
       "polygon": [
-        [41.348500, 69.286500],
-        [41.348500, 69.290200],
-        [41.347200, 69.290200],
-        [41.347200, 69.286500]
+        [
+          41.3485,
+          69.2865
+        ],
+        [
+          41.3485,
+          69.2902
+        ],
+        [
+          41.3472,
+          69.2902
+        ],
+        [
+          41.3472,
+          69.2865
+        ]
       ],
       "adminEmail": "admin.sch21@smartchild.uz",
       "totalStudents": 1
@@ -52,19 +76,450 @@
       "name_en": "Al-Khwarizmi IT School",
       "code": "SCH003",
       "address": "Toshkent sh., Mirzo Ulug'bek tumani",
-      "lat": 41.332500,
-      "lng": 69.324100,
+      "lat": 41.3325,
+      "lng": 69.3241,
       "startTime": "08:00",
       "endTime": "14:00",
       "color": "#8b5cf6",
       "polygon": [
-        [41.334000, 69.322000],
-        [41.334000, 69.326500],
-        [41.331000, 69.326500],
-        [41.331000, 69.322000]
+        [
+          41.334,
+          69.322
+        ],
+        [
+          41.334,
+          69.3265
+        ],
+        [
+          41.331,
+          69.3265
+        ],
+        [
+          41.331,
+          69.322
+        ]
       ],
       "adminEmail": "admin.it@smartchild.uz",
       "totalStudents": 0
+    }
+  ],
+  "users": [
+    {
+      "id": "usr-superadmin",
+      "name": "Sardor Alimov (Super Admin)",
+      "email": "superadmin@smartchild.uz",
+      "phone": "+998901111111",
+      "password": "password123",
+      "role": "SUPER_ADMIN"
+    },
+    {
+      "id": "usr-admin-sch1",
+      "name": "Akmal Rahimov (Maktab #1 Admini)",
+      "email": "admin.sch1@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "password123",
+      "role": "SCHOOL_ADMIN",
+      "schoolId": "SCH001"
+    },
+    {
+      "id": "usr-teacher-1",
+      "name": "Dilnoza Karimova",
+      "email": "teacher@smartchild.uz",
+      "phone": "+998902345678",
+      "password": "password123",
+      "role": "TEACHER",
+      "schoolId": "SCH001",
+      "classId": "cls-5b"
+    },
+    {
+      "id": "usr-parent-1",
+      "name": "Jasur Bekmirzayev",
+      "email": "parent@smartchild.uz",
+      "phone": "+998903456789",
+      "password": "password123",
+      "role": "PARENT",
+      "childrenIds": [
+        "10001",
+        "10002"
+      ]
+    }
+  ],
+  "students": [
+    {
+      "id": "10001",
+      "studentId": "10001",
+      "uniqueId": "10001",
+      "name": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "1-Sonli Namunaviy Maktab",
+      "classId": "cls-5b",
+      "className": "5-B",
+      "parentId": "usr-parent-1",
+      "parentName": "Jasur Bekmirzayev",
+      "parentPhone": "+998903456789",
+      "deviceId": "watch-5pro-01",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "10002",
+      "studentId": "10002",
+      "uniqueId": "10002",
+      "name": "Vali Karimov",
+      "schoolId": "SCH001",
+      "schoolName": "1-Sonli Namunaviy Maktab",
+      "classId": "cls-5b",
+      "className": "5-B",
+      "parentId": "usr-parent-1",
+      "parentName": "Zilola Alimova",
+      "parentPhone": "+998911112233",
+      "deviceId": "watch-5pro-02",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "10003",
+      "studentId": "10003",
+      "uniqueId": "10003",
+      "name": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "schoolName": "1-Sonli Namunaviy Maktab",
+      "classId": "cls-9a",
+      "className": "9-A",
+      "parentId": "usr-parent-1",
+      "parentName": "Farrux Toshpulatov",
+      "parentPhone": "+998933334455",
+      "deviceId": "watch-5pro-03",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "20001",
+      "studentId": "20001",
+      "uniqueId": "20001",
+      "name": "Rustam Yusupov",
+      "schoolId": "SCH002",
+      "schoolName": "21-Sonli Ixtisoslashtirilgan Maktab",
+      "classId": "cls-7a",
+      "className": "7-A",
+      "parentId": "usr-parent-1",
+      "parentName": "Nodir Yusupov",
+      "parentPhone": "+998977778899",
+      "deviceId": "watch-5pro-04",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE"
+    }
+  ],
+  "attendance": [
+    {
+      "id": "att-10001",
+      "studentId": "10001",
+      "schoolId": "SCH001",
+      "date": "2026-11-04",
+      "arrivalTime": "08:18:24",
+      "departureTime": null,
+      "status": "PRESENT",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "statusColor": "GREEN",
+      "isManualCorrection": false
+    },
+    {
+      "id": "att-10002",
+      "studentId": "10002",
+      "schoolId": "SCH001",
+      "date": "2026-11-04",
+      "arrivalTime": "08:42:10",
+      "departureTime": null,
+      "status": "LATE",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL (LATE)",
+      "statusColor": "GREEN",
+      "isManualCorrection": false
+    },
+    {
+      "id": "att-10003",
+      "studentId": "10003",
+      "schoolId": "SCH001",
+      "date": "2026-11-04",
+      "arrivalTime": null,
+      "departureTime": null,
+      "status": "ABSENT",
+      "statusDisplay": "LEFT SCHOOL – OUTSIDE SCHOOL",
+      "statusColor": "RED",
+      "isManualCorrection": false
+    }
+  ],
+  "telemetryState": {
+    "watch-5pro-01": {
+      "deviceId": "watch-5pro-01",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "latitude": 41.311081,
+      "longitude": 69.240562,
+      "accuracy": 3.2,
+      "speed": 1.2,
+      "heading": 45,
+      "altitude": 432,
+      "heartRate": 88,
+      "bodyTemperature": 36.6,
+      "stepCount": 3650,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isSos": false,
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "lastSeen": 1793777674632
+    },
+    "watch-5pro-02": {
+      "deviceId": "watch-5pro-02",
+      "studentId": "10002",
+      "latitude": 41.31135,
+      "longitude": 69.2408,
+      "accuracy": 4.1,
+      "speed": 1.2,
+      "heading": 120,
+      "altitude": 431,
+      "heartRate": 84,
+      "bodyTemperature": 36.7,
+      "stepCount": 2890,
+      "batteryLevel": 74,
+      "isCharging": false,
+      "isSos": false,
+      "geofenceStatus": "INSIDE",
+      "assignedSchoolId": "SCH001",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "lastSeen": 1793777630072
+    },
+    "watch-5pro-03": {
+      "deviceId": "watch-5pro-03",
+      "studentId": "10003",
+      "latitude": 41.3021,
+      "longitude": 69.2315,
+      "accuracy": 6.5,
+      "speed": 0,
+      "heading": 270,
+      "altitude": 435,
+      "heartRate": 72,
+      "bodyTemperature": 36.5,
+      "stepCount": 1120,
+      "batteryLevel": 95,
+      "isCharging": false,
+      "isSos": false,
+      "geofenceStatus": "OUTSIDE",
+      "assignedSchoolId": "SCH001",
+      "statusColor": "RED",
+      "statusDisplay": "LEFT SCHOOL – OUTSIDE SCHOOL",
+      "lastSeen": 1793777630072
+    }
+  },
+  "notifications": [
+    {
+      "id": "notif-1793777674632",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ARRIVAL",
+      "title": "🟢 Maktabga yetib keldi",
+      "message": "Ali Valiyev soat 2:34:34 AM da o'zining maktabi (1-Sonli Namunaviy Maktab) hududiga kirdi. Holati: PRESENT – INSIDE SCHOOL.",
+      "isRead": false,
+      "time": "2:34:34 AM"
+    },
+    {
+      "id": "notif-1",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ARRIVAL",
+      "title": "Maktabga yetib keldi",
+      "title_ru": "Прибыл в школу",
+      "title_en": "Arrived at school",
+      "message": "Ali Valiyev 08:18 da 1-Sonli Namunaviy Maktab (SCH001) hududiga yetib keldi.",
+      "isRead": false,
+      "time": "08:18"
+    }
+  ],
+  "routeHistory": {
+    "10001": [
+      {
+        "lat": 41.306,
+        "lng": 69.236,
+        "time": "07:55:00",
+        "speed": 1.1,
+        "heading": 45,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.3075,
+        "lng": 69.2372,
+        "time": "08:02:15",
+        "speed": 1.3,
+        "heading": 48,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.309,
+        "lng": 69.2385,
+        "time": "08:10:30",
+        "speed": 1.2,
+        "heading": 50,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.3102,
+        "lng": 69.2398,
+        "time": "08:15:10",
+        "speed": 0.9,
+        "heading": 42,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31112,
+        "lng": 69.24061,
+        "time": "08:18:24",
+        "speed": 0.2,
+        "heading": 45,
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.309281,
+        "lng": 69.238762,
+        "time": "2:34:23 AM",
+        "speed": 1.2,
+        "heading": 45,
+        "status": "VERIFYING",
+        "color": "YELLOW"
+      },
+      {
+        "lat": 41.311081,
+        "lng": 69.240562,
+        "time": "2:34:34 AM",
+        "speed": 1.2,
+        "heading": 45,
+        "status": "INSIDE",
+        "color": "GREEN"
+      }
+    ],
+    "10002": [
+      {
+        "lat": 41.304,
+        "lng": 69.233,
+        "time": "08:20:00",
+        "speed": 1.4,
+        "heading": 60,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.308,
+        "lng": 69.237,
+        "time": "08:32:00",
+        "speed": 1.3,
+        "heading": 55,
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31135,
+        "lng": 69.2408,
+        "time": "08:42:10",
+        "speed": 0.4,
+        "heading": 120,
+        "status": "INSIDE",
+        "color": "GREEN"
+      }
+    ],
+    "10003": [
+      {
+        "lat": 41.3021,
+        "lng": 69.2315,
+        "time": "08:30:00",
+        "speed": 0,
+        "heading": 270,
+        "status": "OUTSIDE",
+        "color": "RED"
+      }
+    ]
+  },
+  "safeZones": [
+    {
+      "id": "sz-1",
+      "studentId": "10001",
+      "name": "1-Sonli Namunaviy Maktab Hududi",
+      "type": "SCHOOL",
+      "radius": 250,
+      "lat": 41.311081,
+      "lng": 69.240562,
+      "isSafe": true
+    },
+    {
+      "id": "sz-2",
+      "studentId": "10001",
+      "name": "Uy (Chilonzor mavzesi)",
+      "type": "HOME",
+      "radius": 150,
+      "lat": 41.305,
+      "lng": 69.235,
+      "isSafe": true
+    },
+    {
+      "id": "sz-3",
+      "studentId": "10001",
+      "name": "Sport Majmuasi / Dzyudo",
+      "type": "ACTIVITY",
+      "radius": 180,
+      "lat": 41.2985,
+      "lng": 69.2201,
+      "isSafe": true
+    }
+  ],
+  "classes": [
+    {
+      "id": "cls-5b",
+      "schoolId": "SCH001",
+      "name": "5-B",
+      "grade": 5,
+      "teacherName": "Dilnoza Karimova",
+      "teacherPhone": "+998902345678",
+      "teacherEmail": "teacher@smartchild.uz"
+    },
+    {
+      "id": "cls-9a",
+      "schoolId": "SCH001",
+      "name": "9-A",
+      "grade": 9,
+      "teacherName": "Aziz Mahmudov",
+      "teacherPhone": "+998904567890",
+      "teacherEmail": "aziz.m@smartchild.uz"
+    },
+    {
+      "id": "cls-7a",
+      "schoolId": "SCH002",
+      "name": "7-A",
+      "grade": 7,
+      "teacherName": "Shahnoza Yusupova",
+      "teacherPhone": "+998905678901",
+      "teacherEmail": "shahnoza@smartchild.uz"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-1",
+      "timestamp": "2026-11-04T07:33:50.072Z",
+      "user": "Sardor Alimov (Super Admin)",
+      "role": "SUPER_ADMIN",
+      "action": "PLATFORM_INITIALIZED",
+      "target": "SYSTEM",
+      "details": "SMART CHILD multi-school platform engine initialized."
     }
   ]
 }

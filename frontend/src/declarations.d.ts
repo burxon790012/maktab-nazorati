@@ -23,7 +23,7 @@ declare namespace React {
   export function useRef<T>(initialValue?: T): { current: T };
   export function forwardRef<T, P = {}>(
     render: (props: P, ref: any) => any
-  ): (props: P & { ref?: any }) => any;
+  ): ((props: P & { ref?: any }) => any) & { displayName?: string };
   export function createContext<T>(defaultValue: T): any;
   export function useContext<T>(context: any): T;
   export function useMemo<T>(factory: () => T, deps: any[] | undefined): T;
@@ -74,6 +74,10 @@ declare namespace L {
   export type DivIcon = any;
   export type Layer = any;
   export type LatLng = any;
+  export type TileLayer = any;
+  export type LayerGroup = any;
+  export type Circle = any;
+  export type CircleMarker = any;
 
   export const map: any;
   export const control: any;
@@ -82,6 +86,10 @@ declare namespace L {
   export const marker: any;
   export const divIcon: any;
   export const polyline: any;
+  export const layerGroup: any;
+  export const circle: any;
+  export const circleMarker: any;
+  export const latLngBounds: any;
 }
 
 declare module 'leaflet' {
@@ -134,6 +142,35 @@ declare module 'lucide-react' {
   export const Map: any;
   export const ClipboardCheck: any;
   export const Smartphone: any;
+  export const Layers: any;
+  export const Crosshair: any;
+  export const Activity: any;
+  export const Compass: any;
+  export const ZoomIn: any;
+  export const ZoomOut: any;
+  export const Maximize2: any;
+  export const Minimize2: any;
+  export const Ruler: any;
+  export const Square: any;
+  export const Circle: any;
+  export const Sparkles: any;
+  export const Filter: any;
+  export const RefreshCw: any;
+  export const AlertCircle: any;
+  export const Volume2: any;
+  export const Eye: any;
+  export const Navigation2: any;
+  export const Phone: any;
+  export const Flame: any;
+  export const Zap: any;
+  export const MapPinned: any;
+  export const Undo: any;
+  export const RotateCcw: any;
+  export const Pause: any;
+  export const Copy: any;
+  export const ChevronRight: any;
+  export const Info: any;
+  export const ExternalLink: any;
 }
 
 declare module '@radix-ui/react-slot' {

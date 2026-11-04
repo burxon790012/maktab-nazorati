@@ -379,6 +379,10 @@ export const App: React.FC = () => {
               students={students}
               onSaveGeofence={handleSaveGeofence}
               selectedSchoolId={selectedSchoolId}
+              onRefreshData={async () => {
+                await fetchStudents();
+                await fetchSchools();
+              }}
             />
           </TabsContent>
 
@@ -412,6 +416,10 @@ export const App: React.FC = () => {
                 setStudentToCorrect(std);
                 setOpenCorrection(true);
               }}
+              onViewOnMap={(std) => {
+                if (std.schoolId) setSelectedSchoolId(std.schoolId);
+                setActiveTab('tab-map');
+              }}
             />
           </TabsContent>
 
@@ -423,6 +431,10 @@ export const App: React.FC = () => {
               onOpenBulkImport={() => setOpenBulkImport(true)}
               onOpenTransfer={() => alert("Transfer oynasi")}
               onDeleteStudent={handleDeleteStudent}
+              onViewOnMap={(std) => {
+                if (std.schoolId) setSelectedSchoolId(std.schoolId);
+                setActiveTab('tab-map');
+              }}
             />
           </TabsContent>
 

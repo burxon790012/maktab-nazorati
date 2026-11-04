@@ -6,7 +6,7 @@
 const EARTH_RADIUS = 6371000;
 
 /**
- * Calculates great-circle distance between two GPS coordinates using Haversine formula (meters)
+ * Calculates great-circle sfsd distance between two GPS coordinates using Haversine formula (meters)
  */
 export function haversineDistance(
   lat1: number,
@@ -20,9 +20,9 @@ export function haversineDistance(
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return EARTH_RADIUS * c;

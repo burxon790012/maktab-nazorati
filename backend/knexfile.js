@@ -1,6 +1,20 @@
 const path = require('path');
 
-const client = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
+let client = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
+
+// Lazy verify better-sqlite3 availability
+if (client === 'better-sqlite3') {
+  try {
+    require.resolve('better-sqlite3');
+  } catch (e) {
+    if (process.env.DATABASE_URL) {
+      console.warn('⚠️ Warning: better-sqlite3 mavjud emas. PostgreSQL (pg) mijoziga o\'tilmoqda.');
+      client = 'pg';
+    } else {
+      console.error('❌ Error: better-sqlite3 o\'rnatilmagan va DATABASE_URL belgilanmagan. Ishlab chiqarish muhitida DB_CLIENT=pg va DATABASE_URL ni o\'rnating.');
+    }
+  }
+}
 
 const config = {
   client: client,
@@ -30,4 +44,3 @@ const config = {
 };
 
 module.exports = config;
-

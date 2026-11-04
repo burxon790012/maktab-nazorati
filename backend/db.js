@@ -1,14 +1,35 @@
 const knex = require('knex');
 const knexConfig = require('./knexfile');
 
-const db = knex(knexConfig);
+let knexInstance = null;
+
+function getDb() {
+  if (!knexInstance) {
+    knexInstance = knex(knexConfig);
+  }
+  return knexInstance;
+}
+
+// Transparent lazy Proxy for knex instance
+const dbProxy = new Proxy(function() {}, {
+  apply(target, thisArg, argArray) {
+    const instance = getDb();
+    return instance(...argArray);
+  },
+  get(target, prop) {
+    const instance = getDb();
+    const val = instance[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
+  }
+});
 
 async function runMigrations() {
-  await db.migrate.latest();
+  const instance = getDb();
+  await instance.migrate.latest();
 }
 
 module.exports = {
-  db,
+  db: dbProxy,
+  getDb,
   runMigrations
 };
-

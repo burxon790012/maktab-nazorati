@@ -181,6 +181,27 @@ npm install
 node server.js
 ```
 
+#### Production Database Configuration & Render Deployment
+> [!IMPORTANT]
+> **Render.com Ephemeral Disk Notice**: Render's free web service disk is ephemeral, meaning any local files (like SQLite files) will be wiped on restarts or redeployments. Therefore, **production environments must use PostgreSQL**.
+
+To configure the production database:
+1. Set the following environment variables:
+   - `DB_CLIENT=pg`
+   - `DATABASE_URL=postgres://user:password@hostname:5432/dbname?ssl=true`
+   - `JWT_SECRET=your-production-crypto-random-jwt-secret`
+   - `RETENTION_DAYS=30` (automatically cleans up location points older than 30 days)
+2. Database migrations are executed automatically on server startup (`knex.migrate.latest()`) before the server opens its listening port.
+3. For local development, Knex automatically defaults to `better-sqlite3` when `DATABASE_URL` is omitted.
+
+#### Docker Deployment
+The backend Docker image uses `node:22-alpine` with production-only dependencies:
+```bash
+cd backend
+docker build -t maktab-watch-backend .
+docker run -p 3000:3000 -e DB_CLIENT=pg -e DATABASE_URL="postgres://..." maktab-watch-backend
+```
+
 #### Option B: Python 3 Engine (Standard Library, zero external pip dependencies needed)
 ```bash
 cd backend

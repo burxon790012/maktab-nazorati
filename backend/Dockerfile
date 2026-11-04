@@ -1,19 +1,19 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Bog'liqliklarni o'rnatish
+# Install production dependencies only using locked versions
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev
 
-# Loyiha fayllarini nusxalash
+# Copy application source code
 COPY . .
 
-# Server porti
+# Server port
 EXPOSE 3000
 
 ENV PORT=3000
 ENV NODE_ENV=production
 
-# Serverni ishga tushirish
+# Start server
 CMD ["node", "server.js"]

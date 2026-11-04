@@ -69,13 +69,6 @@ const authLimiter = rateLimit({
 
 const deviceAuth = createDeviceAuthMiddleware(knexDb);
 
-// Run migrations on start
-runMigrations().then(() => {
-  console.log('✅ Knex ma\'lumotlar bazasi migratsiyalari tekshirildi/bajarildi');
-}).catch(err => {
-  console.error('❌ Knex migratsiyasida xatolik:', err);
-});
-
 // Periodic retention cleanup (once a day)
 const retentionTimer = setInterval(() => {
   runRetentionCleanup(knexDb, RETENTION_DAYS).catch(err => console.error('Retention error:', err));
@@ -2498,14 +2491,33 @@ app.post('/api/v1/telemetry/simulate-walk', (req, res) => {
   });
 });
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`==================================================================`);
-    console.log(`🚀 SMART CHILD Multi-School Platform Engine ishga tushdi!`);
-    console.log(`📡 URL: http://localhost:${PORT}`);
-    console.log(`🏫 Ro'yxatdagi maktablar: ${db.schools.map(s => `${s.name} (${s.id})`).join(', ')}`);
-    console.log(`==================================================================`);
+async function startServer() {
+  try {
+    console.log('⏳ Knex ma\'lumotlar bazasi migratsiyalari tekshirilmoqda...');
+    await runMigrations();
+    console.log('✅ Knex ma\'lumotlar bazasi migratsiyalari muvaffaqiyatli tekshirildi/bajarildi');
+  } catch (err) {
+    console.error('❌ Knex migratsiyalarini bajarishda jiddiy xatolik yuz berdi:', err.message);
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+  }
+
+  return new Promise((resolve) => {
+    const server = app.listen(PORT, () => {
+      console.log(`==================================================================`);
+      console.log(`🚀 SMART CHILD Multi-School Platform Engine ishga tushdi!`);
+      console.log(`📡 URL: http://localhost:${PORT}`);
+      console.log(`🏫 Ro'yxatdagi maktablar: ${db.schools.map(s => `${s.name} (${s.id})`).join(', ')}`);
+      console.log(`==================================================================`);
+      resolve(server);
+    });
   });
 }
 
+if (require.main === module) {
+  startServer();
+}
+
 module.exports = app;
+module.exports.startServer = startServer;

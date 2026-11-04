@@ -9,9 +9,78 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
+
+const { db: knexDb, runMigrations } = require('./db');
+const {
+  signToken,
+  signRefreshToken,
+  verifyToken,
+  verifyPassword,
+  authMiddleware,
+  optionalAuthMiddleware,
+  canAccessChildLocation
+} = require('./auth');
+const {
+  generateDeviceToken,
+  hashDeviceToken,
+  generatePairingCode,
+  createStreamTicket,
+  consumeStreamTicket,
+  createDeviceAuthMiddleware,
+  LocationPointSchema,
+  LocationBatchSchema,
+  haversineDistanceMeters,
+  evaluateGeofences,
+  runRetentionCleanup,
+  logAudit,
+  ipFailedAttempts
+} = require('./services/trackingService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const RETENTION_DAYS = parseInt(process.env.RETENTION_DAYS || '30', 10);
+
+// Rate Limiters
+const pairingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, message: 'Ulanish so\'rovlari soni me\'yordan oshdi. 15 daqiqadan so\'ng urinib ko\'ring' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const locationsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { success: false, message: 'Telemetriya yuborish limiti oshdi' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, message: 'Kirish so\'rovlari soni me\'yordan oshdi' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const deviceAuth = createDeviceAuthMiddleware(knexDb);
+
+// Run migrations on start
+runMigrations().then(() => {
+  console.log('✅ Knex ma\'lumotlar bazasi migratsiyalari tekshirildi/bajarildi');
+}).catch(err => {
+  console.error('❌ Knex migratsiyasida xatolik:', err);
+});
+
+// Periodic retention cleanup (once a day)
+const retentionTimer = setInterval(() => {
+  runRetentionCleanup(knexDb, RETENTION_DAYS).catch(err => console.error('Retention error:', err));
+}, 24 * 60 * 60 * 1000);
+if (retentionTimer.unref) retentionTimer.unref();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -416,11 +485,16 @@ function saveDb() {
 
 // SSE Clients
 const sseClients = [];
-function broadcast(event, payload) {
-  const msg = `data: ${JSON.stringify({ event, payload, timestamp: Date.now() })}\n\n`;
+function broadcast(event, payload, targetFilter) {
+  const eventId = Date.now().toString();
+  const msg = `id: ${eventId}\nevent: ${event}\ndata: ${JSON.stringify({ event, payload, timestamp: Date.now() })}\n\n`;
   for (let i = sseClients.length - 1; i >= 0; i--) {
+    const client = sseClients[i];
     try {
-      sseClients[i].write(msg);
+      if (typeof targetFilter === 'function') {
+        if (!targetFilter(client)) continue;
+      }
+      client.res.write(msg);
     } catch (_) {
       sseClients.splice(i, 1);
     }
@@ -543,18 +617,66 @@ app.get('/api/v1/config', (req, res) => {
   });
 });
 
-// 1. Real-Time SSE
+// 0. Stream Ticket Endpoint (EventSource single-use 60s ticket)
+app.post('/api/v1/stream/ticket', authMiddleware, (req, res) => {
+  const ticket = createStreamTicket(req.user);
+  res.json({
+    success: true,
+    ticket,
+    expiresIn: 60
+  });
+});
+
+// 1. Real-Time SSE Stream with ticket auth, 25s heartbeat, and Last-Event-ID
 app.get('/api/v1/stream', (req, res) => {
+  const ticket = req.query.ticket;
+  let user = null;
+  if (ticket) {
+    user = consumeStreamTicket(ticket);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Yaroqsiz yoki muddati o\'tgan stream ticket' });
+    }
+  } else {
+    // Optional Bearer header fallback
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      user = verifyToken(authHeader.split(' ')[1]);
+    }
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
-  sseClients.push(res);
-  res.write(`data: ${JSON.stringify({ event: 'connected', time: Date.now() })}\n\n`);
+  const clientId = 'sse_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+  const clientObj = {
+    id: clientId,
+    res,
+    user,
+    lastEventId: req.headers['last-event-id'] || req.query.lastEventId || null
+  };
+  sseClients.push(clientObj);
+
+  res.write(`id: ${Date.now()}\nevent: connected\ndata: ${JSON.stringify({ event: 'connected', time: Date.now(), authenticated: !!user })}\n\n`);
+
+  if (req.query.immediateClose === '1') {
+    res.end();
+    return;
+  }
+
+  // Heartbeat comment every 25 seconds
+  const heartbeatInterval = setInterval(() => {
+    try {
+      res.write(': heartbeat\n\n');
+    } catch (_) {
+      clearInterval(heartbeatInterval);
+    }
+  }, 25000);
 
   req.on('close', () => {
-    const idx = sseClients.indexOf(res);
+    clearInterval(heartbeatInterval);
+    const idx = sseClients.indexOf(clientObj);
     if (idx !== -1) sseClients.splice(idx, 1);
   });
 });
@@ -1335,8 +1457,8 @@ app.get('/api/v1/audit-logs', (req, res) => {
   res.json({ success: true, auditLogs: db.auditLogs || [] });
 });
 
-// 18. Authentication & Role Switcher (Section 1, 10, 11, 15)
-app.post('/api/v1/auth/login', (req, res) => {
+// 18. Authentication & Role Switcher with JWT & Refresh Token
+app.post('/api/v1/auth/login', authLimiter, (req, res) => {
   const { email, password, role } = req.body;
   let user;
   if (role) {
@@ -1356,13 +1478,24 @@ app.post('/api/v1/auth/login', (req, res) => {
   }
 
   if (!user) {
-    user = db.users[0]; // Fallback to super admin
+    return res.status(401).json({ success: false, message: 'Foydalanuvchi topilmadi' });
+  }
+
+  // Password verification with bcrypt if provided
+  if (password) {
+    const isValid = verifyPassword(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ success: false, message: 'Noto\'g\'ri parol' });
+    }
   }
 
   const school = user.schoolId ? db.schools.find(s => s.id === user.schoolId) : null;
   const children = user.role === 'PARENT' && user.childrenIds 
     ? db.students.filter(s => user.childrenIds.includes(s.id))
     : [];
+
+  const token = signToken(user);
+  const refreshToken = signRefreshToken(user);
 
   res.json({
     success: true,
@@ -1375,9 +1508,38 @@ app.post('/api/v1/auth/login', (req, res) => {
       schoolId: user.schoolId || null,
       schoolName: school ? school.name : null,
       classId: user.classId || null,
-      children
+      children,
+      childrenIds: user.childrenIds || []
     },
-    token: `jwt-mock-token-${user.id}-${Date.now()}`
+    token,
+    refreshToken
+  });
+});
+
+// Refresh Token Endpoint
+app.post('/api/v1/auth/refresh', (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ success: false, message: 'refreshToken talab qilinadi' });
+  }
+
+  const decoded = verifyToken(refreshToken);
+  if (!decoded || decoded.type !== 'refresh') {
+    return res.status(401).json({ success: false, message: 'Yaroqsiz yoki muddati o\'tgan refresh token' });
+  }
+
+  const user = db.users.find(u => u.id === decoded.id);
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Foydalanuvchi topilmadi' });
+  }
+
+  const newToken = signToken(user);
+  const newRefreshToken = signRefreshToken(user);
+
+  res.json({
+    success: true,
+    token: newToken,
+    refreshToken: newRefreshToken
   });
 });
 
@@ -1548,21 +1710,622 @@ app.post('/api/v1/parents/children/add', (req, res) => {
   });
 });
 
-// 26. Connect & Verify Smartwatch (Section 6 & 7)
-app.post('/api/v1/devices/pair', (req, res) => {
-  const { studentId, deviceId, deviceModel } = req.body;
-  const student = db.students.find(s => s.id === studentId || s.uniqueId === studentId);
-  if (!student) return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+// ====================================================================
+// CHILD SAFETY GPS TRACKING & DEVICE ENDPOINTS (Phase 1)
+// ====================================================================
 
-  student.deviceId = deviceId;
-  student.deviceModel = deviceModel || "Samsung Galaxy Watch5 Pro";
+// 26.1 Generate 6-Digit Pairing Code (10-minute expiry, guardian only)
+app.post('/api/v1/devices/pairing-code', authMiddleware, async (req, res) => {
+  const { studentId } = req.body;
+  if (!studentId) {
+    return res.status(400).json({ success: false, message: 'studentId kiritilishi shart' });
+  }
 
-  saveDb();
-  broadcast('device_paired', { studentId: student.id, deviceId, deviceModel: student.deviceModel });
+  if (!canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Ruxsat berilmadi: Faqat biriktirilgan ota-ona soatni ulashi mumkin'
+    });
+  }
+
+  const code = generatePairingCode();
+  const pairingId = 'pair_' + crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  try {
+    await knexDb('pairing_codes').insert({
+      id: pairingId,
+      code,
+      guardian_id: req.user.id,
+      student_id: String(studentId),
+      failed_attempts: 0,
+      is_locked: 0,
+      is_used: 0,
+      expires_at: expiresAt,
+      created_at: new Date()
+    });
+
+    await logAudit(knexDb, {
+      userId: req.user.id,
+      action: 'GENERATE_PAIRING_CODE',
+      targetType: 'STUDENT',
+      targetId: String(studentId),
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      details: { pairingId, expiresAt }
+    });
+
+    res.json({
+      success: true,
+      code,
+      expiresAt: expiresAt.toISOString(),
+      expiresInMinutes: 10
+    });
+  } catch (err) {
+    console.error('Pairing code generation error:', err);
+    res.status(500).json({ success: false, message: 'Ulanish kodini yaratishda xatolik' });
+  }
+});
+
+// 26.2 Pair Smartwatch with 6-Digit Code (256-bit token, SHA-256 hash, 5-attempt lockout)
+app.post('/api/v1/devices/pair', pairingLimiter, async (req, res) => {
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  const ipAttempts = ipFailedAttempts.get(clientIp) || 0;
+  if (ipAttempts >= 5) {
+    return res.status(429).json({
+      success: false,
+      message: 'Juda ko\'p muvaffaqiyatsiz urinishlar. Ushbu IP manzildan ulanish vaqtincha bloklandi.'
+    });
+  }
+
+  const { code, deviceUid, model } = req.body;
+  if (!code || !deviceUid) {
+    return res.status(400).json({ success: false, message: 'code va deviceUid kiritilishi shart' });
+  }
+
+  try {
+    const record = await knexDb('pairing_codes')
+      .where({ code: String(code).trim() })
+      .orderBy('created_at', 'desc')
+      .first();
+
+    if (!record) {
+      ipFailedAttempts.set(clientIp, ipAttempts + 1);
+      return res.status(400).json({ success: false, message: 'Noto\'g\'ri ulanish kodi' });
+    }
+
+    if (record.is_locked || record.failed_attempts >= 5) {
+      return res.status(403).json({ success: false, message: 'Ushbu ulanish kodi 5 ta xato urinishdan so\'ng bloklangan' });
+    }
+
+    if (record.is_used) {
+      return res.status(400).json({ success: false, message: 'Bu ulanish kodi allaqachon ishlatilgan' });
+    }
+
+    if (new Date(record.expires_at) < new Date()) {
+      return res.status(400).json({ success: false, message: 'Ulanish kodining 10 daqiqalik muddati o\'tgan' });
+    }
+
+    // Mark pairing code as used
+    await knexDb('pairing_codes').where({ id: record.id }).update({ is_used: 1 });
+
+    // Generate 256-bit cryptographic token (64 hex characters) and its SHA-256 hash
+    const rawToken = generateDeviceToken();
+    const tokenHash = hashDeviceToken(rawToken);
+
+    // Check if device already registered
+    const existingDevice = await knexDb('devices').where({ device_uid: deviceUid }).first();
+    let deviceId;
+
+    if (existingDevice) {
+      deviceId = existingDevice.id;
+      await knexDb('devices').where({ id: deviceId }).update({
+        student_id: record.student_id,
+        guardian_id: record.guardian_id,
+        token_hash: tokenHash,
+        model: model || existingDevice.model || 'Samsung Galaxy Watch 5 Pro',
+        is_paired: 1,
+        sharing_status: 'ACTIVE',
+        updated_at: new Date()
+      });
+    } else {
+      deviceId = 'dev_' + crypto.randomUUID();
+      await knexDb('devices').insert({
+        id: deviceId,
+        device_uid: deviceUid,
+        student_id: record.student_id,
+        guardian_id: record.guardian_id,
+        token_hash: tokenHash,
+        model: model || 'Samsung Galaxy Watch 5 Pro',
+        is_paired: 1,
+        sharing_status: 'ACTIVE',
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+    }
+
+    // Upsert device settings
+    const existingSettings = await knexDb('device_settings').where({ device_id: deviceId }).first();
+    if (!existingSettings) {
+      await knexDb('device_settings').insert({
+        id: 'set_' + crypto.randomUUID(),
+        device_id: deviceId,
+        moving_interval_sec: 10,
+        stationary_interval_sec: 45,
+        low_battery_interval_sec: 120,
+        offline_timeout_sec: 180,
+        min_accuracy_meters: 100,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+    }
+
+    // Reset IP failed counter on success
+    ipFailedAttempts.delete(clientIp);
+
+    // Sync student device identifier in JSON database
+    const student = db.students.find(s => s.id === record.student_id || s.uniqueId === record.student_id);
+    if (student) {
+      student.deviceId = deviceUid;
+      student.deviceModel = model || 'Samsung Galaxy Watch 5 Pro';
+      saveDb();
+    }
+
+    await logAudit(knexDb, {
+      userId: record.guardian_id,
+      action: 'PAIR_DEVICE',
+      targetType: 'DEVICE',
+      targetId: deviceId,
+      ipAddress: clientIp,
+      userAgent: req.get('user-agent'),
+      details: { deviceUid, model, studentId: record.student_id }
+    });
+
+    broadcast('device_paired', {
+      studentId: record.student_id,
+      deviceId,
+      deviceUid,
+      model: model || 'Samsung Galaxy Watch 5 Pro'
+    });
+
+    res.json({
+      success: true,
+      message: 'Samsung Galaxy Watch 5 Pro muvaffaqiyatli ulandi!',
+      deviceId,
+      deviceToken: rawToken, // 256-bit secret sent ONLY ONCE upon pairing
+      studentId: record.student_id
+    });
+  } catch (err) {
+    console.error('Pairing error:', err);
+    res.status(500).json({ success: false, message: 'Qurilmani ulashda tizim xatoligi' });
+  }
+});
+
+// 26.3 Real GPS Telemetry Ingestion (Single or Batch, Device-Token Auth, Idempotent)
+app.post('/api/v1/locations', locationsLimiter, deviceAuth, async (req, res) => {
+  const body = req.body;
+  const rawPoints = Array.isArray(body.locations) ? body.locations : [body];
+
+  if (!rawPoints || rawPoints.length === 0) {
+    return res.status(400).json({ success: false, message: 'Hech qanday GPS koordinata yuborilmadi' });
+  }
+
+  const validatedPoints = [];
+  for (const pt of rawPoints) {
+    const parsed = LocationPointSchema.safeParse(pt);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Koordinata parametrlarida xatolik',
+        errors: parsed.error.issues
+      });
+    }
+    validatedPoints.push(parsed.data);
+  }
+
+  const device = req.device;
+  let insertedCount = 0;
+  const allAlerts = [];
+
+  for (const pt of validatedPoints) {
+    const locId = 'loc_' + crypto.randomUUID();
+    const recordedAtDate = new Date(typeof pt.recordedAt === 'number' ? pt.recordedAt : pt.recordedAt);
+
+    try {
+      if (pt.clientId) {
+        const existing = await knexDb('locations')
+          .where({ device_id: device.id, client_id: pt.clientId })
+          .first();
+        if (existing) {
+          continue; // Idempotent: ignore duplicate
+        }
+      }
+
+      await knexDb('locations').insert({
+        id: locId,
+        device_id: device.id,
+        student_id: device.student_id,
+        latitude: pt.latitude,
+        longitude: pt.longitude,
+        accuracy: pt.accuracy,
+        altitude: pt.altitude !== undefined ? pt.altitude : null,
+        speed: pt.speed !== undefined ? pt.speed : null,
+        bearing: pt.bearing !== undefined ? pt.bearing : null,
+        battery_level: pt.batteryLevel !== undefined ? pt.batteryLevel : null,
+        is_synced_offline: pt.isSyncedOffline ? 1 : 0,
+        client_id: pt.clientId || null,
+        recorded_at: recordedAtDate,
+        created_at: new Date()
+      });
+      insertedCount++;
+
+      // Evaluate geofences server-side
+      const alerts = await evaluateGeofences(knexDb, device, pt, (ev, payload) => {
+        broadcast(ev, payload, (client) => {
+          return client.user && client.user.role === 'PARENT' &&
+            client.user.childrenIds && client.user.childrenIds.map(String).includes(String(device.student_id));
+        });
+      });
+      allAlerts.push(...alerts);
+    } catch (insertErr) {
+      if (insertErr.code === 'SQLITE_CONSTRAINT' || insertErr.code === '23505') {
+        continue; // Idempotent unique constraint duplicate ignored
+      }
+      console.error('Insert location error:', insertErr);
+    }
+  }
+
+  // Update device battery & last seen timestamp
+  const lastPt = validatedPoints[validatedPoints.length - 1];
+  const updateData = {
+    last_seen_at: new Date(),
+    updated_at: new Date()
+  };
+  if (lastPt.batteryLevel !== undefined && lastPt.batteryLevel !== null) {
+    updateData.battery_pct = lastPt.batteryLevel;
+  }
+  await knexDb('devices').where({ id: device.id }).update(updateData);
+
+  // Broadcast real-time location to authorized guardian via SSE
+  broadcast('location_update', {
+    studentId: device.student_id,
+    deviceId: device.id,
+    latitude: lastPt.latitude,
+    longitude: lastPt.longitude,
+    accuracy: lastPt.accuracy,
+    speed: lastPt.speed,
+    bearing: lastPt.bearing,
+    batteryLevel: lastPt.batteryLevel,
+    recordedAt: lastPt.recordedAt,
+    isSyncedOffline: lastPt.isSyncedOffline
+  }, (client) => {
+    return client.user && client.user.role === 'PARENT' &&
+      client.user.childrenIds && client.user.childrenIds.map(String).includes(String(device.student_id));
+  });
+
   res.json({
     success: true,
-    message: `${student.name} uchun ${deviceId} raqamli Samsung Galaxy Watch5 Pro soati muvaffaqiyatli ulandi!`,
-    student
+    insertedCount,
+    alertsCount: allAlerts.length,
+    deviceId: device.id
+  });
+});
+
+// 26.4 Read Latest Verified Location (Guardian Auth & Audit Log)
+app.get('/api/v1/locations/latest', authMiddleware, async (req, res) => {
+  const studentId = req.query.studentId;
+  if (!studentId) {
+    return res.status(400).json({ success: false, message: 'studentId kiritilishi shart' });
+  }
+
+  if (!canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Ruxsat berilmadi: Faqat biriktirilgan ota-ona bolaning GPS ma\'lumotini ko\'ra oladi'
+    });
+  }
+
+  await logAudit(knexDb, {
+    userId: req.user.id,
+    action: 'READ_CHILD_LOCATION_LATEST',
+    targetType: 'STUDENT',
+    targetId: String(studentId),
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent')
+  });
+
+  const loc = await knexDb('locations')
+    .where({ student_id: String(studentId) })
+    .orderBy('recorded_at', 'desc')
+    .first();
+
+  const device = await knexDb('devices')
+    .where({ student_id: String(studentId), is_paired: 1 })
+    .first();
+
+  res.json({
+    success: true,
+    location: loc || null,
+    device: device ? {
+      id: device.id,
+      model: device.model,
+      batteryPct: device.battery_pct,
+      sharingStatus: device.sharing_status,
+      lastSeenAt: device.last_seen_at
+    } : null
+  });
+});
+
+// 26.5 Read Location History with Real Stop Detection (Guardian Auth & Audit Log)
+app.get('/api/v1/locations/history', authMiddleware, async (req, res) => {
+  const { studentId, from, to } = req.query;
+  if (!studentId) {
+    return res.status(400).json({ success: false, message: 'studentId kiritilishi shart' });
+  }
+
+  if (!canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Ruxsat berilmadi: Faqat biriktirilgan ota-ona bolaning GPS tarixini ko\'ra oladi'
+    });
+  }
+
+  await logAudit(knexDb, {
+    userId: req.user.id,
+    action: 'READ_CHILD_LOCATION_HISTORY',
+    targetType: 'STUDENT',
+    targetId: String(studentId),
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+    details: { from, to }
+  });
+
+  let query = knexDb('locations')
+    .where({ student_id: String(studentId) })
+    .orderBy('recorded_at', 'asc');
+
+  if (from) {
+    query = query.where('recorded_at', '>=', new Date(from));
+  }
+  if (to) {
+    query = query.where('recorded_at', '<=', new Date(to));
+  }
+
+  const points = await query.limit(2000);
+
+  // Stop detection: points within 50m for more than 5 minutes
+  const stops = [];
+  if (points.length >= 2) {
+    let startPt = points[0];
+    let endPt = points[0];
+
+    for (let i = 1; i < points.length; i++) {
+      const p = points[i];
+      const dist = haversineDistanceMeters(startPt.latitude, startPt.longitude, p.latitude, p.longitude);
+      if (dist <= 50) {
+        endPt = p;
+      } else {
+        const dur = new Date(endPt.recorded_at).getTime() - new Date(startPt.recorded_at).getTime();
+        if (dur >= 5 * 60 * 1000) {
+          stops.push({
+            latitude: startPt.latitude,
+            longitude: startPt.longitude,
+            arrivedAt: startPt.recorded_at,
+            departedAt: endPt.recorded_at,
+            durationMinutes: Math.round(dur / 60000)
+          });
+        }
+        startPt = p;
+        endPt = p;
+      }
+    }
+    const finalDur = new Date(endPt.recorded_at).getTime() - new Date(startPt.recorded_at).getTime();
+    if (finalDur >= 5 * 60 * 1000) {
+      stops.push({
+        latitude: startPt.latitude,
+        longitude: startPt.longitude,
+        arrivedAt: startPt.recorded_at,
+        departedAt: endPt.recorded_at,
+        durationMinutes: Math.round(finalDur / 60000)
+      });
+    }
+  }
+
+  res.json({
+    success: true,
+    locations: points,
+    stops,
+    count: points.length
+  });
+});
+
+// 26.6 Geofences CRUD (Safe Zones)
+app.get('/api/v1/geofences', authMiddleware, async (req, res) => {
+  const studentId = req.query.studentId;
+  if (!studentId || !canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+  const fences = await knexDb('geofences').where({ student_id: String(studentId) });
+  res.json({ success: true, geofences: fences });
+});
+
+app.post('/api/v1/geofences', authMiddleware, async (req, res) => {
+  const { studentId, name, type, latitude, longitude, radiusMeters } = req.body;
+  if (!studentId || !name || latitude === undefined || longitude === undefined || !radiusMeters) {
+    return res.status(400).json({ success: false, message: 'Barcha parametrlar to\'liq kiritilishi shart' });
+  }
+  if (!canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  const id = 'geo_' + crypto.randomUUID();
+  const fence = {
+    id,
+    guardian_id: req.user.id,
+    student_id: String(studentId),
+    name: String(name).trim(),
+    type: type || 'CUSTOM',
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+    radius_meters: Number(radiusMeters),
+    is_active: 1,
+    created_at: new Date(),
+    updated_at: new Date()
+  };
+
+  await knexDb('geofences').insert(fence);
+  await logAudit(knexDb, {
+    userId: req.user.id,
+    action: 'CREATE_GEOFENCE',
+    targetType: 'GEOFENCE',
+    targetId: id,
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+    details: fence
+  });
+
+  res.json({ success: true, geofence: fence });
+});
+
+app.put('/api/v1/geofences/:id', authMiddleware, async (req, res) => {
+  const fence = await knexDb('geofences').where({ id: req.params.id }).first();
+  if (!fence) return res.status(404).json({ success: false, message: 'Geozona topilmadi' });
+  if (!canAccessChildLocation(req.user, fence.student_id)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  const { name, type, latitude, longitude, radiusMeters, isActive } = req.body;
+  const updateData = { updated_at: new Date() };
+  if (name !== undefined) updateData.name = name;
+  if (type !== undefined) updateData.type = type;
+  if (latitude !== undefined) updateData.latitude = Number(latitude);
+  if (longitude !== undefined) updateData.longitude = Number(longitude);
+  if (radiusMeters !== undefined) updateData.radius_meters = Number(radiusMeters);
+  if (isActive !== undefined) updateData.is_active = isActive ? 1 : 0;
+
+  await knexDb('geofences').where({ id: req.params.id }).update(updateData);
+  const updated = await knexDb('geofences').where({ id: req.params.id }).first();
+  res.json({ success: true, geofence: updated });
+});
+
+app.delete('/api/v1/geofences/:id', authMiddleware, async (req, res) => {
+  const fence = await knexDb('geofences').where({ id: req.params.id }).first();
+  if (!fence) return res.status(404).json({ success: false, message: 'Geozona topilmadi' });
+  if (!canAccessChildLocation(req.user, fence.student_id)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  await knexDb('geofences').where({ id: req.params.id }).del();
+  res.json({ success: true, message: 'Xavfsiz zona o\'chirildi' });
+});
+
+// 26.7 Alerts History
+app.get('/api/v1/alerts', authMiddleware, async (req, res) => {
+  const studentId = req.query.studentId;
+  if (!studentId || !canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+  const alerts = await knexDb('alert_events')
+    .where({ student_id: String(studentId) })
+    .orderBy('triggered_at', 'desc')
+    .limit(100);
+  res.json({ success: true, alerts });
+});
+
+// 26.8 Device Status & Settings
+app.get('/api/v1/devices/:id/status', authMiddleware, async (req, res) => {
+  const device = await knexDb('devices').where({ id: req.params.id }).first();
+  if (!device) return res.status(404).json({ success: false, message: 'Qurilma topilmadi' });
+  if (!canAccessChildLocation(req.user, device.student_id)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  const settings = await knexDb('device_settings').where({ device_id: device.id }).first();
+  const timeoutSec = settings ? settings.offline_timeout_sec : 180;
+  const isOnline = device.last_seen_at && (Date.now() - new Date(device.last_seen_at).getTime()) <= timeoutSec * 1000;
+
+  res.json({
+    success: true,
+    device: {
+      id: device.id,
+      deviceUid: device.device_uid,
+      model: device.model,
+      batteryPct: device.battery_pct,
+      status: isOnline ? 'ONLINE' : 'OFFLINE',
+      sharingStatus: device.sharing_status,
+      isPaired: !!device.is_paired,
+      lastSeenAt: device.last_seen_at
+    }
+  });
+});
+
+// 26.9 Pause / Resume Location Sharing
+app.patch('/api/v1/devices/:id/sharing', authMiddleware, async (req, res) => {
+  const device = await knexDb('devices').where({ id: req.params.id }).first();
+  if (!device) return res.status(404).json({ success: false, message: 'Qurilma topilmadi' });
+  if (!canAccessChildLocation(req.user, device.student_id)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  const { sharingStatus } = req.body;
+  if (!['ACTIVE', 'PAUSED'].includes(sharingStatus)) {
+    return res.status(400).json({ success: false, message: 'sharingStatus faqat ACTIVE yoki PAUSED bo\'lishi kerak' });
+  }
+
+  await knexDb('devices').where({ id: device.id }).update({ sharing_status: sharingStatus, updated_at: new Date() });
+  res.json({ success: true, sharingStatus });
+});
+
+// 26.10 Unpair Smartwatch & Revoke Token
+app.delete('/api/v1/devices/:id', authMiddleware, async (req, res) => {
+  const device = await knexDb('devices').where({ id: req.params.id }).first();
+  if (!device) return res.status(404).json({ success: false, message: 'Qurilma topilmadi' });
+  if (!canAccessChildLocation(req.user, device.student_id)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  await knexDb('devices').where({ id: device.id }).update({
+    token_hash: null,
+    is_paired: 0,
+    sharing_status: 'PAUSED',
+    updated_at: new Date()
+  });
+
+  await logAudit(knexDb, {
+    userId: req.user.id,
+    action: 'UNPAIR_DEVICE',
+    targetType: 'DEVICE',
+    targetId: device.id,
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+    details: { studentId: device.student_id }
+  });
+
+  res.json({ success: true, message: 'Qurilma muvaffaqiyatli uzildi va token bekor qilindi' });
+});
+
+// 26.11 Privacy & Consent: Delete All Child GPS Data
+app.delete('/api/v1/students/:id/locations', authMiddleware, async (req, res) => {
+  const studentId = req.params.id;
+  if (!canAccessChildLocation(req.user, studentId)) {
+    return res.status(403).json({ success: false, message: 'Ruxsat berilmadi' });
+  }
+
+  const deletedCount = await knexDb('locations').where({ student_id: String(studentId) }).del();
+  await logAudit(knexDb, {
+    userId: req.user.id,
+    action: 'DELETE_CHILD_LOCATIONS',
+    targetType: 'STUDENT',
+    targetId: String(studentId),
+    ipAddress: req.ip,
+    userAgent: req.get('user-agent'),
+    details: { deletedCount }
+  });
+
+  res.json({
+    success: true,
+    message: 'Bolaning barcha GPS joylashuv ma\'lumotlari to\'liq o\'chirildi',
+    deletedCount
   });
 });
 
@@ -1735,10 +2498,14 @@ app.post('/api/v1/telemetry/simulate-walk', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`==================================================================`);
-  console.log(`🚀 SMART CHILD Multi-School Platform Engine ishga tushdi!`);
-  console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🏫 Ro'yxatdagi maktablar: ${db.schools.map(s => `${s.name} (${s.id})`).join(', ')}`);
-  console.log(`==================================================================`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`==================================================================`);
+    console.log(`🚀 SMART CHILD Multi-School Platform Engine ishga tushdi!`);
+    console.log(`📡 URL: http://localhost:${PORT}`);
+    console.log(`🏫 Ro'yxatdagi maktablar: ${db.schools.map(s => `${s.name} (${s.id})`).join(', ')}`);
+    console.log(`==================================================================`);
+  });
+}
+
+module.exports = app;

@@ -33,6 +33,7 @@ export const App: React.FC = () => {
   const [currentRole, setCurrentRole] = useState<Role>('SUPER_ADMIN');
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('ALL');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [token, setToken] = useState<string>(() => localStorage.getItem('maktab_auth_token') || '');
 
   // Modals state
   const [openAddSchool, setOpenAddSchool] = useState(false);
@@ -44,10 +45,42 @@ export const App: React.FC = () => {
   const [studentToCorrect, setStudentToCorrect] = useState<Student | null>(null);
   const [openNotifDrawer, setOpenNotifDrawer] = useState(false);
 
+  // Authenticated fetch wrapper
+  const authFetch = async (url: string, options: RequestInit = {}) => {
+    const activeToken = token || localStorage.getItem('maktab_auth_token');
+    const headers = new Headers(options.headers || {});
+    if (activeToken) {
+      headers.set('Authorization', `Bearer ${activeToken}`);
+    }
+    return fetch(url, { ...options, headers });
+  };
+
+  const loginWithRole = async (role: Role) => {
+    try {
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, password: 'password123' })
+      });
+      const data = await res.json();
+      if (data.success && data.token) {
+        setToken(data.token);
+        localStorage.setItem('maktab_auth_token', data.token);
+        if (data.refreshToken) {
+          localStorage.setItem('maktab_refresh_token', data.refreshToken);
+        }
+        return data.token;
+      }
+    } catch (err) {
+      console.error('Error logging in with role:', err);
+    }
+    return null;
+  };
+
   // 1. Fetch initial data
   const fetchSchools = async () => {
     try {
-      const res = await fetch('/api/v1/schools');
+      const res = await authFetch('/api/v1/schools');
       const data = await res.json();
       if (data.success) {
         setSchools(data.schools);
@@ -59,7 +92,7 @@ export const App: React.FC = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch(`/api/v1/students?schoolId=${selectedSchoolId}`);
+      const res = await authFetch(`/api/v1/students?schoolId=${selectedSchoolId}`);
       const data = await res.json();
       if (data.success) {
         setStudents(data.students);
@@ -71,7 +104,7 @@ export const App: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/v1/users');
+      const res = await authFetch('/api/v1/users');
       const data = await res.json();
       if (data.success) {
         setUsers(data.users);
@@ -83,7 +116,7 @@ export const App: React.FC = () => {
 
   const fetchAuditLogs = async () => {
     try {
-      const res = await fetch('/api/v1/audit-logs');
+      const res = await authFetch('/api/v1/audit-logs');
       const data = await res.json();
       if (data.success) {
         setAuditLogs(data.auditLogs);
@@ -95,7 +128,7 @@ export const App: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch('/api/v1/notifications');
+      const res = await authFetch('/api/v1/notifications');
       const data = await res.json();
       if (data.success) {
         setNotifications(data.notifications);
@@ -106,47 +139,81 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSchools();
-    fetchUsers();
-    fetchAuditLogs();
-    fetchNotifications();
-  }, []);
+    let isMounted = true;
+    loginWithRole(currentRole).then(() => {
+      if (!isMounted) return;
+      fetchSchools();
+      fetchUsers();
+      fetchAuditLogs();
+      fetchNotifications();
+      fetchStudents();
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentRole]);
 
   useEffect(() => {
     fetchStudents();
   }, [selectedSchoolId]);
 
-  // 2. Real-Time SSE Stream Setup
+  // 2. Real-Time SSE Stream Setup with single-use ticket
   useEffect(() => {
-    const sse = new EventSource('/api/v1/stream');
-    sse.onmessage = (e) => {
+    let sse: EventSource | null = null;
+    let active = true;
+
+    const initSse = async () => {
+      let streamUrl = '/api/v1/stream';
       try {
-        const d = JSON.parse(e.data);
-        if (
-          d.event === 'telemetry' ||
-          d.event === 'attendance_updated' ||
-          d.event === 'geofence_updated' ||
-          d.event === 'student_added'
-        ) {
-          fetchStudents();
-        } else if (
-          d.event === 'school_added' ||
-          d.event === 'school_updated' ||
-          d.event === 'school_deleted'
-        ) {
-          fetchSchools();
-          fetchStudents();
-          fetchAuditLogs();
-        } else if (d.event === 'notification') {
-          fetchNotifications();
+        const activeToken = token || localStorage.getItem('maktab_auth_token');
+        if (activeToken) {
+          const ticketRes = await fetch('/api/v1/stream/ticket', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${activeToken}` },
+          });
+          const ticketData = await ticketRes.json();
+          if (ticketData.success && ticketData.ticket) {
+            streamUrl = `/api/v1/stream?ticket=${ticketData.ticket}`;
+          }
         }
       } catch (_) {}
+
+      if (!active) return;
+      sse = new EventSource(streamUrl);
+      sse.onmessage = (e) => {
+        try {
+          const d = JSON.parse(e.data);
+          if (
+            d.event === 'telemetry' ||
+            d.event === 'location_update' ||
+            d.event === 'attendance_updated' ||
+            d.event === 'geofence_updated' ||
+            d.event === 'geofence_alert' ||
+            d.event === 'student_added'
+          ) {
+            fetchStudents();
+          } else if (
+            d.event === 'school_added' ||
+            d.event === 'school_updated' ||
+            d.event === 'school_deleted'
+          ) {
+            fetchSchools();
+            fetchStudents();
+            fetchAuditLogs();
+          } else if (d.event === 'notification') {
+            fetchNotifications();
+          }
+        } catch (_) {}
+      };
     };
 
+    initSse();
+
     return () => {
-      sse.close();
+      active = false;
+      if (sse) sse.close();
     };
-  }, []);
+  }, [token]);
 
   // Theme switcher
   const toggleTheme = () => {
@@ -163,7 +230,7 @@ export const App: React.FC = () => {
 
   // API Actions
   const handleAddSchool = async (schoolData: any) => {
-    const res = await fetch('/api/v1/schools', {
+    const res = await authFetch('/api/v1/schools', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(schoolData),
@@ -177,7 +244,7 @@ export const App: React.FC = () => {
   };
 
   const handleUpdateSchool = async (id: string, updates: any) => {
-    const res = await fetch(`/api/v1/schools/${id}`, {
+    const res = await authFetch(`/api/v1/schools/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -193,7 +260,7 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteSchool = async (id: string) => {
-    const res = await fetch(`/api/v1/schools/${id}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/v1/schools/${id}`, { method: 'DELETE' });
     const d = await res.json();
     if (d.success) {
       fetchSchools();
@@ -205,7 +272,7 @@ export const App: React.FC = () => {
   };
 
   const handleAddStudent = async (data: any) => {
-    const res = await fetch('/api/v1/students', {
+    const res = await authFetch('/api/v1/students', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -232,7 +299,7 @@ export const App: React.FC = () => {
       };
     });
 
-    const res = await fetch('/api/v1/students/bulk', {
+    const res = await authFetch('/api/v1/students/bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ schoolId, students: studentsArr }),
@@ -247,7 +314,7 @@ export const App: React.FC = () => {
   };
 
   const handleSaveGeofence = async (schoolId: string, polygon: [number, number][]) => {
-    const res = await fetch(`/api/v1/schools/${schoolId}/geofence`, {
+    const res = await authFetch(`/api/v1/schools/${schoolId}/geofence`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ polygon }),
@@ -263,7 +330,7 @@ export const App: React.FC = () => {
   };
 
   const handleSubmitCorrection = async (studentId: string, status: string, reason: string) => {
-    const res = await fetch('/api/v1/attendance/correct', {
+    const res = await authFetch('/api/v1/attendance/correct', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId, status, reason, teacherId: "Dilnoza Karimova (O'qituvchi)" }),
@@ -278,7 +345,7 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteStudent = async (id: string) => {
-    const res = await fetch(`/api/v1/students/${id}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
     const d = await res.json();
     if (d.success) {
       fetchStudents();
@@ -289,7 +356,7 @@ export const App: React.FC = () => {
   };
 
   const handleSimulateWalk = async (stage: 'ENTER_SCHOOL' | 'LEAVE_SCHOOL') => {
-    const res = await fetch('/api/v1/telemetry/simulate-walk', {
+    const res = await authFetch('/api/v1/telemetry/simulate-walk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId: '10001', stage }),
@@ -301,7 +368,7 @@ export const App: React.FC = () => {
   };
 
   const handleTriggerSos = async () => {
-    await fetch('/api/v1/sos', {
+    await authFetch('/api/v1/sos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: 'watch-5pro-01', latitude: 41.31112, longitude: 69.24061 }),

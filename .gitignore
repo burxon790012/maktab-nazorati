@@ -19,10 +19,15 @@ upload_log.txt
 
 # Environment variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+
+# SQLite & Local databases
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db
+
 
 # IDE & Editor files
 .idea/

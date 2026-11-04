@@ -109,7 +109,7 @@
       "name": "Sardor Alimov (Super Admin)",
       "email": "superadmin@smartchild.uz",
       "phone": "+998901111111",
-      "password": "password123",
+      "password": "$2b$12$otZwGdqUXhZkbMgFhPC20OiFUIa98V/yM9L68TghNf4vujRqAlUQG",
       "role": "SUPER_ADMIN"
     },
     {
@@ -117,7 +117,7 @@
       "name": "Akmal Rahimov (Maktab #1 Admini)",
       "email": "admin.sch1@smartchild.uz",
       "phone": "+998901234567",
-      "password": "password123",
+      "password": "$2b$12$cd4ukDQlfgOGsm3gGqu8b.FFabRYESSpJSY7iHr5XnwIECVddxGT6",
       "role": "SCHOOL_ADMIN",
       "schoolId": "SCH001"
     },
@@ -126,7 +126,7 @@
       "name": "Dilnoza Karimova",
       "email": "teacher@smartchild.uz",
       "phone": "+998902345678",
-      "password": "password123",
+      "password": "$2b$12$SuS4Sz2Pf4dCUWuBbqDoqO.QUxGEQRImAVSpzkJDGHdqQez16rwqy",
       "role": "TEACHER",
       "schoolId": "SCH001",
       "classId": "cls-5b"
@@ -136,7 +136,7 @@
       "name": "Jasur Bekmirzayev",
       "email": "parent@smartchild.uz",
       "phone": "+998903456789",
-      "password": "password123",
+      "password": "$2b$12$hCzd/Gbkw4W8kQhb7KR/FOD/xvHvBUN46EzvIIy/W/ks.tVsbEsce",
       "role": "PARENT",
       "childrenIds": [
         "10001",
@@ -157,8 +157,8 @@
       "parentId": "usr-parent-1",
       "parentName": "Jasur Bekmirzayev",
       "parentPhone": "+998903456789",
-      "deviceId": "watch-5pro-01",
-      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "deviceId": "W5P-REUSE-1",
+      "deviceModel": "Samsung Galaxy Watch 5 Pro",
       "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
       "status": "ACTIVE"
     },

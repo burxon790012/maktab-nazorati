@@ -97,7 +97,14 @@ export const MapView: React.FC<MapViewProps> = ({
   const [showTrails, setShowTrails] = useState(true);
 
   // Map view layer & UI states
-  const [mapLayer, setMapLayer] = useState<MapTileLayerType>(DEFAULT_TILE_LAYER_ID);
+  const [mapLayer, setMapLayer] = useState<MapTileLayerType>(() => {
+    try {
+      const saved = localStorage.getItem('smart_child_map_layer') as MapTileLayerType;
+      if (saved && TILE_CONFIG[saved]) return saved;
+    } catch {}
+    return DEFAULT_TILE_LAYER_ID;
+  });
+
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('smart_child_map_dark');
@@ -107,15 +114,33 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   });
 
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => {
-      const next = !prev;
+  const handleSelectLayer = (key: MapTileLayerType) => {
+    setMapLayer(key);
+    try {
+      localStorage.setItem('smart_child_map_layer', key);
+    } catch {}
+    if (key === 'dark') {
+      setIsDarkMode(true);
       try {
-        localStorage.setItem('smart_child_map_dark', String(next));
+        localStorage.setItem('smart_child_map_dark', 'true');
       } catch {}
-      return next;
-    });
+    } else if (key === 'streets' || key === 'voyager') {
+      setIsDarkMode(false);
+      try {
+        localStorage.setItem('smart_child_map_dark', 'false');
+      } catch {}
+    }
   };
+
+  const toggleDarkMode = () => {
+    if (mapLayer === 'dark') {
+      handleSelectLayer('streets');
+    } else {
+      handleSelectLayer('dark');
+    }
+  };
+
+  const isDarkActive = mapLayer === 'dark' || (isDarkMode && mapLayer !== 'satellite');
 
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -247,6 +272,43 @@ export const MapView: React.FC<MapViewProps> = ({
     const newLayer = createTileLayer(mapLayer).addTo(map);
     currentTileLayerRef.current = newLayer;
   }, [mapLayer]);
+
+  // 3. ResizeObserver: recalculate size on layout/window/sidebar change to prevent black gaps
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    resizeObserver.observe(container);
+    window.addEventListener('resize', handleResize);
+
+    const t1 = setTimeout(handleResize, 100);
+    const t2 = setTimeout(handleResize, 350);
+    const t3 = setTimeout(handleResize, 1000);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 200);
+  }, [isFullscreen]);
 
   // 3. Render School Geofence Polygons & Badges
   useEffect(() => {
@@ -998,13 +1060,14 @@ export const MapView: React.FC<MapViewProps> = ({
       </Card>
 
       {/* 2. RIGHT / MAIN: High-Tech Leaflet Map & Professional HUD Studio */}
-      <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-border/80 shadow-2xl bg-zinc-950 flex flex-col">
+      <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-border/80 shadow-2xl bg-zinc-950 flex flex-col h-full min-h-0">
         {/* Map Canvas */}
         <div
           ref={mapContainerRef}
-          className={`w-full flex-1 min-h-[520px] transition-all duration-300 ${
-            isDarkMode && mapLayer !== 'satellite' ? 'dark-tiles' : ''
+          className={`w-full h-full flex-1 min-h-0 transition-all duration-300 ${
+            isDarkActive ? 'dark-tiles' : ''
           }`}
+          style={{ width: '100%', height: '100%', minHeight: '100%', flex: '1 1 0%' }}
         />
 
         {/* --- TOP-LEFT CONTROLS HUD: Search & Tools --- */}
@@ -1258,7 +1321,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   <button
                     key={key}
                     onClick={() => {
-                      setMapLayer(key);
+                      handleSelectLayer(key);
                       setShowLayerMenu(false);
                     }}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-all ${

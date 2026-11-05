@@ -440,7 +440,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* TAB 1: LIVE MAP */}
-          <TabsContent value="tab-map">
+          <TabsContent value="tab-map" className="h-full min-h-0 flex-1 outline-none mt-0">
             <MapView
               schools={schools}
               students={students}

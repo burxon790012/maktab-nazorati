@@ -1,20 +1,7 @@
 /// <reference path="../declarations.d.ts" />
-// SMART CHILD — High-Performance Professional Geolocation & Geofencing System
+// SMART CHILD — High-Tech Fleet Geolocation & Geofencing System (Google Maps Primary, OSM Fallback)
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import L from 'leaflet';
 import { School, Student, StudentTelemetry } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import {
-  calculatePolygonArea,
-  calculatePerimeter,
-  generateCirclePolygon,
-  formatArea,
-  formatDistance,
-  haversineDistance,
-} from '@/lib/geoUtils';
 import {
   Search,
   PenTool,
@@ -23,41 +10,44 @@ import {
   MapPin,
   Heart,
   Battery,
-  BatteryCharging,
   Radio,
   Layers,
   Crosshair,
   Activity,
-  Compass,
   Maximize2,
   Minimize2,
   Ruler,
-  Play,
-  Pause,
-  RotateCcw,
-  Undo,
-  Circle,
+  Circle as CircleIcon,
   Copy,
   AlertTriangle,
   Phone,
   ShieldAlert,
   ShieldCheck,
-  Eye,
   Navigation2,
   Users,
   ChevronRight,
+  ChevronLeft,
   Info,
   Thermometer,
-  Sun,
-  Moon,
+  RotateCcw,
+  Footprints,
+  Clock,
+  Sparkles,
+  Target,
 } from 'lucide-react';
 import {
-  TILE_CONFIG,
-  DEFAULT_TILE_LAYER_ID,
-  MapTileLayerType,
-  OSM_DEFAULT_URL,
-  OSM_ATTRIBUTION,
-} from '@/config/mapConfig';
+  MapAdapter,
+  MapLayerType,
+  MapProviderType,
+  createMapAdapter,
+} from '@/lib/mapAdapter';
+import {
+  formatArea,
+  formatDistance,
+  haversineDistance,
+  calculatePolygonArea,
+} from '@/lib/geoUtils';
+import { SearchCombobox, SearchResultItem } from './SearchCombobox';
 
 interface MapViewProps {
   schools: School[];
@@ -67,10 +57,8 @@ interface MapViewProps {
   onRefreshData?: () => Promise<void>;
   activeFilter?: string;
   onSelectFilter?: (f: string) => void;
+  googleMapsApiKey?: string;
 }
-
-type GeofenceToolMode = 'NONE' | 'DRAW_POLYGON' | 'CIRCLE' | 'MEASURE';
-type ZoneType = 'SAFE' | 'DANGER';
 
 export const MapView: React.FC<MapViewProps> = ({
   schools,
@@ -80,1653 +68,932 @@ export const MapView: React.FC<MapViewProps> = ({
   onRefreshData,
   activeFilter = 'ALL',
   onSelectFilter,
+  googleMapsApiKey,
 }) => {
-  // Map container & Leaflet instance refs
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapWrapperRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const currentTileLayerRef = useRef<L.TileLayer | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const adapterRef = useRef<MapAdapter | null>(null);
 
-  // Layers refs
-  const schoolLayersRef = useRef<{ [key: string]: L.Polygon | L.LayerGroup }>({});
-  const studentMarkersRef = useRef<{ [key: string]: L.Marker }>({});
-  const studentAccuracyCirclesRef = useRef<{ [key: string]: L.Circle }>({});
-  const trailPolylinesRef = useRef<{ [key: string]: L.Polyline }>({});
-  const measureLayersRef = useRef<L.LayerGroup | null>(null);
-  const tempDrawLayerRef = useRef<L.Polygon | L.Polyline | null>(null);
-  const tempPointsMarkersRef = useRef<L.CircleMarker[]>([]);
-
-  // Movement history state (studentId -> coordinates array)
-  const [historyTrails, setHistoryTrails] = useState<Record<string, [number, number][]>>({});
-  const [showTrails, setShowTrails] = useState(true);
-
-  // Map view layer & UI states
-  const [mapLayer, setMapLayer] = useState<MapTileLayerType>(() => {
-    try {
-      const saved = localStorage.getItem('smart_child_map_layer') as MapTileLayerType;
-      if (saved && TILE_CONFIG[saved]) return saved;
-    } catch {}
-    return DEFAULT_TILE_LAYER_ID;
-  });
-
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('smart_child_map_dark');
-      return saved !== null ? saved === 'true' : true;
-    } catch {
-      return true;
-    }
-  });
-
-  const handleSelectLayer = (key: MapTileLayerType) => {
-    setMapLayer(key);
-    try {
-      localStorage.setItem('smart_child_map_layer', key);
-    } catch {}
-    if (key === 'dark') {
-      setIsDarkMode(true);
-      try {
-        localStorage.setItem('smart_child_map_dark', 'true');
-      } catch {}
-    } else if (key === 'streets' || key === 'voyager') {
-      setIsDarkMode(false);
-      try {
-        localStorage.setItem('smart_child_map_dark', 'false');
-      } catch {}
-    }
-  };
-
-  const toggleDarkMode = () => {
-    if (mapLayer === 'dark') {
-      handleSelectLayer('streets');
-    } else {
-      handleSelectLayer('dark');
-    }
-  };
-
-  const isDarkActive = mapLayer === 'dark' || (isDarkMode && mapLayer !== 'satellite');
-
-  const [showLayerMenu, setShowLayerMenu] = useState(false);
+  // Map state
+  const [provider, setProvider] = useState<MapProviderType>('leaflet-osm');
+  const [isFallbackNotice, setIsFallbackNotice] = useState(false);
+  const [mapLayer, setMapLayer] = useState<MapLayerType>('roadmap');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Selected entities
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [copiedCoord, setCopiedCoord] = useState(false);
+  const [targetSchoolId, setTargetSchoolId] = useState<string>(selectedSchoolId || 'SCH001');
 
-  // Geofence Studio State
-  const [activeTool, setActiveTool] = useState<GeofenceToolMode>('NONE');
-  const [zoneType, setZoneType] = useState<ZoneType>('SAFE');
-  const [targetSchoolId, setTargetSchoolId] = useState<string>(
-    selectedSchoolId !== 'ALL' ? selectedSchoolId : (schools[0]?.id || 'SCH001')
-  );
-  const [drawnPoints, setDrawnPoints] = useState<[number, number][]>([]);
-  const [circleRadius, setCircleRadius] = useState<number>(120);
-
-  // Measure tool state
-  const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
-  const [measuredDistanceMeters, setMeasuredDistanceMeters] = useState<number | null>(null);
-
-  // Search & Filter state
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'INSIDE' | 'OUTSIDE' | 'SOS'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  // Walking simulation state
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simStep, setSimStep] = useState<number>(0);
-  const simTimerRef = useRef<any>(null);
+  // Side panels toggle
+  const [showStudentList, setShowStudentList] = useState(true);
 
-  // Active target school object
-  const activeSchool = useMemo(() => {
-    return schools.find((s) => s.id === targetSchoolId) || schools[0];
-  }, [schools, targetSchoolId]);
+  // Drawing & Tools state
+  const [drawingMode, setDrawingMode] = useState<'NONE' | 'POLYGON' | 'CIRCLE' | 'MEASURE'>('NONE');
+  const [polygonPointCount, setPolygonPointCount] = useState(0);
+  const [measuredDistance, setMeasuredDistance] = useState<number | null>(null);
+  const [isSavingGeofence, setIsSavingGeofence] = useState(false);
 
-  // Keep targetSchoolId synced when prop changes
-  useEffect(() => {
-    if (selectedSchoolId !== 'ALL') {
-      setTargetSchoolId(selectedSchoolId);
-    }
-  }, [selectedSchoolId]);
+  // Search Pin & Map Pick Mode state
+  const [searchPin, setSearchPin] = useState<{ lat: number; lng: number; title: string; subtitle?: string } | null>(null);
+  const [isMapPickMode, setIsMapPickMode] = useState(false);
+  const isMapPickModeRef = useRef(false);
+  isMapPickModeRef.current = isMapPickMode;
 
-  // Update movement history trails when students move
-  useEffect(() => {
-    students.forEach((s) => {
-      const telem = s.telemetry;
-      if (telem && telem.latitude && telem.longitude) {
-        setHistoryTrails((prev) => {
-          const current = prev[s.id] || [];
-          const lastPoint = current[current.length - 1];
-          if (!lastPoint || lastPoint[0] !== telem.latitude || lastPoint[1] !== telem.longitude) {
-            const updated = [...current, [telem.latitude, telem.longitude] as [number, number]];
-            // Keep last 15 points
-            return { ...prev, [s.id]: updated.slice(-15) };
-          }
-          return prev;
-        });
-      }
-    });
-  }, [students]);
+  // In-app non-blocking Toast notification state (zero alert popups)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-  // Helper to create tile layer with automatic fallback to OpenStreetMap on error
-  const createTileLayer = (configKey: MapTileLayerType) => {
-    const tileConfig = TILE_CONFIG[configKey] || TILE_CONFIG[DEFAULT_TILE_LAYER_ID];
-    const layer = L.tileLayer(tileConfig.url, {
-      maxZoom: tileConfig.maxZoom,
-      attribution: tileConfig.attr,
-      subdomains: tileConfig.subdomains || 'abc',
-    });
-
-    let fallbackTriggered = false;
-    layer.on('tileerror', (error: any) => {
-      console.warn("⚠️ Xarita plitkasi (tile) yuklanmadi, avtomatik zaxira OpenStreetMap manbasiga o'tilmoqda:", error);
-      if (!fallbackTriggered && tileConfig.url !== OSM_DEFAULT_URL) {
-        fallbackTriggered = true;
-        if (mapInstanceRef.current && currentTileLayerRef.current) {
-          mapInstanceRef.current.removeLayer(currentTileLayerRef.current);
-          const fallbackLayer = L.tileLayer(OSM_DEFAULT_URL, {
-            maxZoom: 19,
-            attribution: OSM_ATTRIBUTION,
-          }).addTo(mapInstanceRef.current);
-          currentTileLayerRef.current = fallbackLayer;
-        }
-      }
-    });
-
-    return layer;
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
   };
 
-  // 1. Initialize Leaflet Map
+  // Sync Search Marker on Map
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
-
-    const initialCenter: [number, number] = activeSchool?.lat && activeSchool?.lng
-      ? [activeSchool.lat, activeSchool.lng]
-      : [41.311081, 69.240562];
-
-    const map = L.map(mapContainerRef.current, {
-      center: initialCenter,
-      zoom: 16,
-      zoomControl: false,
-      attributionControl: false,
-    });
-
-    // Custom attribution in bottom corner
-    L.control.attribution({ position: 'bottomright' }).addTo(map);
-
-    // Apply initial Tile Layer
-    const tileLayer = createTileLayer(mapLayer).addTo(map);
-
-    currentTileLayerRef.current = tileLayer;
-    measureLayersRef.current = L.layerGroup().addTo(map);
-    mapInstanceRef.current = map;
-
-    return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-    };
-  }, []);
-
-  // 2. Change Tile Layer Dynamically
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    if (currentTileLayerRef.current) {
-      map.removeLayer(currentTileLayerRef.current);
+    if (searchPin && adapterRef.current) {
+      adapterRef.current.setSearchMarker(searchPin.lat, searchPin.lng, searchPin.title);
+    } else if (adapterRef.current) {
+      adapterRef.current.clearSearchMarker();
     }
+  }, [searchPin]);
 
-    const newLayer = createTileLayer(mapLayer).addTo(map);
-    currentTileLayerRef.current = newLayer;
-  }, [mapLayer]);
+  // Movement Trails (last 30 minutes)
+  const [trailsHistory, setTrailsHistory] = useState<Record<string, [number, number][]>>({});
+  const [copiedCoords, setCopiedCoords] = useState(false);
 
-  // 3. ResizeObserver: recalculate size on layout/window/sidebar change to prevent black gaps
-  useEffect(() => {
-    const container = mapContainerRef.current;
-    if (!container) return;
-
-    const handleResize = () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(() => {
-      handleResize();
-    });
-
-    resizeObserver.observe(container);
-    window.addEventListener('resize', handleResize);
-
-    const t1 = setTimeout(handleResize, 100);
-    const t2 = setTimeout(handleResize, 350);
-    const t3 = setTimeout(handleResize, 1000);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, []);
-
-  useEffect(() => {
-    setTimeout(() => {
-      mapInstanceRef.current?.invalidateSize();
-    }, 200);
-  }, [isFullscreen]);
-
-  // 3. Render School Geofence Polygons & Badges
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    // Clear old school layers
-    Object.values(schoolLayersRef.current).forEach((layer) => {
-      map.removeLayer(layer);
-    });
-    schoolLayersRef.current = {};
-
-    schools.forEach((sch) => {
-      const isSelected = sch.id === targetSchoolId;
-      const schoolGroup = L.layerGroup();
-
-      if (sch.polygon && sch.polygon.length >= 3) {
-        const polyArea = calculatePolygonArea(sch.polygon);
-        const polyPerimeter = calculatePerimeter(sch.polygon);
-        const strokeColor = sch.color || (isSelected ? '#10b981' : '#6366f1');
-
-        const poly = L.polygon(sch.polygon, {
-          color: strokeColor,
-          weight: isSelected ? 3.5 : 2,
-          fillColor: strokeColor,
-          fillOpacity: isSelected ? 0.22 : 0.12,
-          dashArray: isSelected ? '6, 6' : '3, 4',
-        });
-
-        // Interactive School Popup with Geometrics
-        poly.bindPopup(`
-          <div style="min-width: 230px; font-family: inherit; padding: 4px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="font-size: 20px;">🏫</span>
-              <div>
-                <b style="font-size: 13.5px; display: block; color: #fff;">${sch.name}</b>
-                <span style="font-size: 10.5px; opacity: 0.7;">ID: <code>${sch.id}</code> | Geofence: <code>${sch.geofenceId || 'GEO001'}</code></span>
-              </div>
-            </div>
-            <div style="font-size: 11px; margin-bottom: 6px; padding: 6px; background: rgba(255,255,255,0.06); border-radius: 6px;">
-              <div>📍 <b>Manzil:</b> ${sch.address}</div>
-              <div>📐 <b>Geozona Maydoni:</b> <b style="color: #10b981;">${formatArea(polyArea)}</b></div>
-              <div>📏 <b>Chegara Perimetri:</b> ${formatDistance(polyPerimeter)}</div>
-              <div>👥 <b>Jami O'quvchilar:</b> ${sch.totalStudents || 0} nafar</div>
-            </div>
-            <div style="display: flex; gap: 4px;">
-              <button onclick="window.dispatchEvent(new CustomEvent('select_school_event', { detail: '${sch.id}' }))"
-                style="width: 100%; background: #10b981; color: #000; font-weight: bold; font-size: 11px; padding: 5px 8px; border: none; border-radius: 6px; cursor: pointer;">
-                Ushbu Maktabga Fokuslash
-              </button>
-            </div>
-          </div>
-        `);
-
-        schoolGroup.addLayer(poly);
-      }
-
-      // School Center Pin / Badge
-      if (sch.lat && sch.lng) {
-        const schoolIcon = L.divIcon({
-          className: 'school-badge-wrapper',
-          html: `
-            <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%); cursor: pointer;">
-              <div style="background: ${sch.color || '#10b981'}; color: #fff; padding: 3px 8px; border-radius: 9999px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 4px; border: 1.5px solid rgba(255,255,255,0.4); white-space: nowrap;">
-                🏫 ${sch.name.length > 18 ? sch.name.slice(0, 18) + '...' : sch.name}
-              </div>
-            </div>
-          `,
-          iconSize: [0, 0],
-        });
-
-        const schoolMarker = L.marker([sch.lat, sch.lng], { icon: schoolIcon });
-        schoolGroup.addLayer(schoolMarker);
-      }
-
-      schoolGroup.addTo(map);
-      schoolLayersRef.current[sch.id] = schoolGroup;
-    });
-
-    // Listen to window event from popup
-    const handleSelectSchoolEvent = (e: any) => {
-      if (e.detail) {
-        setTargetSchoolId(e.detail);
-        const sch = schools.find((s) => s.id === e.detail);
-        if (sch && sch.lat && sch.lng && mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([sch.lat, sch.lng], 16.5);
-        }
-      }
-    };
-
-    window.addEventListener('select_school_event', handleSelectSchoolEvent);
-    return () => {
-      window.removeEventListener('select_school_event', handleSelectSchoolEvent);
+  // Active School
+  const activeSchool = useMemo(() => {
+    return schools.find((s) => s.id === targetSchoolId) || schools[0] || {
+      id: 'SCH001',
+      name: '1-Sonli Namunaviy Maktab',
+      address: 'Toshkent sh., Chilonzor tumani',
+      lat: 41.311081,
+      lng: 69.240562,
+      polygon: [],
     };
   }, [schools, targetSchoolId]);
 
-  // 4. Render Dynamic Student Markers, Accuracy Halos & Breadcrumb Trails
+  // Sync activeFilter prop
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
+    if (activeFilter) {
+      setStatusFilter(activeFilter);
+    }
+  }, [activeFilter]);
 
-    // Clear old markers and halos
-    Object.values(studentMarkersRef.current).forEach((m) => map.removeLayer(m));
-    studentMarkersRef.current = {};
-    Object.values(studentAccuracyCirclesRef.current).forEach((c) => map.removeLayer(c));
-    studentAccuracyCirclesRef.current = {};
-    Object.values(trailPolylinesRef.current).forEach((p) => map.removeLayer(p));
-    trailPolylinesRef.current = {};
+  // 1. Initialize Map Engine (Google Maps with OSM Fallback)
+  useEffect(() => {
+    let isMounted = true;
+    const container = containerRef.current;
+    if (!container) return;
 
-    students.forEach((std) => {
-      const telem = std.telemetry;
+    createMapAdapter(googleMapsApiKey).then((res) => {
+      if (!isMounted || !container) return;
+      adapterRef.current = res.adapter;
+      setProvider(res.provider);
+      setIsFallbackNotice(res.isFallback);
+
+      const initCenter: [number, number] = [
+        activeSchool.lat || 41.311081,
+        activeSchool.lng || 69.240562,
+      ];
+
+      res.adapter.init(container, {
+        center: initCenter,
+        zoom: 16.5,
+        isDark: true,
+        mapType: mapLayer,
+        events: {
+          onMarkerClick: (payload) => {
+            setSelectedStudent(payload.student);
+          },
+          onSchoolClick: (schId) => {
+            setTargetSchoolId(schId);
+          },
+          onMapClick: (lat, lng) => {
+            if (isMapPickModeRef.current) {
+              setSearchPin({
+                lat,
+                lng,
+                title: 'Tanlangan manzil',
+                subtitle: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+              });
+              setIsMapPickMode(false);
+            }
+          },
+        },
+      });
+
+      // Initial School Geofences
+      res.adapter.renderSchoolGeofences(schools, targetSchoolId);
+
+      // Fit bounds to school if polygon available
+      if (activeSchool.polygon && activeSchool.polygon.length > 2) {
+        res.adapter.fitBounds(activeSchool.polygon);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      if (adapterRef.current) {
+        adapterRef.current.destroy();
+        adapterRef.current = null;
+      }
+    };
+  }, [googleMapsApiKey]);
+
+  // 2. ResizeObserver for robust layout adaptation
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const ro = new ResizeObserver(() => {
+      adapterRef.current?.resize();
+    });
+    ro.observe(container);
+
+    return () => {
+      ro.disconnect();
+    };
+  }, []);
+
+  // 3. Update Geofences when schools or selectedSchool changes
+  useEffect(() => {
+    if (adapterRef.current) {
+      adapterRef.current.renderSchoolGeofences(schools, targetSchoolId);
+    }
+  }, [schools, targetSchoolId]);
+
+  // 4. Update Student Markers and Trails
+  useEffect(() => {
+    if (!adapterRef.current) return;
+    const adapter = adapterRef.current;
+
+    adapter.clearStudentMarkers();
+
+    students.forEach((s) => {
+      const telem = s.telemetry;
       if (!telem || telem.latitude == null || telem.longitude == null) return;
 
       const isInside = telem.geofenceStatus === 'INSIDE';
       const isVerifying = telem.geofenceStatus === 'VERIFYING';
       const isSos = telem.isSos || false;
-      const devStatus = telem.deviceStatus || (telem.lastSeen && Date.now() - telem.lastSeen > 300000 ? 'OFFLINE' : 'ONLINE');
-      const isOffline = devStatus === 'OFFLINE';
+      const isOffline = telem.deviceStatus === 'OFFLINE' || (telem.lastSeen && Date.now() - telem.lastSeen > 300000);
 
-      // KPI / Status filtering check
-      if (activeFilter && activeFilter !== 'ALL') {
-        if (activeFilter === 'INSIDE' && !isInside) return;
-        if (activeFilter === 'OUTSIDE' && isInside) return;
-        if (activeFilter === 'VERIFYING' && !isVerifying) return;
-        if (activeFilter === 'SOS' && !isSos) return;
-        if (activeFilter === 'ONLINE' && isOffline) return;
-        if (activeFilter === 'OFFLINE' && !isOffline) return;
+      // Filter check
+      if (statusFilter !== 'ALL') {
+        if (statusFilter === 'INSIDE' && !isInside) return;
+        if (statusFilter === 'OUTSIDE' && isInside) return;
+        if (statusFilter === 'VERIFYING' && !isVerifying) return;
+        if (statusFilter === 'SOS' && !isSos) return;
+        if (statusFilter === 'ONLINE' && isOffline) return;
+        if (statusFilter === 'OFFLINE' && !isOffline) return;
       }
 
-      // Status-dependent palette
-      let color = '#ff4d5e'; // Red (Outside)
-      let statusLabel = 'TASHQARIDA';
-      if (isOffline) {
-        color = '#9a9ac0'; // Gray (Offline)
-        statusLabel = "OFFLINE (oxirgi ma'lum joy)";
-      } else if (isInside) {
-        color = '#2ee59d'; // Green (Inside)
-        statusLabel = 'MAKTABDA';
-      } else if (isVerifying) {
-        color = '#ffb020'; // Amber (Verifying)
-        statusLabel = 'CHEGARADA (VERIFYING)';
-      }
+      adapter.upsertStudentMarker(s, selectedStudent?.id === s.id);
 
-      if (isSos) {
-        color = '#ff4d5e';
-        statusLabel = '🚨 SOS FAVQULODDA!';
-      }
-
-      const isSelected = selectedStudent?.id === std.id;
-      const markerSize = isSelected ? 52 : 44;
-      const pulseHtml = isSos
-        ? `<div class="radar-ring" style="position: absolute; inset: -10px; border-radius: 9999px; background: rgba(255, 77, 94, 0.45); border: 2px solid #ff4d5e;"></div>`
-        : isInside && !isOffline
-        ? `<div class="radar-ring" style="position: absolute; inset: -4px; border-radius: 9999px; background: rgba(46, 229, 157, 0.25);"></div>`
-        : '';
-
-      // Calculate distance to assigned school
-      const school = schools.find((s) => s.id === std.schoolId) || schools[0];
-      let distText = '—';
-      if (school && school.lat && school.lng) {
-        const dMeters = Math.round(haversineDistance(telem.latitude, telem.longitude, school.lat, school.lng));
-        distText = formatDistance(dMeters);
-      }
-
-      const customIcon = L.divIcon({
-        className: 'student-pro-marker',
-        html: `
-          <div style="position: relative; width: ${markerSize}px; height: ${markerSize}px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));">
-            ${pulseHtml}
-            <div style="width: ${markerSize - 8}px; height: ${markerSize - 8}px; border-radius: 9999px; border: 3px solid ${color}; overflow: hidden; background: #1b1b33; position: relative; z-index: 2; transition: all 0.2s; ${isOffline ? 'filter: grayscale(80%) opacity(0.85);' : ''}">
-              <img src="${std.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${std.name}" />
-            </div>
-            <div style="position: absolute; bottom: 0; right: 0; z-index: 3; background: ${color}; color: #fff; font-size: 8px; font-weight: 800; border-radius: 9999px; border: 1.5px solid #1b1b33; padding: 1px 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-              ${isOffline ? 'OFF' : isInside ? '✓' : isSos ? 'SOS' : '!'}
-            </div>
-            ${
-              isSelected
-                ? `<div style="position: absolute; top: -18px; background: #2ee59d; color: #1b1b33; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; z-index: 4;">${std.name}</div>`
-                : ''
-            }
-          </div>
-        `,
-        iconSize: [markerSize, markerSize],
-        iconAnchor: [markerSize / 2, markerSize / 2],
-      });
-
-      const marker = L.marker([telem.latitude, telem.longitude], { icon: customIcon }).addTo(map);
-
-      // Rich Telemetry Popup
-      const popupHtml = `
-        <div style="min-width: 220px; font-size: 12px; line-height: 1.4; color: #e8e8f5;">
-          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 6px;">
-            <div>
-              <b style="font-size: 13px; color: #fff;">${std.name}</b>
-              <div style="font-size: 11px; color: #9a9ac0;">${std.className} • ${std.schoolName}</div>
-            </div>
-            <span style="background: ${color}20; color: ${color}; border: 1px solid ${color}40; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 10px;">
-              ${statusLabel}
-            </span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px; font-size: 11px;">
-            <div>⌚ <b>Soat:</b> Galaxy Watch5 Pro</div>
-            <div>🔋 <b>Batareya:</b> <span style="color: ${telem.batteryLevel > 20 ? '#2ee59d' : '#ff4d5e'}; font-weight: bold;">${telem.batteryLevel || 85}%</span></div>
-            <div>❤️ <b>Yurak:</b> ${telem.heartRate || 76} BPM</div>
-            <div>👣 <b>Qadam:</b> ${telem.steps || 3200}</div>
-          </div>
-
-          <div style="background: rgba(0,0,0,0.25); padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-bottom: 6px;">
-            <div>📍 <b>Manzil:</b> ${telem.address || "Toshkent shahri"}</div>
-            <div>📏 <b>Maktabdan masofa:</b> <b style="color: #4db5ff;">${distText}</b></div>
-            <div>🎯 <b>Aniqlik:</b> ±${telem.accuracy || 3.5}m</div>
-          </div>
-
-          <div style="font-size: 10px; color: #9a9ac0; text-align: right;">
-            Holat: <b style="color: ${isOffline ? '#9a9ac0' : '#2ee59d'}">${devStatus}</b> • ${telem.lastSeen ? new Date(telem.lastSeen).toLocaleTimeString() : 'Hozir'}
-          </div>
-        </div>
-      `;
-
-      marker.bindPopup(popupHtml, { maxWidth: 280 });
-
-      // Tooltip on hover
-      marker.bindTooltip(
-        `<b>${std.name}</b> (${std.className})<br/><span style="color: ${color}; font-weight: bold;">● ${statusLabel}</span><br/>📍 ${telem.address || "Toshkent shahri"}`,
-        { className: 'custom-leaflet-tooltip', direction: 'top', offset: [0, -18] }
-      );
-
-      // Click selects student for HUD
-      marker.on('click', () => {
-        setSelectedStudent(std);
-        map.flyTo([telem.latitude, telem.longitude], 17.5, { duration: 0.8 });
-      });
-
-      studentMarkersRef.current[std.id] = marker;
-
-      // GPS Accuracy Confidence Halo
-      const accuracyRadius = Math.max(telem.accuracy || 3.5, 2.5);
-      const accCircle = L.circle([telem.latitude, telem.longitude], {
-        radius: accuracyRadius,
-        color: color,
-        weight: 1,
-        fillColor: color,
-        fillOpacity: isOffline ? 0.05 : 0.12,
-        dashArray: '3, 3',
-      }).addTo(map);
-
-      studentAccuracyCirclesRef.current[std.id] = accCircle;
-
-      // History Breadcrumb Trail
-      if (showTrails && historyTrails[std.id] && historyTrails[std.id].length > 1) {
-        const polyline = L.polyline(historyTrails[std.id], {
-          color: color,
-          weight: 2.5,
-          opacity: isOffline ? 0.3 : 0.65,
-          dashArray: '4, 6',
-        }).addTo(map);
-        trailPolylinesRef.current[std.id] = polyline;
-      }
-    });
-  }, [students, selectedStudent, showTrails, historyTrails, activeFilter, schools]);
-
-  // 5. Drawing & Distance Measuring Click Handler
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    const handleMapClick = (e: L.LeafletMouseEvent) => {
-      const clickCoords: [number, number] = [
-        parseFloat(e.latlng.lat.toFixed(6)),
-        parseFloat(e.latlng.lng.toFixed(6)),
-      ];
-
-      // CASE A: Polygon Geofence Drawing Mode
-      if (activeTool === 'DRAW_POLYGON') {
-        setDrawnPoints((prev) => {
-          const updated = [...prev, clickCoords];
-
-          // Render live preview polygon
-          if (tempDrawLayerRef.current) {
-            map.removeLayer(tempDrawLayerRef.current);
-          }
-
-          const strokeColor = zoneType === 'SAFE' ? '#10b981' : '#ef4444';
-          tempDrawLayerRef.current = L.polygon(updated, {
-            color: strokeColor,
-            weight: 2.5,
-            fillColor: strokeColor,
-            fillOpacity: 0.25,
-            dashArray: '5, 5',
-          }).addTo(map);
-
-          // Add interactive vertex handle
-          const vertexMarker = L.circleMarker(clickCoords, {
-            radius: 5,
-            color: '#fff',
-            fillColor: strokeColor,
-            fillOpacity: 1,
-            weight: 2,
-          }).addTo(map);
-
-          tempPointsMarkersRef.current.push(vertexMarker);
-          return updated;
-        });
-      }
-
-      // CASE B: Distance Measurement Tool
-      else if (activeTool === 'MEASURE') {
-        setMeasurePoints((prev) => {
-          if (prev.length >= 2) {
-            // Reset and start new measurement
-            if (measureLayersRef.current) measureLayersRef.current.clearLayers();
-            const next = [clickCoords];
-            const m = L.circleMarker(clickCoords, { radius: 6, color: '#f59e0b', fillColor: '#fbbf24', fillOpacity: 1 });
-            measureLayersRef.current?.addLayer(m);
-            setMeasuredDistanceMeters(null);
-            return next;
-          }
-
-          const next = [...prev, clickCoords];
-          const m = L.circleMarker(clickCoords, { radius: 6, color: '#f59e0b', fillColor: '#fbbf24', fillOpacity: 1 });
-          measureLayersRef.current?.addLayer(m);
-
-          if (next.length === 2) {
-            const dist = haversineDistance(next[0][0], next[0][1], next[1][0], next[1][1]);
-            setMeasuredDistanceMeters(dist);
-
-            const line = L.polyline(next, {
-              color: '#f59e0b',
-              weight: 3,
-              dashArray: '6, 6',
-            });
-            measureLayersRef.current?.addLayer(line);
-
-            // Midpoint marker with distance badge
-            const midLat = (next[0][0] + next[1][0]) / 2;
-            const midLng = (next[0][1] + next[1][1]) / 2;
-            const badgeIcon = L.divIcon({
-              className: 'measure-badge',
-              html: `
-                <div style="background: #18181b; color: #fbbf24; border: 1.5px solid #f59e0b; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: bold; transform: translate(-50%, -50%); white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                  📏 ${formatDistance(dist)}
-                </div>
-              `,
-              iconSize: [0, 0],
-            });
-            const badgeMarker = L.marker([midLat, midLng], { icon: badgeIcon });
-            measureLayersRef.current?.addLayer(badgeMarker);
-          }
-          return next;
-        });
-      }
-    };
-
-    map.on('click', handleMapClick);
-    return () => {
-      map.off('click', handleMapClick);
-    };
-  }, [activeTool, zoneType]);
-
-  // 6. Handle Circle Geofence Mode
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || activeTool !== 'CIRCLE') return;
-
-    if (!activeSchool || !activeSchool.lat || !activeSchool.lng) return;
-
-    // Generate circle polygon
-    const circleCoords = generateCirclePolygon(activeSchool.lat, activeSchool.lng, circleRadius, 36);
-    setDrawnPoints(circleCoords);
-
-    // Render preview on map
-    if (tempDrawLayerRef.current) {
-      map.removeLayer(tempDrawLayerRef.current);
-    }
-
-    const strokeColor = zoneType === 'SAFE' ? '#10b981' : '#ef4444';
-    tempDrawLayerRef.current = L.polygon(circleCoords, {
-      color: strokeColor,
-      weight: 2.5,
-      fillColor: strokeColor,
-      fillOpacity: 0.22,
-      dashArray: '4, 4',
-    }).addTo(map);
-
-    map.flyTo([activeSchool.lat, activeSchool.lng], 16.5);
-  }, [activeTool, circleRadius, activeSchool, zoneType]);
-
-  // Cleanup drawing layers
-  const cleanupDrawLayers = () => {
-    const map = mapInstanceRef.current;
-    if (tempDrawLayerRef.current && map) {
-      map.removeLayer(tempDrawLayerRef.current);
-      tempDrawLayerRef.current = null;
-    }
-    tempPointsMarkersRef.current.forEach((m) => map?.removeLayer(m));
-    tempPointsMarkersRef.current = [];
-    if (measureLayersRef.current) {
-      measureLayersRef.current.clearLayers();
-    }
-    setDrawnPoints([]);
-    setMeasurePoints([]);
-    setMeasuredDistanceMeters(null);
-  };
-
-  // Undo last point in polygon drawing
-  const handleUndoPoint = () => {
-    if (drawnPoints.length === 0) return;
-    const map = mapInstanceRef.current;
-    const nextPoints = drawnPoints.slice(0, -1);
-    setDrawnPoints(nextPoints);
-
-    // Remove last vertex marker
-    const lastMarker = tempPointsMarkersRef.current.pop();
-    if (lastMarker && map) map.removeLayer(lastMarker);
-
-    // Re-render polygon
-    if (tempDrawLayerRef.current && map) {
-      map.removeLayer(tempDrawLayerRef.current);
-      if (nextPoints.length > 0) {
-        const strokeColor = zoneType === 'SAFE' ? '#10b981' : '#ef4444';
-        tempDrawLayerRef.current = L.polygon(nextPoints, {
-          color: strokeColor,
-          weight: 2.5,
-          fillColor: strokeColor,
-          fillOpacity: 0.2,
-          dashArray: '5, 5',
-        }).addTo(map);
-      }
-    }
-  };
-
-  // Save new geofence to backend
-  const handleSaveGeofenceStudio = async () => {
-    if (drawnPoints.length < 3) {
-      alert("Kamida 3 ta GPS nuqta belgilanishi zarur!");
-      return;
-    }
-
-    try {
-      await onSaveGeofence(targetSchoolId, drawnPoints);
-      cleanupDrawLayers();
-      setActiveTool('NONE');
-      if (onRefreshData) await onRefreshData();
-    } catch {
-      alert("Geozonani saqlashda xatolik yuz berdi!");
-    }
-  };
-
-  // Geocoding Search (Nominatim) with Debounce >= 1s
-  const lastSearchTimeRef = useRef<number>(0);
-  const searchDebounceTimerRef = useRef<any>(null);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const executeNominatimSearch = async (query: string) => {
-    lastSearchTimeRef.current = Date.now();
-    setIsSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query + ' Tashkent Uzbekistan'
-        )}&limit=1`,
-        {
-          headers: {
-            'Accept-Language': 'uz,ru,en',
-          },
+      // Track history update (in-memory last 30 minutes trail)
+      setTrailsHistory((prev) => {
+        const studentTrail = prev[s.id] || [];
+        const lastPt = studentTrail[studentTrail.length - 1];
+        if (!lastPt || lastPt[0] !== telem.latitude || lastPt[1] !== telem.longitude) {
+          const updated = [...studentTrail, [telem.latitude, telem.longitude] as [number, number]];
+          if (updated.length > 50) updated.shift();
+          return { ...prev, [s.id]: updated };
         }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const first = data[0];
-        const lat = parseFloat(first.lat);
-        const lon = parseFloat(first.lon);
-        mapInstanceRef.current?.flyTo([lat, lon], 17, { duration: 1.2 });
-      } else {
-        alert("Kiritilgan manzil topilmadi. Qidiruv so'zini tekshiring.");
+        return prev;
+      });
+    });
+  }, [students, selectedStudent, statusFilter]);
+
+  // Render Trails
+  useEffect(() => {
+    if (!adapterRef.current) return;
+    const adapter = adapterRef.current;
+    adapter.clearTrails();
+
+    Object.entries(trailsHistory).forEach(([studentId, pts]) => {
+      const std = students.find((s) => s.id === studentId);
+      const isInside = std?.telemetry?.geofenceStatus === 'INSIDE';
+      const isSos = std?.telemetry?.isSos;
+      const color = isSos ? '#ff4d5e' : isInside ? '#2ee59d' : '#ff4d5e';
+      adapter.renderTrail(studentId, pts, color);
+    });
+  }, [trailsHistory, students]);
+
+  // Map Layer toggle (Roadmap vs Satellite)
+  const handleToggleLayer = () => {
+    const nextLayer: MapLayerType = mapLayer === 'roadmap' ? 'satellite' : 'roadmap';
+    setMapLayer(nextLayer);
+    adapterRef.current?.setMapType(nextLayer);
+  };
+
+  // Recenter to School
+  const handleRecenter = () => {
+    if (activeSchool.lat && activeSchool.lng) {
+      adapterRef.current?.flyTo(activeSchool.lat, activeSchool.lng, 17);
+      if (activeSchool.polygon && activeSchool.polygon.length > 2) {
+        adapterRef.current?.fitBounds(activeSchool.polygon);
       }
-    } catch (err) {
-      console.warn("Nominatim qidiruvida xatolik:", err);
-      alert("Qidiruv xizmatida vaqtinchalik xatolik yuz berdi.");
-    } finally {
-      setIsSearching(false);
     }
   };
 
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const query = searchQuery.trim();
-    if (!query || !mapInstanceRef.current) return;
-
-    const now = Date.now();
-    const elapsed = now - lastSearchTimeRef.current;
-    if (elapsed < 1000) {
-      if (searchDebounceTimerRef.current) clearTimeout(searchDebounceTimerRef.current);
-      searchDebounceTimerRef.current = setTimeout(() => {
-        executeNominatimSearch(query);
-      }, 1000 - elapsed);
+  // Drawing Tools Handlers
+  const handleStartPolygonDraw = () => {
+    if (drawingMode === 'POLYGON') {
+      adapterRef.current?.cancelDrawing();
+      setDrawingMode('NONE');
       return;
     }
-
-    executeNominatimSearch(query);
-  };
-
-  // Focus All Students & Schools
-  const handleFitAll = () => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    const boundsPoints: [number, number][] = [];
-    schools.forEach((s) => {
-      if (s.lat && s.lng) boundsPoints.push([s.lat, s.lng]);
+    setDrawingMode('POLYGON');
+    setPolygonPointCount(0);
+    adapterRef.current?.startDrawingPolygon((count) => {
+      setPolygonPointCount(count);
     });
-    students.forEach((s) => {
-      if (s.telemetry?.latitude && s.telemetry?.longitude) {
-        boundsPoints.push([s.telemetry.latitude, s.telemetry.longitude]);
-      }
-    });
-
-    if (boundsPoints.length > 0) {
-      map.fitBounds(L.latLngBounds(boundsPoints), { padding: [50, 50], maxZoom: 17 });
-    }
   };
 
-  // Toggle Fullscreen
-  const handleToggleFullscreen = () => {
-    if (!mapWrapperRef.current) return;
-    if (!document.fullscreenElement) {
-      mapWrapperRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-    }
-  };
-
-  // Interactive Live Walking Simulator
-  const handleTriggerSimStage = async (
-    stage: 'OUTSIDE_STREET' | 'APPROACHING_GATE' | 'ENTER_SCHOOL' | 'INSIDE_CLASS' | 'LEAVE_SCHOOL' | 'SOS'
-  ) => {
-    const targetStudentId = selectedStudent?.id || students[0]?.id || '10001';
-
-    if (stage === 'SOS') {
-      // Trigger emergency SOS payload
+  const handleFinishPolygonDraw = async () => {
+    if (!adapterRef.current) return;
+    const points = adapterRef.current.finishDrawingPolygon();
+    setDrawingMode('NONE');
+    if (points && points.length >= 3) {
+      setIsSavingGeofence(true);
       try {
-        const target = students.find((s) => s.id === targetStudentId) || students[0];
-        const res = await fetch('/api/v1/telemetry', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            device_id: target?.deviceId || 'watch-5pro-01',
-            is_sos: true,
-            heart_rate: 128,
-            body_temperature: 37.1,
-            battery_level: target?.telemetry?.batteryLevel || 84,
-            latitude: target?.telemetry?.latitude || 41.311081,
-            longitude: target?.telemetry?.longitude || 69.240562,
-          }),
-        });
-        const data = await res.json();
-        if (data.success && onRefreshData) {
-          await onRefreshData();
-        }
-      } catch (err) {
-        console.error(err);
+        await onSaveGeofence(activeSchool.id, points);
+        showToast(`✅ "${activeSchool.name}" uchun yangi geozona poligoni muvaffaqiyatli saqlandi!`, 'success');
+      } catch (e: any) {
+        showToast("Xatolik: " + e.message, 'error');
+      } finally {
+        setIsSavingGeofence(false);
       }
+    } else {
+      showToast("⚠️ Poligon uchun kamida 3 ta nuqta belgilanishi shart!", 'info');
+    }
+  };
+
+  const handleStartCircleDraw = () => {
+    if (drawingMode === 'CIRCLE') {
+      adapterRef.current?.cancelDrawing();
+      setDrawingMode('NONE');
       return;
     }
+    setDrawingMode('CIRCLE');
+    adapterRef.current?.startDrawingCircle();
+  };
 
+  const handleFinishCircleDraw = async () => {
+    if (!adapterRef.current) return;
+    const circle = adapterRef.current.finishDrawingCircle();
+    setDrawingMode('NONE');
+    if (circle) {
+      // Approximate circle as a 16-point polygon for uniform DB storage
+      const poly: [number, number][] = [];
+      const steps = 16;
+      for (let i = 0; i < steps; i++) {
+        const theta = (i / steps) * 2 * Math.PI;
+        const dLat = (circle.radius / 111320) * Math.cos(theta);
+        const dLng = (circle.radius / (111320 * Math.cos((circle.center[0] * Math.PI) / 180))) * Math.sin(theta);
+        poly.push([circle.center[0] + dLat, circle.center[1] + dLng]);
+      }
+      setIsSavingGeofence(true);
+      try {
+        await onSaveGeofence(activeSchool.id, poly);
+        showToast(`✅ "${activeSchool.name}" uchun ${circle.radius}m radiusli doiraviy geozona saqlandi!`, 'success');
+      } catch (e: any) {
+        showToast("Xatolik: " + e.message, 'error');
+      } finally {
+        setIsSavingGeofence(false);
+      }
+    }
+  };
+
+  const handleStartMeasure = () => {
+    if (drawingMode === 'MEASURE') {
+      adapterRef.current?.stopMeasure();
+      setDrawingMode('NONE');
+      setMeasuredDistance(null);
+      return;
+    }
+    setDrawingMode('MEASURE');
+    setMeasuredDistance(null);
+    adapterRef.current?.startMeasure((dist) => {
+      setMeasuredDistance(dist);
+    });
+  };
+
+  // Search result selection & Map Pick mode
+  const handleSelectSearchResult = (item: SearchResultItem) => {
+    setSearchPin({
+      lat: item.lat,
+      lng: item.lng,
+      title: item.title,
+      subtitle: item.subtitle,
+    });
+
+    adapterRef.current?.flyTo(item.lat, item.lng, 17.5);
+
+    if (item.category === 'local_student' && item.originalItem) {
+      setSelectedStudent(item.originalItem);
+    } else if (item.category === 'local_school' && item.originalItem) {
+      setTargetSchoolId(item.originalItem.id);
+    }
+  };
+
+  const handleSetAsSchoolCenter = async () => {
+    if (!searchPin) return;
+    const centerLat = searchPin.lat;
+    const centerLng = searchPin.lng;
+
+    // Approximate 200m circular geofence
+    const radius = 200;
+    const steps = 16;
+    const poly: [number, number][] = [];
+    for (let i = 0; i < steps; i++) {
+      const theta = (i / steps) * 2 * Math.PI;
+      const dLat = (radius / 111320) * Math.cos(theta);
+      const dLng = (radius / (111320 * Math.cos((centerLat * Math.PI) / 180))) * Math.sin(theta);
+      poly.push([centerLat + dLat, centerLng + dLng]);
+    }
+
+    activeSchool.lat = centerLat;
+    activeSchool.lng = centerLng;
+    activeSchool.polygon = poly;
+
+    setIsSavingGeofence(true);
     try {
-      const res = await fetch('/api/v1/telemetry/simulate-walk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: targetStudentId, stage }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (onRefreshData) await onRefreshData();
+      if (onSaveGeofence) {
+        await onSaveGeofence(activeSchool.id, poly);
       }
-    } catch (err) {
-      console.error(err);
+      showToast(`🎯 "${activeSchool.name}" markazi (${centerLat.toFixed(5)}, ${centerLng.toFixed(5)}) va 200m geozonasi belgilandi!`, 'success');
+      adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
+      adapterRef.current?.flyTo(centerLat, centerLng, 17.5);
+    } catch (e: any) {
+      showToast("Geozonani saqlashda xatolik: " + e.message, 'error');
+    } finally {
+      setIsSavingGeofence(false);
+      setSearchPin(null);
     }
   };
 
-  // Automated Walk Simulation Loop
-  const handleToggleAutoWalk = () => {
-    if (isSimulating) {
-      clearInterval(simTimerRef.current);
-      setIsSimulating(false);
-      setSimStep(0);
-      return;
-    }
-
-    setIsSimulating(true);
-    const stages: ('OUTSIDE_STREET' | 'APPROACHING_GATE' | 'ENTER_SCHOOL' | 'INSIDE_CLASS' | 'LEAVE_SCHOOL')[] = [
-      'OUTSIDE_STREET',
-      'APPROACHING_GATE',
-      'ENTER_SCHOOL',
-      'INSIDE_CLASS',
-      'LEAVE_SCHOOL',
-    ];
-
-    let currentIdx = 0;
-    handleTriggerSimStage(stages[0]);
-    setSimStep(1);
-
-    simTimerRef.current = setInterval(() => {
-      currentIdx = (currentIdx + 1) % stages.length;
-      handleTriggerSimStage(stages[currentIdx]);
-      setSimStep(currentIdx + 1);
-    }, 3200);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (simTimerRef.current) clearInterval(simTimerRef.current);
-    };
-  }, []);
-
-  // Filter students for sidebar
+  // Filtered Students List
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const matchesSearch =
         s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
         s.uniqueId.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        s.className.toLowerCase().includes(studentSearch.toLowerCase());
+        s.className.toLowerCase().includes(studentSearch.toLowerCase()) ||
+        (s.telemetry?.address && s.telemetry.address.toLowerCase().includes(studentSearch.toLowerCase()));
 
       if (!matchesSearch) return false;
 
       const isInside = s.telemetry?.geofenceStatus === 'INSIDE';
+      const isVerifying = s.telemetry?.geofenceStatus === 'VERIFYING';
       const isSos = s.telemetry?.isSos;
+      const isOffline = s.telemetry?.deviceStatus === 'OFFLINE' || (s.telemetry?.lastSeen && Date.now() - s.telemetry.lastSeen > 300000);
 
       if (statusFilter === 'INSIDE') return isInside;
       if (statusFilter === 'OUTSIDE') return !isInside;
+      if (statusFilter === 'VERIFYING') return isVerifying;
       if (statusFilter === 'SOS') return isSos;
+      if (statusFilter === 'ONLINE') return !isOffline;
+      if (statusFilter === 'OFFLINE') return isOffline;
       return true;
     });
   }, [students, studentSearch, statusFilter]);
 
-  const insideCount = students.filter((s) => s.telemetry?.geofenceStatus === 'INSIDE').length;
-  const outsideCount = students.length - insideCount;
-  const sosCount = students.filter((s) => s.telemetry?.isSos).length;
-
-  // Real-time geometric calculations for Geofence Studio
-  const currentDrawArea = useMemo(() => calculatePolygonArea(drawnPoints), [drawnPoints]);
-  const currentDrawPerimeter = useMemo(() => calculatePerimeter(drawnPoints), [drawnPoints]);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCoords(true);
+    setTimeout(() => setCopiedCoords(false), 2000);
+  };
 
   return (
     <div
-      ref={mapWrapperRef}
-      className={`grid grid-cols-1 lg:grid-cols-4 gap-3 transition-all ${
-        isFullscreen ? 'fixed inset-0 z-50 bg-background p-3' : 'h-[calc(100vh-115px)] min-h-[640px]'
+      className={`relative w-full h-full flex flex-col min-h-0 bg-[#1b1b33] overflow-hidden select-none ${
+        isFullscreen ? 'fixed inset-0 z-50 p-0' : ''
       }`}
     >
-      {/* 1. LEFT SIDEBAR: Students Telemetry & Quick Focus List */}
-      <Card className="lg:col-span-1 flex flex-col h-full overflow-hidden border-border/70 bg-card/90 backdrop-blur-md shadow-xl">
-        <CardHeader className="p-3 border-b border-border/60 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-extrabold flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              GPS Jonli Kuzatuv
-            </CardTitle>
-            <Badge variant="outline" className="text-[10.5px] font-mono border-primary/30 text-primary">
-              {students.length} nafar o'quvchi
-            </Badge>
-          </div>
+      {/* 1. MAP ENGINE CANVAS (Full Viewport Height) */}
+      <div
+        ref={containerRef}
+        className={`w-full h-full flex-1 min-h-0 relative z-0 ${isMapPickMode ? 'cursor-crosshair' : ''}`}
+        style={{ width: '100%', height: '100%', minHeight: '100%' }}
+      />
 
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
-            <Input
-              value={studentSearch}
-              onChange={(e) => setStudentSearch(e.target.value)}
-              placeholder="Ism, ID yoki sinf..."
-              className="h-8 pl-8 text-xs bg-background/50"
-            />
-          </div>
+      {/* 1.1 In-app Toast Banner (zero blocking alert popups) */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 max-w-md p-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-3 ${
+            toast.type === 'success'
+              ? 'bg-[#2ee59d]/20 border-[#2ee59d]/60 text-[#2ee59d]'
+              : toast.type === 'error'
+              ? 'bg-[#ff4d5e]/20 border-[#ff4d5e]/60 text-[#ff4d5e]'
+              : 'bg-[#4db5ff]/20 border-[#4db5ff]/60 text-[#4db5ff]'
+          }`}
+        >
+          <span className="flex-1">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="opacity-70 hover:opacity-100 p-0.5">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-          {/* Filter Pills */}
-          <div className="grid grid-cols-4 gap-1 text-[10.5px] font-bold">
-            <button
-              onClick={() => setStatusFilter('ALL')}
-              className={`py-1 rounded-md transition-all text-center ${
-                statusFilter === 'ALL'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              Hammasi ({students.length})
-            </button>
-            <button
-              onClick={() => setStatusFilter('INSIDE')}
-              className={`py-1 rounded-md transition-all text-center ${
-                statusFilter === 'INSIDE'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-muted/50 text-emerald-400 hover:bg-muted'
-              }`}
-            >
-              Maktabda ({insideCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('OUTSIDE')}
-              className={`py-1 rounded-md transition-all text-center ${
-                statusFilter === 'OUTSIDE'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'bg-muted/50 text-rose-400 hover:bg-muted'
-              }`}
-            >
-              Tashqarida ({outsideCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('SOS')}
-              className={`py-1 rounded-md transition-all text-center ${
-                statusFilter === 'SOS'
-                  ? 'bg-amber-600 text-white shadow-sm animate-pulse'
-                  : 'bg-muted/50 text-amber-400 hover:bg-muted'
-              }`}
-            >
-              SOS ({sosCount})
-            </button>
+      {/* 1.2 Map Click Pick-Mode Banner */}
+      {isMapPickMode && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-md w-[92%] bg-[#1b1b33]/95 border border-[#4db5ff]/70 backdrop-blur-xl p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2 text-[#4db5ff] font-bold">
+            <Crosshair className="w-4 h-4 animate-spin" />
+            <span>📍 Xaritada istalgan joyni bosing — nuqta avtomatik tanlanadi</span>
           </div>
-        </CardHeader>
+          <button
+            onClick={() => setIsMapPickMode(false)}
+            className="px-2.5 py-1 rounded-xl bg-[#2a2a4a] text-[#9a9ac0] hover:text-[#e8e8f5] text-xs font-semibold border border-[#3a3a63]"
+          >
+            Bekor qilish
+          </button>
+        </div>
+      )}
 
-        {/* Student Cards List */}
-        <CardContent className="p-2 flex-1 overflow-y-auto space-y-2">
-          {filteredStudents.length === 0 ? (
-            <div className="text-center py-12 text-xs text-muted-foreground">
-              <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              Filtr bo'yicha o'quvchi topilmadi
+      {/* 1.3 Search Pin Action Banner */}
+      {searchPin && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-lg w-[92%] bg-[#1b1b33]/95 border border-[#2ee59d]/60 backdrop-blur-xl p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-[#2ee59d]/20 border border-[#2ee59d]/40 flex items-center justify-center shrink-0 text-[#2ee59d]">
+              <MapPin className="w-4 h-4" />
             </div>
-          ) : (
-            filteredStudents.map((std) => {
-              const telem = std.telemetry;
-              const isInside = telem?.geofenceStatus === 'INSIDE';
-              const isSos = telem?.isSos;
-              const isSelected = selectedStudent?.id === std.id;
+            <div className="min-w-0">
+              <div className="font-bold text-[#e8e8f5] truncate">{searchPin.title}</div>
+              <div className="text-[11px] text-[#9a9ac0] font-mono truncate">
+                {searchPin.subtitle || `${searchPin.lat.toFixed(5)}, ${searchPin.lng.toFixed(5)}`}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleSetAsSchoolCenter}
+              disabled={isSavingGeofence}
+              className="px-3 py-1.5 rounded-xl bg-[#2ee59d] hover:bg-[#25c485] text-[#1b1b33] font-black text-xs flex items-center gap-1.5 shadow-lg shadow-[#2ee59d]/20 transition disabled:opacity-50"
+            >
+              <Target className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">🎯 Shu joyni maktab markazi qilish</span>
+              <span className="sm:hidden">🎯 Markaz qilish</span>
+            </button>
+            <button
+              onClick={() => setSearchPin(null)}
+              className="p-1.5 rounded-xl text-[#9a9ac0] hover:text-[#e8e8f5] hover:bg-[#2a2a4a]"
+              title="Yopish"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
-              return (
-                <div
-                  key={std.id}
-                  onClick={() => {
-                    setSelectedStudent(std);
-                    if (telem?.latitude && telem?.longitude && mapInstanceRef.current) {
-                      mapInstanceRef.current.flyTo([telem.latitude, telem.longitude], 17.5, { duration: 1 });
-                      studentMarkersRef.current[std.id]?.openPopup();
-                    }
-                  }}
-                  className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
-                    isSelected
-                      ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary/40'
-                      : 'border-border/60 bg-card/60 hover:bg-muted/40 hover:border-border'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img
-                        src={std.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}
-                        className="w-10 h-10 rounded-xl object-cover border border-border shadow-sm"
-                        alt={std.name}
-                      />
-                      <span
-                        className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-background flex items-center justify-center text-[7px] text-white font-extrabold ${
-                          isSos ? 'bg-rose-600 animate-ping' : isInside ? 'bg-emerald-500' : 'bg-rose-500'
-                        }`}
-                      >
-                        {isInside ? '✓' : '!'}
-                      </span>
-                    </div>
+      {/* 2. TOP FLOATING TOOLBAR HUD */}
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none gap-2 flex-wrap">
+        {/* Left cluster: Search & Student List Toggle */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <button
+            onClick={() => setShowStudentList(!showStudentList)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold shadow-xl border border-[#3a3a63]/50 backdrop-blur-md transition ${
+              showStudentList
+                ? 'bg-[#2ee59d] text-[#1b1b33]'
+                : 'bg-[#2a2a4a]/90 text-[#9a9ac0] hover:text-[#e8e8f5]'
+            }`}
+            title="O'quvchilar ro'yxatini yashirish/ko'rsatish"
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">O'quvchilar ({filteredStudents.length})</span>
+          </button>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs truncate text-foreground">{std.name}</span>
-                        <Badge
-                          variant={isSos ? 'destructive' : isInside ? 'success' : 'danger'}
-                          className="text-[9px] px-1.5 py-0 font-extrabold"
+          {/* Unified Intelligent Search Combobox */}
+          <SearchCombobox
+            schools={schools}
+            students={students}
+            currentSchool={activeSchool}
+            googleMapsApiKey={googleMapsApiKey}
+            onSelectResult={handleSelectSearchResult}
+            onStartMapPickMode={() => setIsMapPickMode(!isMapPickMode)}
+            isMapPickMode={isMapPickMode}
+          />
+        </div>
+
+        {/* Center / Right cluster: Map Tools */}
+        <div className="flex items-center gap-1.5 pointer-events-auto bg-[#2a2a4a]/90 backdrop-blur-md p-1.5 rounded-2xl border border-[#3a3a63]/50 shadow-xl">
+          {/* Geofence Drawing Tools */}
+          <button
+            onClick={handleStartPolygonDraw}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+              drawingMode === 'POLYGON'
+                ? 'bg-[#ff2d78] text-white animate-pulse'
+                : 'bg-[#1b1b33] text-[#9a9ac0] hover:text-[#e8e8f5]'
+            }`}
+            title="Poligon Geozona Chizish"
+          >
+            <PenTool className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Poligon</span>
+            {drawingMode === 'POLYGON' && <span>({polygonPointCount})</span>}
+          </button>
+
+          {drawingMode === 'POLYGON' && (
+            <button
+              onClick={handleFinishPolygonDraw}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] text-xs font-bold hover:bg-[#25c485]"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Saqlash</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleStartCircleDraw}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+              drawingMode === 'CIRCLE'
+                ? 'bg-[#2ee59d] text-[#1b1b33]'
+                : 'bg-[#1b1b33] text-[#9a9ac0] hover:text-[#e8e8f5]'
+            }`}
+            title="Aylana Geozona"
+          >
+            <CircleIcon className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Aylana</span>
+          </button>
+
+          {drawingMode === 'CIRCLE' && (
+            <button
+              onClick={handleFinishCircleDraw}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] text-xs font-bold"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Saqlash</span>
+            </button>
+          )}
+
+          {/* Measure Tool */}
+          <button
+            onClick={handleStartMeasure}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+              drawingMode === 'MEASURE'
+                ? 'bg-[#4db5ff] text-[#1b1b33]'
+                : 'bg-[#1b1b33] text-[#9a9ac0] hover:text-[#e8e8f5]'
+            }`}
+            title="Masofa O'lchash (Ruler)"
+          >
+            <Ruler className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">
+              {measuredDistance !== null ? `${measuredDistance} m` : "O'lchash"}
+            </span>
+          </button>
+
+          {/* Layer switcher */}
+          <button
+            onClick={handleToggleLayer}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1b1b33] text-[#9a9ac0] hover:text-[#e8e8f5] text-xs font-semibold transition"
+            title="Xarita qatlamini almashtirish"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#4db5ff]" />
+            <span className="hidden md:inline">
+              {mapLayer === 'roadmap' ? 'Xarita' : "Sun'iy Yo'ldosh"}
+            </span>
+          </button>
+
+          {/* Recenter */}
+          <button
+            onClick={handleRecenter}
+            className="p-1.5 rounded-xl bg-[#1b1b33] text-[#9a9ac0] hover:text-[#2ee59d] transition"
+            title="Maktabga fokuslash"
+          >
+            <Crosshair className="w-4 h-4" />
+          </button>
+
+          {/* Fullscreen toggle */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-1.5 rounded-xl bg-[#1b1b33] text-[#9a9ac0] hover:text-[#e8e8f5] transition"
+            title="To'liq ekran"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+
+          {/* Engine indicator pill */}
+          <div
+            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
+              provider === 'google'
+                ? 'bg-[#2ee59d]/15 text-[#2ee59d] border-[#2ee59d]/30'
+                : 'bg-[#ffb020]/15 text-[#ffb020] border-[#ffb020]/30'
+            }`}
+            title={provider === 'google' ? 'Google Maps JavaScript API faol' : 'OpenStreetMap Fallback faol'}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${provider === 'google' ? 'bg-[#2ee59d]' : 'bg-[#ffb020]'}`} />
+            <span className="hidden sm:inline">
+              {provider === 'google' ? 'Google Maps' : 'OSM Zaxira'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. LEFT FLOATING GLASSMORPHIC STUDENT LIST */}
+      {showStudentList && (
+        <div className="absolute top-16 left-3 bottom-12 w-72 sm:w-80 z-10 flex flex-col bg-[#1b1b33]/92 backdrop-blur-xl border border-[#3a3a63]/60 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
+          {/* Header */}
+          <div className="p-3 border-b border-[#3a3a63]/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2ee59d] animate-ping" />
+              <span className="font-bold text-xs text-[#e8e8f5]">Jonli Telemetriya</span>
+            </div>
+            <span className="text-[11px] font-mono text-[#2ee59d] font-bold">
+              {filteredStudents.length} / {students.length}
+            </span>
+          </div>
+
+          {/* Student Cards List */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin">
+            {filteredStudents.length === 0 ? (
+              <div className="text-center py-12 text-xs text-[#9a9ac0]">
+                O'quvchilar topilmadi
+              </div>
+            ) : (
+              filteredStudents.map((std) => {
+                const telem = std.telemetry;
+                const isInside = telem?.geofenceStatus === 'INSIDE';
+                const isSos = telem?.isSos;
+                const isOffline =
+                  telem?.deviceStatus === 'OFFLINE' ||
+                  (telem?.lastSeen && Date.now() - telem.lastSeen > 300000);
+                const isSelected = selectedStudent?.id === std.id;
+
+                const school = schools.find((s) => s.id === std.schoolId) || schools[0];
+                let distText = '—';
+                if (school && school.lat && school.lng && telem?.latitude && telem?.longitude) {
+                  const d = Math.round(haversineDistance(telem.latitude, telem.longitude, school.lat, school.lng));
+                  distText = formatDistance(d);
+                }
+
+                return (
+                  <div
+                    key={std.id}
+                    onClick={() => {
+                      setSelectedStudent(std);
+                      if (telem?.latitude && telem?.longitude) {
+                        adapterRef.current?.flyTo(telem.latitude, telem.longitude, 17.5);
+                      }
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
+                      isSelected
+                        ? 'border-[#2ee59d] bg-[#2ee59d]/15 shadow-md shadow-[#2ee59d]/10'
+                        : 'border-[#3a3a63]/40 bg-[#2a2a4a]/70 hover:bg-[#3a3a63]/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative">
+                        <img
+                          src={std.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}
+                          alt={std.name}
+                          className="w-9 h-9 rounded-xl object-cover border border-[#3a3a63]"
+                        />
+                        <span
+                          className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[#1b1b33] flex items-center justify-center text-[7px] font-black text-white ${
+                            isSos
+                              ? 'bg-[#ff4d5e] animate-ping'
+                              : isOffline
+                              ? 'bg-[#9a9ac0]'
+                              : isInside
+                              ? 'bg-[#2ee59d]'
+                              : 'bg-[#ff4d5e]'
+                          }`}
                         >
-                          {isSos ? '🚨 SOS' : isInside ? 'PRESENT' : 'OUTSIDE'}
-                        </Badge>
-                      </div>
-
-                      <div className="text-[10.5px] text-muted-foreground flex items-center justify-between mt-1">
-                        <span>
-                          {std.className} • ID: <code className="text-primary/90 font-mono">{std.uniqueId}</code>
-                        </span>
-                        <span className="flex items-center gap-1 font-mono text-[10px] text-rose-400 font-semibold">
-                          <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
-                          {telem?.heartRate || 76} BPM
+                          {isOffline ? '•' : isInside ? '✓' : '!'}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 mt-1 pt-1 border-t border-border/40">
-                        <span className="truncate max-w-[130px]" title={telem?.address || std.schoolName}>
-                          📍 {telem?.address || std.schoolName}
-                        </span>
-                        <span className="flex items-center gap-1 font-mono text-emerald-400">
-                          <Battery className="w-3 h-3 text-emerald-400" />
-                          {telem?.batteryLevel || 85}%
-                        </span>
-                      </div>
-
-                      {telem?.isWorn === false && (
-                        <div className="text-[10px] font-bold text-rose-500 mt-1 flex items-center gap-1 bg-rose-500/10 px-1.5 py-0.5 rounded">
-                          <AlertTriangle className="w-3 h-3" />
-                          Soat qo'ldan yechilgan!
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-[#e8e8f5] truncate">{std.name}</span>
+                          <span
+                            className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold ${
+                              isSos
+                                ? 'bg-[#ff4d5e] text-white animate-pulse'
+                                : isOffline
+                                ? 'bg-[#9a9ac0]/20 text-[#9a9ac0]'
+                                : isInside
+                                ? 'bg-[#2ee59d]/20 text-[#2ee59d]'
+                                : 'bg-[#ff4d5e]/20 text-[#ff4d5e]'
+                            }`}
+                          >
+                            {isSos ? 'SOS' : isOffline ? 'OFFLINE' : isInside ? 'MAKTABDA' : 'TASHQARIDA'}
+                          </span>
                         </div>
-                      )}
+
+                        <div className="text-[11px] text-[#9a9ac0] flex items-center justify-between mt-0.5">
+                          <span>
+                            {std.className} • <span className="font-mono text-[#4db5ff]">{std.uniqueId}</span>
+                          </span>
+                          <span className="flex items-center gap-1 font-mono text-[10px] text-[#ff4d5e]">
+                            <Heart className="w-2.5 h-2.5 fill-[#ff4d5e]" />
+                            {telem?.heartRate || 75}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-[#9a9ac0] mt-1 pt-1 border-t border-[#3a3a63]/30">
+                          <span className="truncate max-w-[140px]" title={telem?.address || 'Toshkent shahri'}>
+                            📍 {telem?.address || 'Toshkent shahri'}
+                          </span>
+                          <span className="font-mono text-[#2ee59d]">
+                            🔋 {telem?.batteryLevel || 85}%
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 2. RIGHT / MAIN: High-Tech Leaflet Map & Professional HUD Studio */}
-      <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-border/80 shadow-2xl bg-zinc-950 flex flex-col h-full min-h-0">
-        {/* Map Canvas */}
-        <div
-          ref={mapContainerRef}
-          className={`w-full h-full flex-1 min-h-0 transition-all duration-300 ${
-            isDarkActive ? 'dark-tiles' : ''
-          }`}
-          style={{ width: '100%', height: '100%', minHeight: '100%', flex: '1 1 0%' }}
-        />
-
-        {/* --- TOP-LEFT CONTROLS HUD: Search & Tools --- */}
-        <div className="absolute top-3 left-3 z-[1000] flex items-center gap-2 flex-wrap max-w-[90%]">
-          {/* Geocoding Address Search */}
-          <form onSubmit={handleSearchSubmit} className="relative w-52 sm:w-64">
-            <MapPin className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Manzil yoki maktab qidirish..."
-              className="h-8 pl-8 pr-7 text-xs bg-background/90 backdrop-blur-md border-border shadow-lg"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+                );
+              })
             )}
-          </form>
-
-          {/* Geofence Studio Main Button */}
-          {activeTool === 'NONE' ? (
-            <div className="flex items-center gap-1 bg-background/90 p-1 rounded-xl border border-border/80 shadow-lg backdrop-blur-md">
-              <Button
-                size="sm"
-                variant="success"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('DRAW_POLYGON');
-                }}
-                className="h-7 text-xs gap-1.5 px-2.5 shadow-sm font-bold"
-              >
-                <PenTool className="w-3.5 h-3.5" />
-                Poligon Chizish
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('CIRCLE');
-                }}
-                className="h-7 text-xs gap-1.5 px-2.5 border-border hover:bg-muted font-bold"
-              >
-                <Circle className="w-3.5 h-3.5 text-emerald-400" />
-                Aylana Geozona
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('MEASURE');
-                }}
-                className="h-7 text-xs gap-1 px-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
-                title="Masofani o'lchash"
-              >
-                <Ruler className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          ) : activeTool === 'DRAW_POLYGON' ? (
-            /* Active Drawing Toolbar */
-            <div className="flex items-center gap-2 bg-background/95 p-1.5 rounded-xl border border-emerald-500/50 shadow-2xl backdrop-blur-lg flex-wrap">
-              <div className="flex items-center gap-1.5 px-2 text-xs font-bold">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-400">Poligon: {drawnPoints.length} nuqta</span>
-              </div>
-
-              {/* Area & Perimeter calculations */}
-              {drawnPoints.length >= 3 && (
-                <div className="hidden sm:flex items-center gap-2 px-2 text-[11px] font-mono border-l border-border/70 text-muted-foreground">
-                  <span>📐 {formatArea(currentDrawArea)}</span>
-                  <span>📏 {formatDistance(currentDrawPerimeter)}</span>
-                </div>
-              )}
-
-              {/* Zone type selector */}
-              <select
-                value={zoneType}
-                onChange={(e) => setZoneType(e.target.value as ZoneType)}
-                className="bg-card text-[11px] font-semibold border border-border rounded-md px-2 py-1 focus:outline-none cursor-pointer"
-              >
-                <option value="SAFE">🟢 Xavfsiz Zona (Maktab)</option>
-                <option value="DANGER">🔴 Xavfli Hudud (Trassa/Kanal)</option>
-              </select>
-
-              {/* Target School Selector */}
-              <select
-                value={targetSchoolId}
-                onChange={(e) => setTargetSchoolId(e.target.value)}
-                className="bg-card text-[11px] font-semibold border border-border rounded-md px-2 py-1 focus:outline-none cursor-pointer max-w-[140px] truncate"
-              >
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleUndoPoint}
-                disabled={drawnPoints.length === 0}
-                className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
-                title="Oxirgi nuqtani bekor qilish"
-              >
-                <Undo className="w-3 h-3" /> Orqaga
-              </Button>
-
-              <Button
-                size="sm"
-                variant="default"
-                onClick={handleSaveGeofenceStudio}
-                disabled={drawnPoints.length < 3}
-                className="h-7 text-xs px-2.5 gap-1 font-bold shadow-md"
-              >
-                <Check className="w-3.5 h-3.5" /> Saqlash
-              </Button>
-
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('NONE');
-                }}
-                className="h-7 text-xs px-2 gap-1"
-              >
-                <X className="w-3 h-3" /> Bekor
-              </Button>
-            </div>
-          ) : activeTool === 'CIRCLE' ? (
-            /* Active Circle Toolbar */
-            <div className="flex items-center gap-2 bg-background/95 p-1.5 rounded-xl border border-primary/50 shadow-2xl backdrop-blur-lg flex-wrap">
-              <span className="text-xs font-bold text-primary px-2">Aylana Geozona:</span>
-              <div className="flex items-center gap-1.5">
-                {[80, 120, 160, 250, 400].map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setCircleRadius(r)}
-                    className={`px-2 py-0.5 rounded text-[10.5px] font-bold transition-all ${
-                      circleRadius === r
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-muted/60 text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    {r}m
-                  </button>
-                ))}
-              </div>
-
-              <select
-                value={targetSchoolId}
-                onChange={(e) => setTargetSchoolId(e.target.value)}
-                className="bg-card text-[11px] font-semibold border border-border rounded-md px-2 py-1 focus:outline-none cursor-pointer max-w-[140px] truncate"
-              >
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-
-              <Button
-                size="sm"
-                variant="default"
-                onClick={handleSaveGeofenceStudio}
-                className="h-7 text-xs px-2.5 gap-1 font-bold shadow-md"
-              >
-                <Check className="w-3.5 h-3.5" /> Saqlash
-              </Button>
-
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('NONE');
-                }}
-                className="h-7 text-xs px-2 gap-1"
-              >
-                <X className="w-3 h-3" /> Bekor
-              </Button>
-            </div>
-          ) : (
-            /* Measure distance toolbar */
-            <div className="flex items-center gap-2 bg-background/95 p-1.5 rounded-xl border border-amber-500/50 shadow-2xl backdrop-blur-lg">
-              <span className="text-xs font-bold text-amber-400 px-2 flex items-center gap-1">
-                <Ruler className="w-3.5 h-3.5" />
-                {measuredDistanceMeters !== null
-                  ? `Masofa: ${formatDistance(measuredDistanceMeters)}`
-                  : 'Xaritada 2 ta nuqtani bosing'}
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  cleanupDrawLayers();
-                  setActiveTool('NONE');
-                }}
-                className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3.5 h-3.5" /> Yopish
-              </Button>
-            </div>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* --- TOP-RIGHT CONTROLS: Layer Switcher & Tools --- */}
-        <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2">
-          {/* Night Mode Toggle Button (CSS Filter on .leaflet-tile-pane) */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={toggleDarkMode}
-            className={`h-8 text-xs gap-1.5 bg-background/90 backdrop-blur-md border-border shadow-lg font-bold transition-all ${
-              isDarkMode ? 'text-amber-300 border-amber-500/40 bg-amber-500/10' : 'text-muted-foreground'
-            }`}
-            title={isDarkMode ? "Kunduzgi rejimga o'tish" : "Tungi rejimga o'tish"}
-          >
-            {isDarkMode ? (
-              <Moon className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            ) : (
-              <Sun className="w-3.5 h-3.5 text-amber-500" />
-            )}
-            <span className="hidden sm:inline">{isDarkMode ? 'Tungi Rejim' : 'Kunduzgi'}</span>
-          </Button>
-
-          {/* Layer switcher menu */}
-          <div className="relative">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowLayerMenu(!showLayerMenu)}
-              className="h-8 text-xs gap-1.5 bg-background/90 backdrop-blur-md border-border shadow-lg font-bold"
+      {/* 4. RIGHT FLOATING STUDENT DETAIL CARD */}
+      {selectedStudent && (
+        <div className="absolute top-16 right-3 bottom-12 w-80 sm:w-96 z-20 flex flex-col bg-[#1b1b33]/95 backdrop-blur-xl border border-[#3a3a63]/70 rounded-2xl shadow-2xl p-4 text-[#e8e8f5] overflow-y-auto scrollbar-thin">
+          <div className="flex items-center justify-between pb-3 border-b border-[#3a3a63]/40">
+            <span className="text-xs font-bold text-[#9a9ac0] uppercase tracking-wider">
+              O'quvchi & Soat Tafsilotlari
+            </span>
+            <button
+              onClick={() => setSelectedStudent(null)}
+              className="p-1 rounded-lg text-[#9a9ac0] hover:text-[#e8e8f5] hover:bg-[#2a2a4a]"
             >
-              <Layers className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">{TILE_CONFIG[mapLayer]?.name || 'Qatlam'}</span>
-            </Button>
-
-            {showLayerMenu && (
-              <div className="absolute right-0 mt-1.5 w-48 bg-card border border-border rounded-xl shadow-2xl p-1.5 space-y-1 backdrop-blur-xl z-[1001]">
-                {(Object.keys(TILE_CONFIG) as MapTileLayerType[]).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      handleSelectLayer(key);
-                      setShowLayerMenu(false);
-                    }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-all ${
-                      mapLayer === key
-                        ? 'bg-primary text-primary-foreground font-bold shadow-sm'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    <span>{TILE_CONFIG[key].name}</span>
-                    {mapLayer === key && <Check className="w-3.5 h-3.5" />}
-                  </button>
-                ))}
-              </div>
-            )}
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Toggle History Trails */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowTrails(!showTrails)}
-            className={`h-8 text-xs gap-1 bg-background/90 backdrop-blur-md border-border shadow-lg ${
-              showTrails ? 'text-primary font-bold' : 'text-muted-foreground'
-            }`}
-            title="GPS Harakat Marshrutlarini Ko'rsatish"
-          >
-            <Navigation2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Marshrut</span>
-          </Button>
-
-          {/* Fit all */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleFitAll}
-            className="h-8 px-2.5 bg-background/90 backdrop-blur-md border-border shadow-lg text-muted-foreground hover:text-foreground"
-            title="Barcha ob'ektlarni ko'rsatish"
-          >
-            <Crosshair className="w-3.5 h-3.5" />
-          </Button>
-
-          {/* Fullscreen */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleToggleFullscreen}
-            className="h-8 px-2.5 bg-background/90 backdrop-blur-md border-border shadow-lg text-muted-foreground hover:text-foreground"
-            title="To'liq ekranga o'tish"
-          >
-            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-          </Button>
-        </div>
-
-        {/* --- BOTTOM-CENTER: Interactive Walking Simulation Toolbar --- */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-1.5 bg-background/90 border border-border/80 backdrop-blur-xl p-1.5 rounded-2xl shadow-2xl max-w-[95%] overflow-x-auto">
-          <div className="flex items-center gap-1 px-2 border-r border-border/60">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-bold text-foreground whitespace-nowrap">Jonli Simulyatsiya:</span>
+          {/* Student Profile Info */}
+          <div className="flex items-center gap-3.5 my-3">
+            <img
+              src={selectedStudent.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100'}
+              alt={selectedStudent.name}
+              className="w-14 h-14 rounded-2xl object-cover border-2 border-[#2ee59d] shadow-lg"
+            />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-sm text-[#e8e8f5] truncate">{selectedStudent.name}</h3>
+              <p className="text-xs text-[#9a9ac0]">{selectedStudent.className} • ID: {selectedStudent.uniqueId}</p>
+              <p className="text-[11px] text-[#4db5ff] truncate">🏫 {selectedStudent.schoolName}</p>
+            </div>
           </div>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleTriggerSimStage('OUTSIDE_STREET')}
-            className="h-7 text-[11px] px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 font-bold whitespace-nowrap"
-          >
-            🚶 1. Ko'chada
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleTriggerSimStage('APPROACHING_GATE')}
-            className="h-7 text-[11px] px-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 font-bold whitespace-nowrap"
-          >
-            🚧 2. Darvozada
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleTriggerSimStage('ENTER_SCHOOL')}
-            className="h-7 text-[11px] px-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 font-bold whitespace-nowrap"
-          >
-            🏫 3. Kirdi
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleTriggerSimStage('INSIDE_CLASS')}
-            className="h-7 text-[11px] px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 font-bold whitespace-nowrap"
-          >
-            📚 4. Sinfda
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleTriggerSimStage('LEAVE_SCHOOL')}
-            className="h-7 text-[11px] px-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 font-bold whitespace-nowrap"
-          >
-            🏃 5. Chiqdi
-          </Button>
-
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => handleTriggerSimStage('SOS')}
-            className="h-7 text-[11px] px-2.5 font-bold shadow-md whitespace-nowrap gap-1"
-          >
-            🚨 SOS Test
-          </Button>
-
-          <div className="w-[1px] h-5 bg-border/60 mx-1" />
-
-          {/* Auto Walk Playback */}
-          <Button
-            size="sm"
-            variant={isSimulating ? 'destructive' : 'outline'}
-            onClick={handleToggleAutoWalk}
-            className="h-7 text-[11px] px-2.5 font-bold whitespace-nowrap gap-1 border-primary/40 text-primary"
-          >
-            {isSimulating ? (
-              <>
-                <Pause className="w-3 h-3" /> To'xtatish ({simStep}/5)
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3" /> Avto-Yurish
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* --- BOTTOM-LEFT LEGEND --- */}
-        <div className="hidden sm:flex absolute bottom-4 left-4 z-[1000] bg-background/85 backdrop-blur-md border border-border/80 rounded-xl p-2 px-3 text-[10.5px] font-bold items-center gap-3.5 shadow-xl">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50" />
-            PRESENT (Maktabda)
-          </span>
-          <span className="flex items-center gap-1.5 text-rose-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50" />
-            OUTSIDE (Tashqarida)
-          </span>
-          <span className="flex items-center gap-1.5 text-amber-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-sm shadow-amber-500/50" />
-            VERIFYING (Chegarada)
-          </span>
-        </div>
-
-        {/* --- RIGHT SLIDE-OUT: Comprehensive Student Telemetry HUD Drawer --- */}
-        {selectedStudent && (
-          <div className="absolute top-14 right-3 z-[1000] w-80 max-w-[calc(100%-24px)] bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-right-4 duration-200">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2 pb-3 border-b border-border/60">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img
-                    src={selectedStudent.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100'}
-                    className="w-12 h-12 rounded-xl object-cover border-2 border-primary/50 shadow-md"
-                    alt={selectedStudent.name}
-                  />
-                  <span
-                    className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[8px] text-white font-extrabold ${
-                      selectedStudent.telemetry?.geofenceStatus === 'INSIDE' ? 'bg-emerald-500' : 'bg-rose-500'
-                    }`}
-                  >
-                    {selectedStudent.telemetry?.geofenceStatus === 'INSIDE' ? '✓' : '!'}
-                  </span>
-                </div>
-
-                <div>
-                  <h4 className="font-extrabold text-sm text-foreground leading-tight">{selectedStudent.name}</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {selectedStudent.className} • ID: <code className="text-primary font-mono">{selectedStudent.uniqueId}</code>
-                  </p>
-                  <p className="text-[10px] text-muted-foreground/80 truncate max-w-[150px]">
-                    🏫 {selectedStudent.schoolName}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedStudent(null)}
-                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted"
+          {/* Telemetry Status Grid */}
+          <div className="grid grid-cols-2 gap-2 my-2">
+            <div className="p-2.5 rounded-xl bg-[#2a2a4a]/80 border border-[#3a3a63]/40">
+              <span className="text-[10px] text-[#9a9ac0] font-semibold block">GEOFENCE HOLATI</span>
+              <span
+                className={`text-xs font-black mt-1 inline-block ${
+                  selectedStudent.telemetry?.geofenceStatus === 'INSIDE'
+                    ? 'text-[#2ee59d]'
+                    : 'text-[#ff4d5e]'
+                }`}
               >
-                <X className="w-4 h-4" />
+                {selectedStudent.telemetry?.geofenceStatus === 'INSIDE' ? '🟢 MAKTABDA' : '🔴 TASHQARIDA'}
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#2a2a4a]/80 border border-[#3a3a63]/40">
+              <span className="text-[10px] text-[#9a9ac0] font-semibold block">SOAT HOLATI</span>
+              <span className="text-xs font-black text-[#2ee59d] mt-1 inline-block">
+                ● ONLINE (0 s oldin)
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#2a2a4a]/80 border border-[#3a3a63]/40">
+              <div className="flex items-center justify-between text-[10px] text-[#9a9ac0] font-semibold">
+                <span>BATAREYA</span>
+                <Battery className="w-3.5 h-3.5 text-[#2ee59d]" />
+              </div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-lg font-black text-[#2ee59d]">
+                  {selectedStudent.telemetry?.batteryLevel || 85}%
+                </span>
+                <span className="text-[10px] text-[#9a9ac0]">Galaxy Watch5 Pro</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#2a2a4a]/80 border border-[#3a3a63]/40">
+              <div className="flex items-center justify-between text-[10px] text-[#9a9ac0] font-semibold">
+                <span>YURAK URISHI</span>
+                <Heart className="w-3.5 h-3.5 text-[#ff4d5e]" />
+              </div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-lg font-black text-[#ff4d5e]">
+                  {selectedStudent.telemetry?.heartRate || 76}
+                </span>
+                <span className="text-[10px] text-[#9a9ac0]">BPM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Location & Reverse Geocoded Address */}
+          <div className="p-3 rounded-xl bg-[#2a2a4a]/60 border border-[#3a3a63]/40 space-y-2 my-1 text-xs">
+            <div>
+              <span className="text-[10px] text-[#9a9ac0] font-bold block">ANIQLANGAN KO'CHA MANZILI</span>
+              <span className="font-semibold text-[#e8e8f5] mt-0.5 block leading-tight">
+                📍 {selectedStudent.telemetry?.address || 'Toshkent shahri, Chilonzor tumani'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#3a3a63]/30">
+              <span className="text-[#9a9ac0]">GPS Aniqligi:</span>
+              <span className="font-mono text-[#2ee59d]">±{selectedStudent.telemetry?.accuracy || 3.5} m</span>
+            </div>
+
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-[#9a9ac0]">Kordinatalar:</span>
+              <button
+                onClick={() =>
+                  copyToClipboard(
+                    `${selectedStudent.telemetry?.latitude?.toFixed(6)}, ${selectedStudent.telemetry?.longitude?.toFixed(6)}`
+                  )
+                }
+                className="font-mono text-[#4db5ff] hover:underline flex items-center gap-1"
+              >
+                <span>
+                  {selectedStudent.telemetry?.latitude?.toFixed(5)}, {selectedStudent.telemetry?.longitude?.toFixed(5)}
+                </span>
+                <Copy className="w-3 h-3" />
+                {copiedCoords && <span className="text-[#2ee59d] text-[10px]">Nusxalandi!</span>}
               </button>
             </div>
+          </div>
 
-            {/* Status Banner */}
-            <div className="mt-3 p-2 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between">
-              <div className="text-[11px] font-bold text-muted-foreground">Geozona Holati:</div>
-              <Badge
-                variant={
-                  selectedStudent.telemetry?.isSos
-                    ? 'destructive'
-                    : selectedStudent.telemetry?.geofenceStatus === 'INSIDE'
-                    ? 'success'
-                    : 'danger'
+          {/* Parent Contact */}
+          <div className="p-3 rounded-xl bg-[#2a2a4a]/60 border border-[#3a3a63]/40 my-1 text-xs flex items-center justify-between">
+            <div>
+              <span className="text-[10px] text-[#9a9ac0] block">OTA-ONA</span>
+              <span className="font-bold text-[#e8e8f5]">{selectedStudent.parentName || 'Karimov Alisher'}</span>
+              <span className="text-[11px] text-[#9a9ac0] block">{selectedStudent.parentPhone || '+998 90 123 45 67'}</span>
+            </div>
+            <a
+              href={`tel:${selectedStudent.parentPhone || '+998901234567'}`}
+              className="p-2.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] hover:bg-[#25c485] transition"
+              title="Qo'ng'iroq qilish"
+            >
+              <Phone className="w-4 h-4" />
+            </a>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-[#3a3a63]/40">
+            <button
+              onClick={() => {
+                if (selectedStudent.telemetry?.latitude && selectedStudent.telemetry?.longitude) {
+                  adapterRef.current?.flyTo(
+                    selectedStudent.telemetry.latitude,
+                    selectedStudent.telemetry.longitude,
+                    18
+                  );
                 }
-                className="text-[10px] font-extrabold px-2 py-0.5"
-              >
-                {selectedStudent.telemetry?.isSos
-                  ? '🚨 SOS FAVQULODDA'
-                  : selectedStudent.telemetry?.geofenceStatus === 'INSIDE'
-                  ? 'PRESENT — MAKTAB ICHIDA'
-                  : 'LEFT — MAKTABDAN TASHQARIDA'}
-              </Badge>
-            </div>
+              }}
+              className="py-2.5 rounded-xl bg-[#2a2a4a] hover:bg-[#3a3a63] border border-[#3a3a63] text-xs font-bold text-[#e8e8f5] flex items-center justify-center gap-1.5 transition"
+            >
+              <Navigation2 className="w-3.5 h-3.5 text-[#4db5ff]" />
+              <span>Fokuslash</span>
+            </button>
 
-            {/* Real-Time Vitals Grid */}
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <div className="p-2.5 rounded-xl bg-card border border-border/60 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 heart-beating">
-                  <Heart className="w-4 h-4 fill-rose-500" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">Yurak Urishi</span>
-                  <b className="text-xs font-mono font-bold text-foreground">
-                    {selectedStudent.telemetry?.heartRate || 76} BPM
-                  </b>
-                </div>
-              </div>
+            <button
+              onClick={() => {
+                showToast(`🚨 ${selectedStudent.name} uchun FAVQULODDA SOS signali yuborildi!`, 'error');
+              }}
+              className="py-2.5 rounded-xl bg-[#ff4d5e] hover:bg-[#e03d4e] text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-lg shadow-[#ff4d5e]/20 transition"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>SOS Signal</span>
+            </button>
+          </div>
+        </div>
+      )}
 
-              <div className="p-2.5 rounded-xl bg-card border border-border/60 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
-                  <Thermometer className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">Harorat</span>
-                  <b className="text-xs font-mono font-bold text-foreground">
-                    {(selectedStudent.telemetry?.bodyTemperature || 36.6).toFixed(1)}°C
-                  </b>
-                </div>
-              </div>
+      {/* 5. BOTTOM BAR: LEGEND & PROVIDER NOTICE */}
+      <div className="absolute bottom-2 left-3 right-3 z-10 flex items-center justify-between pointer-events-none text-xs text-[#9a9ac0]">
+        <div className="pointer-events-auto bg-[#1b1b33]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#3a3a63]/40 flex items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#2ee59d]" /> Maktabda (INSIDE)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#ff4d5e]" /> Tashqarida (OUTSIDE)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#ffb020]" /> Chegarada (VERIFYING)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#9a9ac0]" /> Oflayn (Oxirgi joy)
+          </span>
+        </div>
 
-              <div className="p-2.5 rounded-xl bg-card border border-border/60 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
-                  <Battery className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">Batareya (Soat)</span>
-                  <b className="text-xs font-mono font-bold text-foreground">
-                    {selectedStudent.telemetry?.batteryLevel || 84}%
-                  </b>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-card border border-border/60 flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-500">
-                  <Compass className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-muted-foreground block">GPS Aniqligi</span>
-                  <b className="text-xs font-mono font-bold text-foreground">
-                    ±{selectedStudent.telemetry?.accuracy || 3.2}m
-                  </b>
-                </div>
-              </div>
-            </div>
-
-            {/* Smartwatch Model & Coordinates */}
-            <div className="mt-3 p-2.5 rounded-xl bg-muted/30 border border-border/50 text-[11px] space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Aqlli Qurilma:</span>
-                <span className="font-semibold text-foreground">Samsung Galaxy Watch5 Pro</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Koordinatalar:</span>
-                <button
-                  onClick={() => {
-                    if (selectedStudent.telemetry?.latitude && selectedStudent.telemetry?.longitude) {
-                      const coordText = `${selectedStudent.telemetry.latitude}, ${selectedStudent.telemetry.longitude}`;
-                      navigator.clipboard.writeText(coordText);
-                      setCopiedCoord(true);
-                      setTimeout(() => setCopiedCoord(false), 1500);
-                    }
-                  }}
-                  className="font-mono text-[10px] text-primary hover:underline flex items-center gap-1"
-                >
-                  {selectedStudent.telemetry?.latitude?.toFixed(5)}, {selectedStudent.telemetry?.longitude?.toFixed(5)}
-                  <Copy className="w-3 h-3" />
-                  {copiedCoord && <span className="text-[9px] text-emerald-400">Nusxa olindi!</span>}
-                </button>
-              </div>
-
-              {selectedStudent.parentName && (
-                <div className="flex items-center justify-between pt-1 border-t border-border/40">
-                  <span className="text-muted-foreground">Ota-onasi:</span>
-                  <a
-                    href={`tel:${selectedStudent.parentPhone || ''}`}
-                    className="font-semibold text-emerald-400 flex items-center gap-1 hover:underline"
-                  >
-                    <Phone className="w-3 h-3" />
-                    {selectedStudent.parentPhone || selectedStudent.parentName}
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-border/60">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (
-                    selectedStudent.telemetry?.latitude &&
-                    selectedStudent.telemetry?.longitude &&
-                    mapInstanceRef.current
-                  ) {
-                    mapInstanceRef.current.flyTo(
-                      [selectedStudent.telemetry.latitude, selectedStudent.telemetry.longitude],
-                      18,
-                      { duration: 0.8 }
-                    );
-                  }
-                }}
-                className="h-8 text-xs font-bold gap-1"
-              >
-                <Crosshair className="w-3.5 h-3.5" /> Fokuslash
-              </Button>
-
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleTriggerSimStage('SOS')}
-                className="h-8 text-xs font-bold gap-1"
-              >
-                <ShieldAlert className="w-3.5 h-3.5" /> SOS Signal
-              </Button>
-            </div>
+        {isFallbackNotice && (
+          <div className="pointer-events-auto bg-[#ffb020]/20 text-[#ffb020] border border-[#ffb020]/40 px-3 py-1 rounded-xl text-[11px] font-semibold hidden md:flex items-center gap-1.5 shadow-lg">
+            <Info className="w-3.5 h-3.5" />
+            <span>OpenStreetMap zaxira rejimi faol</span>
           </div>
         )}
       </div>

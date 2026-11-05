@@ -1,0 +1,459 @@
+// Leaflet OpenStreetMap Fallback Adapter (100% Keyless, Zero Watermark, Ultra-Reliable)
+import L from 'leaflet';
+import { School, Student } from '@/types';
+import {
+  MapAdapter,
+  MapInitOptions,
+  MapLayerType,
+  MapProviderType,
+} from './types';
+import { haversineDistance } from '@/lib/geoUtils';
+
+const OSM_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const ESRI_SATELLITE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+export class LeafletOsmAdapter implements MapAdapter {
+  private map: L.Map | null = null;
+  private tileLayer: L.TileLayer | null = null;
+  private container: HTMLElement | null = null;
+  private options!: MapInitOptions;
+
+  private studentMarkers: Map<string, L.Marker> = new Map();
+  private schoolPolygons: Map<string, L.Polygon> = new Map();
+  private schoolBadges: Map<string, L.Marker> = new Map();
+  private trailPolylines: Map<string, L.Polyline> = new Map();
+  private searchMarker: L.Marker | null = null;
+
+  // Custom Drawing state
+  private activeDrawLayer: L.Polygon | L.Polyline | null = null;
+  private activeDrawCircle: L.Circle | null = null;
+  private drawPoints: [number, number][] = [];
+  private mapClickHandler: ((e: L.LeafletMouseEvent) => void) | null = null;
+
+  // Measure state
+  private measurePoints: [number, number][] = [];
+  private measureLine: L.Polyline | null = null;
+  private measureMarkers: L.Marker[] = [];
+
+  getProviderName(): MapProviderType {
+    return 'leaflet-osm';
+  }
+
+  async init(container: HTMLElement, options: MapInitOptions): Promise<void> {
+    this.container = container;
+    this.options = options;
+
+    this.map = L.map(container, {
+      center: options.center,
+      zoom: options.zoom,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    this.setMapType(options.mapType || 'roadmap');
+    this.setTheme(options.isDark);
+
+    if (options.events?.onMapClick) {
+      this.map.on('click', (e: L.LeafletMouseEvent) => {
+        options.events?.onMapClick?.(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    // Leaflet initial size recalculation
+    setTimeout(() => {
+      this.resize();
+    }, 200);
+  }
+
+  setMapType(type: MapLayerType): void {
+    if (!this.map) return;
+    if (this.tileLayer) {
+      this.map.removeLayer(this.tileLayer);
+    }
+
+    const isSatellite = type === 'satellite' || type === 'hybrid';
+    const tileUrl = isSatellite ? ESRI_SATELLITE_URL : OSM_URL;
+
+    this.tileLayer = L.tileLayer(tileUrl, {
+      maxZoom: 19,
+    });
+
+    // Fallback to OSM on tileerror
+    this.tileLayer.on('tileerror', () => {
+      if (isSatellite && this.map) {
+        console.warn('Satellite plitkasi xatosi, OSM ga qaytilmoqda');
+        this.setMapType('roadmap');
+      }
+    });
+
+    this.tileLayer.addTo(this.map);
+  }
+
+  setTheme(isDark: boolean): void {
+    if (!this.container) return;
+    if (isDark) {
+      this.container.classList.add('dark-tiles');
+    } else {
+      this.container.classList.remove('dark-tiles');
+    }
+  }
+
+  flyTo(lat: number, lng: number, zoom?: number): void {
+    if (!this.map) return;
+    this.map.flyTo([lat, lng], zoom || 17, { duration: 0.8 });
+  }
+
+  fitBounds(bounds: [number, number][]): void {
+    if (!this.map || !bounds || bounds.length === 0) return;
+    this.map.fitBounds(L.latLngBounds(bounds as any));
+  }
+
+  upsertStudentMarker(student: Student, isSelected: boolean): void {
+    if (!this.map || !student.telemetry) return;
+    const telem = student.telemetry;
+    if (telem.latitude == null || telem.longitude == null) return;
+
+    const isInside = telem.geofenceStatus === 'INSIDE';
+    const isVerifying = telem.geofenceStatus === 'VERIFYING';
+    const isSos = telem.isSos || false;
+    const isOffline = telem.deviceStatus === 'OFFLINE' || (telem.lastSeen && Date.now() - telem.lastSeen > 300000);
+
+    let color = '#ff4d5e';
+    let statusBadgeText = isInside ? '✓' : isSos ? 'SOS' : '!';
+    if (isOffline) {
+      color = '#9a9ac0';
+      statusBadgeText = 'OFF';
+    } else if (isInside) {
+      color = '#2ee59d';
+    } else if (isVerifying) {
+      color = '#ffb020';
+      statusBadgeText = '~';
+    }
+
+    if (isSos) {
+      color = '#ff4d5e';
+      statusBadgeText = 'SOS';
+    }
+
+    const size = isSelected ? 52 : 44;
+    const pulseHtml = isSos
+      ? `<div class="radar-ring" style="position: absolute; inset: -10px; border-radius: 9999px; background: rgba(255, 77, 94, 0.45); border: 2px solid #ff4d5e;"></div>`
+      : isInside && !isOffline
+      ? `<div class="radar-ring" style="position: absolute; inset: -4px; border-radius: 9999px; background: rgba(46, 229, 157, 0.25);"></div>`
+      : '';
+
+    const iconHtml = `
+      <div style="position: relative; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));">
+        ${pulseHtml}
+        <div style="width: ${size - 8}px; height: ${size - 8}px; border-radius: 9999px; border: 3px solid ${color}; overflow: hidden; background: #1b1b33; position: relative; z-index: 2; transition: all 0.2s; ${isOffline ? 'filter: grayscale(80%) opacity(0.85);' : ''}">
+          <img src="${student.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${student.name}" />
+        </div>
+        <div style="position: absolute; bottom: 0; right: 0; z-index: 3; background: ${color}; color: #fff; font-size: 8px; font-weight: 800; border-radius: 9999px; border: 1.5px solid #1b1b33; padding: 1px 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+          ${statusBadgeText}
+        </div>
+        ${
+          isSelected
+            ? `<div style="position: absolute; top: -18px; background: #2ee59d; color: #1b1b33; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; z-index: 4;">${student.name}</div>`
+            : ''
+        }
+      </div>
+    `;
+
+    const customIcon = L.divIcon({
+      className: 'student-fleet-marker',
+      html: iconHtml,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+    });
+
+    let marker = this.studentMarkers.get(student.id);
+    if (marker) {
+      marker.setLatLng([telem.latitude, telem.longitude]);
+      marker.setIcon(customIcon);
+    } else {
+      marker = L.marker([telem.latitude, telem.longitude], { icon: customIcon });
+      marker.on('click', () => {
+        this.options.events?.onMarkerClick?.({
+          student,
+          lat: telem.latitude,
+          lng: telem.longitude,
+        });
+      });
+      marker.addTo(this.map);
+      this.studentMarkers.set(student.id, marker);
+    }
+  }
+
+  removeStudentMarker(studentId: string): void {
+    const marker = this.studentMarkers.get(studentId);
+    if (marker && this.map) {
+      this.map.removeLayer(marker);
+      this.studentMarkers.delete(studentId);
+    }
+  }
+
+  clearStudentMarkers(): void {
+    if (!this.map) return;
+    this.studentMarkers.forEach((m) => this.map?.removeLayer(m));
+    this.studentMarkers.clear();
+  }
+
+  renderSchoolGeofences(schools: School[], selectedSchoolId?: string): void {
+    if (!this.map) return;
+
+    // Clear old
+    this.schoolPolygons.forEach((p) => this.map?.removeLayer(p));
+    this.schoolPolygons.clear();
+    this.schoolBadges.forEach((b) => this.map?.removeLayer(b));
+    this.schoolBadges.clear();
+
+    schools.forEach((sch) => {
+      if (sch.polygon && sch.polygon.length > 2) {
+        const isSelected = sch.id === selectedSchoolId;
+        const poly = L.polygon(sch.polygon, {
+          color: sch.color || '#2ee59d',
+          weight: isSelected ? 3 : 2,
+          fillColor: sch.color || '#2ee59d',
+          fillOpacity: 0.16,
+        });
+
+        poly.on('click', () => {
+          this.options.events?.onSchoolClick?.(sch.id);
+        });
+
+        poly.addTo(this.map!);
+        this.schoolPolygons.set(sch.id, poly);
+      }
+
+      if (sch.lat && sch.lng) {
+        const badgeIcon = L.divIcon({
+          className: 'school-badge-fleet',
+          html: `
+            <div style="background: ${sch.color || '#2ee59d'}; color: #1b1b33; padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; white-space: nowrap;">
+              🏫 ${sch.name}
+            </div>
+          `,
+          iconSize: [0, 0],
+        });
+
+        const badgeMarker = L.marker([sch.lat, sch.lng], { icon: badgeIcon });
+        badgeMarker.on('click', () => {
+          this.options.events?.onSchoolClick?.(sch.id);
+        });
+        badgeMarker.addTo(this.map!);
+        this.schoolBadges.set(sch.id, badgeMarker);
+      }
+    });
+  }
+
+  renderTrail(studentId: string, coordinates: [number, number][], color: string): void {
+    if (!this.map || !coordinates || coordinates.length < 2) return;
+
+    let polyline = this.trailPolylines.get(studentId);
+    if (polyline) {
+      polyline.setLatLngs(coordinates as any);
+      polyline.setStyle({ color });
+    } else {
+      polyline = L.polyline(coordinates as any, {
+        color,
+        weight: 3,
+        opacity: 0.8,
+      }).addTo(this.map);
+      this.trailPolylines.set(studentId, polyline);
+    }
+  }
+
+  clearTrails(): void {
+    if (!this.map) return;
+    this.trailPolylines.forEach((p) => this.map?.removeLayer(p));
+    this.trailPolylines.clear();
+  }
+
+  setSearchMarker(lat: number, lng: number, title?: string): void {
+    if (!this.map) return;
+    this.clearSearchMarker();
+
+    const icon = L.divIcon({
+      className: 'search-pin-marker',
+      html: `
+        <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); pointer-events: none;">
+          <div style="background: #2ee59d; color: #1b1b33; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; margin-bottom: 3px; border: 1.5px solid #ffffff; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
+            📍 ${title || 'Qidirilgan joy'}
+          </div>
+          <div style="width: 26px; height: 26px; background: #2ee59d; border: 2.5px solid #ffffff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 14px rgba(46, 229, 157, 0.7); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 8px; height: 8px; background: #1b1b33; border-radius: 50%;"></div>
+          </div>
+        </div>
+      `,
+      iconSize: [0, 0],
+    });
+
+    this.searchMarker = L.marker([lat, lng], { icon, zIndexOffset: 2000 }).addTo(this.map);
+  }
+
+  clearSearchMarker(): void {
+    if (this.searchMarker && this.map) {
+      this.map.removeLayer(this.searchMarker);
+      this.searchMarker = null;
+    }
+  }
+
+  // --- DRAWING TOOLS ---
+  startDrawingPolygon(onPointAdded?: (pointsCount: number) => void): void {
+    this.cancelDrawing();
+    if (!this.map) return;
+
+    this.drawPoints = [];
+    this.mapClickHandler = (e: L.LeafletMouseEvent) => {
+      this.drawPoints.push([e.latlng.lat, e.latlng.lng]);
+      if (!this.activeDrawLayer) {
+        this.activeDrawLayer = L.polygon(this.drawPoints, {
+          color: '#ff2d78',
+          weight: 2.5,
+          fillColor: '#ff2d78',
+          fillOpacity: 0.2,
+        }).addTo(this.map!);
+      } else {
+        (this.activeDrawLayer as L.Polygon).setLatLngs(this.drawPoints as any);
+      }
+      onPointAdded?.(this.drawPoints.length);
+    };
+
+    this.map.on('click', this.mapClickHandler);
+  }
+
+  finishDrawingPolygon(): [number, number][] | null {
+    if (this.mapClickHandler && this.map) {
+      this.map.off('click', this.mapClickHandler);
+      this.mapClickHandler = null;
+    }
+
+    if (this.drawPoints.length < 3) {
+      this.cancelDrawing();
+      return null;
+    }
+
+    const res = [...this.drawPoints];
+    this.cancelDrawing();
+    return res;
+  }
+
+  startDrawingCircle(): void {
+    this.cancelDrawing();
+    if (!this.map) return;
+
+    const center = this.map.getCenter();
+    this.activeDrawCircle = L.circle([center.lat, center.lng], {
+      radius: 200,
+      color: '#2ee59d',
+      weight: 2.5,
+      fillColor: '#2ee59d',
+      fillOpacity: 0.2,
+    }).addTo(this.map);
+  }
+
+  finishDrawingCircle(): { center: [number, number]; radius: number } | null {
+    if (!this.activeDrawCircle) return null;
+    const center = this.activeDrawCircle.getLatLng();
+    const radius = Math.round(this.activeDrawCircle.getRadius());
+    const res = {
+      center: [center.lat, center.lng] as [number, number],
+      radius,
+    };
+    this.cancelDrawing();
+    return res;
+  }
+
+  cancelDrawing(): void {
+    if (this.mapClickHandler && this.map) {
+      this.map.off('click', this.mapClickHandler);
+      this.mapClickHandler = null;
+    }
+    if (this.activeDrawLayer && this.map) {
+      this.map.removeLayer(this.activeDrawLayer);
+      this.activeDrawLayer = null;
+    }
+    if (this.activeDrawCircle && this.map) {
+      this.map.removeLayer(this.activeDrawCircle);
+      this.activeDrawCircle = null;
+    }
+    this.drawPoints = [];
+  }
+
+  // --- MEASURE TOOL ---
+  startMeasure(onUpdate?: (distMeters: number) => void): void {
+    this.stopMeasure();
+    if (!this.map) return;
+
+    this.measurePoints = [];
+    this.mapClickHandler = (e: L.LeafletMouseEvent) => {
+      this.measurePoints.push([e.latlng.lat, e.latlng.lng]);
+
+      const marker = L.marker([e.latlng.lat, e.latlng.lng], {
+        icon: L.divIcon({
+          className: 'measure-pin',
+          html: `<div style="background:#4db5ff;color:#fff;width:18px;height:18px;border-radius:9px;text-align:center;font-size:11px;font-weight:bold;line-height:18px;">${
+            this.measurePoints.length === 1 ? 'A' : 'B'
+          }</div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        }),
+      }).addTo(this.map!);
+      this.measureMarkers.push(marker);
+
+      if (this.measurePoints.length === 2) {
+        this.measureLine = L.polyline(this.measurePoints as any, {
+          color: '#4db5ff',
+          weight: 3,
+          dashArray: '5, 5',
+        }).addTo(this.map!);
+
+        const dist = Math.round(
+          haversineDistance(
+            this.measurePoints[0][0],
+            this.measurePoints[0][1],
+            this.measurePoints[1][0],
+            this.measurePoints[1][1]
+          )
+        );
+        onUpdate?.(dist);
+      } else if (this.measurePoints.length > 2) {
+        this.stopMeasure();
+        this.startMeasure(onUpdate);
+      }
+    };
+
+    this.map.on('click', this.mapClickHandler);
+  }
+
+  stopMeasure(): void {
+    if (this.mapClickHandler && this.map) {
+      this.map.off('click', this.mapClickHandler);
+      this.mapClickHandler = null;
+    }
+    if (this.measureLine && this.map) {
+      this.map.removeLayer(this.measureLine);
+      this.measureLine = null;
+    }
+    this.measureMarkers.forEach((m) => this.map?.removeLayer(m));
+    this.measureMarkers = [];
+    this.measurePoints = [];
+  }
+
+  resize(): void {
+    if (!this.map) return;
+    this.map.invalidateSize();
+  }
+
+  destroy(): void {
+    this.cancelDrawing();
+    this.stopMeasure();
+    this.clearSearchMarker();
+    this.clearStudentMarkers();
+    this.clearTrails();
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+}

@@ -501,3 +501,4 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
     </div>
   );
 };
+

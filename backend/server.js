@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 
 const { db: knexDb, runMigrations } = require('./db');
-const { reverseGeocode } = require('./services/geocodingService');
+const { reverseGeocode, searchPlaces } = require('./services/geocodingService');
 const {
   signToken,
   signRefreshToken,
@@ -642,6 +642,28 @@ app.get('/health', handleHealthCheck);
 app.get('/api/v1/health', handleHealthCheck);
 
 // 0. Configuration (Maps & Service Environment)
+// Forward Geocoding Search Endpoint (Server-side proxy with variant normalization & caching)
+app.get(['/api/geocode/search', '/api/v1/geocode/search'], async (req, res) => {
+  try {
+    const q = req.query.q || req.query.query || '';
+    const lat = req.query.lat ? parseFloat(req.query.lat) : null;
+    const lng = req.query.lng ? parseFloat(req.query.lng) : null;
+
+    const result = await searchPlaces(q, { lat, lng });
+    if (!result.success && result.error === 'NETWORK_ERROR') {
+      return res.status(503).json(result);
+    }
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: 'SERVER_ERROR',
+      message: "Qidiruv serverida xatolik yuz berdi: " + err.message,
+      results: []
+    });
+  }
+});
+
 app.get('/api/v1/config', (req, res) => {
   res.json({
     success: true,
@@ -1124,6 +1146,7 @@ const handleDeviceTelemetry = async (req, res) => {
   const accuracy = p.accuracy !== undefined ? parseFloat(p.accuracy) : 4.5;
   const isSos = Boolean(p.is_sos || p.isSos || p.sos);
   const isWorn = p.is_worn !== undefined ? Boolean(p.is_worn) : (p.isWorn !== undefined ? Boolean(p.isWorn) : true);
+  const signalSource = p.signal_source || p.signalSource || 'gps';
 
   // 4. Strict School Attendance Geofencing & Flapping Protection
   const rawEval = evaluateStrictSchoolAttendance(student, lat, lng, accuracy);
@@ -1173,6 +1196,7 @@ const handleDeviceTelemetry = async (req, res) => {
     isCharging: p.is_charging || false,
     isWorn,
     isSos,
+    signalSource,
     geofenceStatus: finalStatus,
     statusColor,
     statusDisplay,
@@ -1224,7 +1248,9 @@ const handleDeviceTelemetry = async (req, res) => {
     await createAlertEvent('SOS', `🚨 Shoshilinch SOS signali! ${student.name} soatidan yordam so'ralmoqda`);
   }
   if (currentBattery < 10 && (!prev.batteryLevel || prev.batteryLevel >= 10)) {
-    await createAlertEvent('LOW_BATTERY', `🪫 DIQQAT: ${student.name} soati batareya quvvati 10% dan kam qoldi (${currentBattery}%)`);
+    await createAlertEvent('LOW_BATTERY', `🪫 KRITIK: ${student.name} soati batareya quvvati 10% dan kam qoldi (${currentBattery}%)`);
+  } else if (currentBattery <= 20 && (!prev.batteryLevel || prev.batteryLevel > 20)) {
+    await createAlertEvent('LOW_BATTERY_WARN', `⚠️ OGOHLANTIRISH: ${student.name} soati batareya quvvati ${currentBattery}% qoldi`);
   }
   if (isWorn === false && prev.isWorn !== false) {
     await createAlertEvent('WATCH_REMOVED', `⚠️ DIQQAT: ${student.name}ning soati qo'ldan yechildi!`);

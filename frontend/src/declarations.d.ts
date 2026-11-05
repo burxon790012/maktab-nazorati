@@ -167,6 +167,8 @@ declare module 'lucide-react' {
   export const Sparkles: any;
   export const Filter: any;
   export const RefreshCw: any;
+  export const Loader2: any;
+  export const Target: any;
   export const AlertCircle: any;
   export const Volume2: any;
   export const Eye: any;

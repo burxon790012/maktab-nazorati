@@ -1,160 +1,189 @@
 #!/usr/bin/env node
 /**
- * SMART CHILD — Real-time Smartwatch (Samsung Galaxy Watch5 Pro) Simulator
- * Sends live GPS & health telemetry over HTTP to the backend server.
+ * SMART CHILD — Real-time Smartwatch (Samsung Galaxy Watch5 Pro) Fleet Simulator
+ * Simulates N smartwatches walking realistic Tashkent school routes,
+ * entering/leaving geofences, draining battery, toggling isWorn, triggering SOS,
+ * and testing online/delayed/offline status transitions.
  *
  * Usage:
- *   node tools/fake-watch.js
- *   node tools/fake-watch.js --sos
- *   node tools/fake-watch.js --low-battery
- *   node tools/fake-watch.js --unworn
- *   node tools/fake-watch.js --outside
+ *   node tools/fake-watch.js                  # Default: 1 watch running continuous route
+ *   node tools/fake-watch.js --count 3        # 3 watches walking simultaneously
+ *   node tools/fake-watch.js --sos            # Trigger emergency SOS
+ *   node tools/fake-watch.js --low-battery    # Simulate low battery (<10%)
+ *   node tools/fake-watch.js --unworn         # Simulate watch removed from wrist
+ *   node tools/fake-watch.js --once           # Send single packet and exit
  */
 
 const SERVER_URL = process.env.SERVER_URL || 'http://127.0.0.1:3000';
-const DEVICE_ID = process.env.DEVICE_ID || 'W5P-TEST-001';
-const STUDENT_ID = process.env.STUDENT_ID || '10001';
 
-// Tashkent School Coordinates (1-Sonli Namunaviy Maktab)
-// Center: [41.311081, 69.240562]
-const WAYPOINTS = [
-  // 1. Street approaching school (OUTSIDE)
-  { lat: 41.309200, lng: 69.238400, desc: "Amir Temur shoh ko'chasi (Maktabdan 280 m uzoqda)" },
-  { lat: 41.309850, lng: 69.239300, desc: "Maktab yo'li chorrahasi (180 m)" },
-  { lat: 41.310400, lng: 69.239900, desc: "Maktab asosiy darvozasi yaqinida (60 m)" },
-
-  // 2. Gate & Entering school grounds (INSIDE)
-  { lat: 41.310900, lng: 69.240400, desc: "Maktab hovlisi darvozasi (HUDUDGA KIRDI)" },
-  { lat: 41.311200, lng: 69.240700, desc: "Maktab binosi A-blok koridori" },
-  { lat: 41.311350, lng: 69.240950, desc: "5-B sinfxonasi ichida (Darsda)" },
-
-  // 3. Staying inside classroom
-  { lat: 41.311360, lng: 69.240960, desc: "5-B sinfxonasi (Tinch holatda)" },
-  { lat: 41.311340, lng: 69.240940, desc: "5-B sinfxonasi (Dars davom etmoqda)" },
-
-  // 4. Leaving school
-  { lat: 41.310850, lng: 69.240350, desc: "Maktab darvozasidan chiqish (HUDUDDAN CHIQDI)" },
-  { lat: 41.310100, lng: 69.239500, desc: "Uyga qaytish yo'li (Tashqarida)" }
+// Realistic Waypoints near 1-Sonli Namunaviy Maktab (Center: [41.311081, 69.240562])
+const FLEET_ROUTES = [
+  // Student 10001 (Ali Karimov)
+  [
+    { lat: 41.309200, lng: 69.238400, desc: "Amir Temur ko'chasi (280 m)" },
+    { lat: 41.309850, lng: 69.239300, desc: "Chorraha (180 m)" },
+    { lat: 41.310400, lng: 69.239900, desc: "Maktab darvozasi (60 m)" },
+    { lat: 41.310900, lng: 69.240400, desc: "Maktab hovlisi (HUDUDGA KIRDI)" },
+    { lat: 41.311200, lng: 69.240700, desc: "Bosh koridor" },
+    { lat: 41.311350, lng: 69.240950, desc: "5-B sinfxonasi (Darsda)" },
+    { lat: 41.311340, lng: 69.240940, desc: "5-B sinfxonasi (Tinch)" },
+    { lat: 41.310850, lng: 69.240350, desc: "Maktab darvozasidan chiqish (CHIQDI)" },
+    { lat: 41.310100, lng: 69.239500, desc: "Uyga qaytish yo'li (Tashqarida)" }
+  ],
+  // Student 10002 (Fotima Zokirova)
+  [
+    { lat: 41.310200, lng: 69.243500, desc: "Yunusobod 4-mavze (350 m)" },
+    { lat: 41.310600, lng: 69.242200, desc: "Sharqiy kirish darvozasi (100 m)" },
+    { lat: 41.311000, lng: 69.241500, desc: "Maktab sport maydoni (KIRDI)" },
+    { lat: 41.311250, lng: 69.241000, desc: "Sport zali binosi" },
+    { lat: 41.311400, lng: 69.241100, desc: "Sinfxona 2-qavat" },
+    { lat: 41.310700, lng: 69.242500, desc: "Tashqariga chiqish (CHIQDI)" }
+  ],
+  // Student 10003 (Sardor Umarov)
+  [
+    { lat: 41.312900, lng: 69.240100, desc: "Shimoliy chorraha (220 m)" },
+    { lat: 41.312100, lng: 69.240400, desc: "Maktab shimoliy bog'i (KIRDI)" },
+    { lat: 41.311500, lng: 69.240600, desc: "Kutubxona xonasi" },
+    { lat: 41.311300, lng: 69.240800, desc: "Asosiy bino" }
+  ]
 ];
 
-async function main() {
-  console.log('==================================================================');
-  console.log('⌚ SMART CHILD: Samsung Galaxy Watch5 Pro Jonli Telemetriya Klienti');
-  console.log(`📡 Server: ${SERVER_URL}`);
-  console.log(`⌚ Qurilma ID: ${DEVICE_ID} (O'quvchi: ${STUDENT_ID})`);
-  console.log('==================================================================\n');
-
-  // Parse command line flags
+async function runSimulator() {
   const args = process.argv.slice(2);
-  const isSosTest = args.includes('--sos');
-  const isLowBatteryTest = args.includes('--low-battery');
-  const isUnwornTest = args.includes('--unworn');
-  const isOutsideOnly = args.includes('--outside');
+  const isSos = args.includes('--sos');
+  const isLowBattery = args.includes('--low-battery');
+  const isUnworn = args.includes('--unworn');
   const isOnce = args.includes('--once');
 
-  // Step 1: Register or get device token
-  let deviceToken = process.env.DEVICE_TOKEN;
-  try {
-    const regRes = await fetch(`${SERVER_URL}/api/devices/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        studentId: STUDENT_ID,
-        deviceUid: DEVICE_ID,
-        model: 'Samsung Galaxy Watch5 Pro (SM-R920)'
-      })
-    });
-    const regData = await regRes.json();
-    if (regData.success && regData.token) {
-      deviceToken = regData.token;
-      console.log(`✅ Soat ro'yxatdan o'tdi. Token olindi: ${deviceToken.substring(0, 16)}...`);
-    } else {
-      deviceToken = 'dev-token-secret-123';
-    }
-  } catch (err) {
-    console.warn("⚠️ Ro'yxatdan o'tishda xatolik, standart tokendan foydalanilmoqda:", err.message);
-    deviceToken = 'dev-token-secret-123';
+  let watchCount = 1;
+  const countIdx = args.indexOf('--count');
+  if (countIdx !== -1 && args[countIdx + 1]) {
+    watchCount = Math.min(3, Math.max(1, parseInt(args[countIdx + 1], 10)));
   }
 
-  let index = 0;
-  let battery = isLowBatteryTest ? 8 : 88;
-  let heartRate = isSosTest ? 134 : 76;
-  let steps = 3120;
+  console.log('==================================================================');
+  console.log('⌚ SMART CHILD: Samsung Galaxy Watch5 Pro Flot Simulyatori');
+  console.log(`📡 Server: ${SERVER_URL}`);
+  console.log(`⌚ Faol soatlar soni: ${watchCount} ta`);
+  if (isSos) console.log('🚨 REJIM: Favqulodda SOS testi yoqilgan');
+  if (isLowBattery) console.log('🪫 REJIM: Kam batareya (<10%) testi yoqilgan');
+  if (isUnworn) console.log('⚠️ REJIM: Soat qo\'ldan yechilgan testi yoqilgan');
+  console.log('==================================================================\n');
 
-  console.log('\n🚀 Jonli telemetriya yuborish boshlandi (har 3 soniyada 1 ta paket)...\n');
+  // Initialize N watches
+  const watches = [];
+  const defaultTokens = ['dev-token-secret-123', 'demo-token-w2', 'demo-token-w3'];
 
-  const sendTelemetryPacket = async () => {
-    let wp = WAYPOINTS[index % WAYPOINTS.length];
-    if (isOutsideOnly) {
-      wp = WAYPOINTS[0];
+  for (let i = 0; i < watchCount; i++) {
+    const devId = `W5P-TEST-00${i + 1}`;
+    const studentId = `1000${i + 1}`;
+    let token = defaultTokens[i] || 'dev-token-secret-123';
+
+    try {
+      const regRes = await fetch(`${SERVER_URL}/api/devices/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceId: devId,
+          studentId: studentId,
+          model: 'Samsung Galaxy Watch5 Pro (SM-R920)'
+        })
+      });
+      const regData = await regRes.json();
+      if (regData.success && regData.device?.token) {
+        token = regData.device.token;
+      }
+    } catch (_) {}
+
+    watches.push({
+      deviceId: devId,
+      studentId: studentId,
+      token: token,
+      route: FLEET_ROUTES[i % FLEET_ROUTES.length],
+      routeIndex: 0,
+      battery: isLowBattery ? 8 : 95 - i * 5,
+      steps: 3200 + i * 500
+    });
+  }
+
+  const sendPacketForWatch = async (w) => {
+    const wp = w.route[w.routeIndex % w.route.length];
+    w.routeIndex++;
+
+    // Battery drain simulation
+    if (!isLowBattery && w.battery > 5) {
+      w.battery = Math.max(5, w.battery - 0.2);
     }
+    w.steps += Math.floor(Math.random() * 8 + 4);
+
+    const heartRate = isSos ? 135 : Math.floor(Math.random() * 15 + 75);
 
     const payload = {
-      deviceId: DEVICE_ID,
-      deviceToken: deviceToken,
-      lat: wp.lat + (Math.random() - 0.5) * 0.00008,
-      lng: wp.lng + (Math.random() - 0.5) * 0.00008,
-      accuracy: 6.5,
-      speed: index >= 4 && index <= 7 ? 0.0 : 1.3,
-      heartRate: heartRate + Math.floor(Math.random() * 4) - 2,
-      battery: Math.max(5, battery),
+      deviceId: w.deviceId,
+      studentId: w.studentId,
+      lat: wp.lat,
+      lng: wp.lng,
+      accuracy: 3.5,
+      speed: 1.2,
+      heartRate,
+      battery: Math.round(w.battery),
       temperature: 36.6,
-      steps: steps += Math.floor(Math.random() * 10),
-      isWorn: !isUnwornTest,
-      isSos: isSosTest,
-      timestamp: Date.now()
+      steps: w.steps,
+      isWorn: !isUnworn,
+      signalSource: 'gps',
+      isSos: isSos,
+      timestamp: new Date().toISOString()
     };
-
-    if (!isLowBatteryTest && Math.random() < 0.2) {
-      battery = Math.max(10, battery - 1);
-    }
 
     try {
       const res = await fetch(`${SERVER_URL}/api/device/telemetry`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${deviceToken}`
+          'Authorization': `Bearer ${w.token}`
         },
         body: JSON.stringify(payload)
       });
 
       const data = await res.json();
-      const statusIcon = data.geofence_status === 'INSIDE' ? '🟢 MAKTABDA' : data.geofence_status === 'VERIFYING' ? '🟡 TEKSHIRUV' : '🔴 TASHQARIDA';
+      const statusIcon =
+        data.geofence_status === 'INSIDE'
+          ? '🟢 MAKTABDA'
+          : data.geofence_status === 'VERIFYING'
+          ? '🟡 CHEGARADA'
+          : '🔴 TASHQARIDA';
 
       console.log(
-        `[${new Date().toLocaleTimeString()}] Paket #${index + 1}: ` +
+        `[${new Date().toLocaleTimeString()}] ${w.deviceId} (${w.studentId}): ` +
         `${statusIcon} | ❤️ ${payload.heartRate} BPM | 🔋 ${payload.battery}% | ` +
-        `📍 Manzil: ${data.address || wp.desc}`
+        `📍 ${data.address || wp.desc}`
       );
-
-      if (data.alert) {
-        console.log(`   🚨 OGOHLANTIRISH: ${data.alert.message}`);
-      }
     } catch (err) {
-      console.error(`❌ Yuborishda xatolik:`, err.message);
+      console.error(`❌ ${w.deviceId} yuborishda xatolik:`, err.message);
     }
-
-    index++;
   };
 
-  // Send first packet immediately
-  await sendTelemetryPacket();
+  // Send first round
+  for (const w of watches) {
+    await sendPacketForWatch(w);
+  }
 
   if (isOnce) {
-    console.log('\n✅ --once parametri bilan 1 ta telemetriya paketi yuborildi va dastur yakunlandi.');
+    console.log('\n✅ --once parametri bilan paketlar yuborildi va dastur yakunlandi.');
     process.exit(0);
   }
 
-  // Send subsequent packets every 3.5 seconds
-  const interval = setInterval(sendTelemetryPacket, 3500);
+  const interval = setInterval(async () => {
+    for (const w of watches) {
+      await sendPacketForWatch(w);
+    }
+  }, 3500);
 
-  // Graceful shutdown
   process.on('SIGINT', () => {
     clearInterval(interval);
-    console.log('\n\n🛑 fake-watch to\'xtatildi. Soat serverda 60 soniyadan so\'ng DELAYED, 5 daqiqadan so\'ng OFFLINE bo\'ladi.');
+    console.log('\n🛑 Simulyatsiya to\'xtatildi. Soatlar 60s dan keyin DELAYED, 5m dan keyin OFFLINE holatiga o\'tadi.');
     process.exit(0);
   });
 }
 
-main().catch(console.error);
+runSimulator().catch(console.error);

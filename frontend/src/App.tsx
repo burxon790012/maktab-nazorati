@@ -29,6 +29,7 @@ export const App: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [devicesList, setDevicesList] = useState<DeviceInfo[]>([]);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
 
   // Navigation & View State
   const [currentTab, setCurrentTab] = useState<NavTab>('map');
@@ -159,6 +160,16 @@ export const App: React.FC = () => {
     }
   };
 
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch('/api/v1/config');
+      const data = await res.json();
+      if (data && data.googleMapsApiKey) {
+        setGoogleMapsApiKey(data.googleMapsApiKey);
+      }
+    } catch (_) {}
+  };
+
   useEffect(() => {
     let isMounted = true;
     loginWithRole(currentRole).then(() => {
@@ -169,6 +180,7 @@ export const App: React.FC = () => {
       fetchNotifications();
       fetchStudents();
       fetchDevices();
+      fetchConfig();
     });
     return () => {
       isMounted = false;
@@ -427,6 +439,7 @@ export const App: React.FC = () => {
                 selectedSchoolId={selectedSchoolId}
                 onRefreshData={fetchStudents}
                 activeFilter={kpiFilter}
+                googleMapsApiKey={googleMapsApiKey}
               />
             )}
 
@@ -464,6 +477,7 @@ export const App: React.FC = () => {
                 selectedSchoolId={selectedSchoolId}
                 onRefreshData={fetchStudents}
                 activeFilter={kpiFilter}
+                googleMapsApiKey={googleMapsApiKey}
               />
             )}
 
@@ -475,6 +489,7 @@ export const App: React.FC = () => {
                 selectedSchoolId={selectedSchoolId}
                 onRefreshData={fetchStudents}
                 activeFilter={kpiFilter}
+                googleMapsApiKey={googleMapsApiKey}
               />
             )}
 

@@ -1,13 +1,20 @@
 services:
   - type: web
     name: maktab-nazorati
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: DB_CLIENT
+        value: pg
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RETENTION_DAYS
+        value: "30"
       - key: MAP_API_KEY
         sync: false

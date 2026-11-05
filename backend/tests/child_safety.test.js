@@ -518,4 +518,27 @@ describe('Phase 1 Child Safety GPS Tracking & Security Test Suite', () => {
       expect(Number(remaining[0].c)).toBe(0);
     });
   });
+
+  // =========================================================================
+  // 8. HEALTH ENDPOINT & PRODUCTION DB FAIL-FAST
+  // =========================================================================
+  describe('8. Health Endpoint & Production Safeguards', () => {
+    it('should return health status and DB client in use without secrets', async () => {
+      const res = await request(app).get('/api/v1/health');
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('ok');
+      expect(res.body.database).toBeDefined();
+      expect(res.body.database.client).toBeDefined();
+      expect(res.body.database.status).toBe('healthy');
+      expect(res.body.uptime).toBeTypeOf('number');
+
+      // Verify no secrets or sensitive fields are exposed
+      const bodyStr = JSON.stringify(res.body);
+      expect(bodyStr).not.toContain('password');
+      expect(bodyStr).not.toContain('secret');
+      expect(bodyStr).not.toContain('jwt');
+      expect(bodyStr).not.toContain('token');
+    });
+  });
 });

@@ -177,3 +177,4 @@ If all **LOW risk** items + **Option A** for the 2 decision items are approved:
 - **Dead code in live files:** Clean 7 unused imports, variables, and dead CartoDB keys.
 - **Unused dependencies:** Remove 3 unreferenced `@radix-ui` packages from `frontend/package.json`.
 - **Zero breaking changes:** All tests (`vitest 40/40`), builds (`tsc && vite build`), and smoke tests (`tools/smoke.js`) will be re-verified after every single commit.
+

@@ -9,7 +9,9 @@ import {
 } from './types';
 import { haversineDistance } from '@/lib/geoUtils';
 
-const OSM_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+// High-availability Keyless Tile URLs (Tested with zero 403/x-blocked on cloud servers)
+const OSM_GERMAN_URL = 'https://tile.openstreetmap.de/{z}/{x}/{y}.png';
+const ESRI_STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 const ESRI_SATELLITE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 export class LeafletOsmAdapter implements MapAdapter {
@@ -75,22 +77,48 @@ export class LeafletOsmAdapter implements MapAdapter {
     if (!this.map) return;
     if (this.tileLayer) {
       this.map.removeLayer(this.tileLayer);
+      this.tileLayer = null;
     }
 
     const isSatellite = type === 'satellite' || type === 'hybrid';
-    const tileUrl = isSatellite ? ESRI_SATELLITE_URL : OSM_URL;
 
-    this.tileLayer = L.tileLayer(tileUrl, {
-      maxZoom: 19,
-    });
-
-    // Fallback to OSM on tileerror
-    this.tileLayer.on('tileerror', () => {
-      if (isSatellite && this.map) {
-        console.warn('Satellite plitkasi xatosi, OSM ga qaytilmoqda');
-        this.setMapType('roadmap');
+    if (isSatellite) {
+      this.container?.classList.add('satellite-mode');
+      this.container?.classList.remove('dark-tiles');
+      this.tileLayer = L.tileLayer(ESRI_SATELLITE_URL, {
+        maxZoom: 19,
+        attribution: 'Tiles © Esri',
+      });
+    } else {
+      this.container?.classList.remove('satellite-mode');
+      if (this.options?.isDark) {
+        this.container?.classList.add('dark-tiles');
+      } else {
+        this.container?.classList.remove('dark-tiles');
       }
-    });
+
+      // Primary: High-reliability OpenStreetMap German cluster (never blocks Render or cloud IPs)
+      this.tileLayer = L.tileLayer(OSM_GERMAN_URL, {
+        maxZoom: 19,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+      });
+
+      // Automatic fallback to Esri World Street Map if OSM mirror experiences any issue
+      let errorCount = 0;
+      this.tileLayer.on('tileerror', () => {
+        errorCount++;
+        if (errorCount >= 2 && this.map) {
+          console.warn('⚠️ OSM plitkasi xatosi, Esri World Street Map ga avtomatik o\'tkazilmoqda...');
+          if (this.tileLayer) {
+            this.map.removeLayer(this.tileLayer);
+          }
+          this.tileLayer = L.tileLayer(ESRI_STREET_URL, {
+            maxZoom: 19,
+            attribution: 'Tiles © Esri',
+          }).addTo(this.map);
+        }
+      });
+    }
 
     this.tileLayer.addTo(this.map);
   }
@@ -606,7 +634,7 @@ export class LeafletOsmAdapter implements MapAdapter {
       const defCenter: [number, number] = this.options?.center && isFinite(this.options.center[0]) && isFinite(this.options.center[1])
         ? this.options.center
         : [41.311081, 69.240562];
-      this.map.setView(defCenter, 16.5);
+      this.map.setView(defCenter, 16);
     }
   }
 

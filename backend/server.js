@@ -599,6 +599,28 @@ function evaluateStrictSchoolAttendance(student, lat, lng, accuracy) {
 // REST API ENDPOINTS
 // ====================================================================
 
+// Health Check Endpoint (Reports server status and active DB client with zero secrets)
+app.get('/api/v1/health', async (req, res) => {
+  const activeClient = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
+  let dbStatus = 'healthy';
+  try {
+    await knexDb.raw('SELECT 1');
+  } catch (err) {
+    dbStatus = 'degraded';
+  }
+
+  res.json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    database: {
+      client: activeClient,
+      status: dbStatus
+    },
+    version: '1.0.0'
+  });
+});
+
 // 0. Configuration (Maps & Service Environment)
 app.get('/api/v1/config', (req, res) => {
   res.json({

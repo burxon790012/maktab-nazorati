@@ -1,3 +1,8 @@
+// Fail fast in production if DB_CLIENT is not set
+if (process.env.NODE_ENV === 'production' && !process.env.DB_CLIENT) {
+  throw new Error('Set DB_CLIENT=pg and DATABASE_URL');
+}
+
 const knex = require('knex');
 const knexConfig = require('./knexfile');
 

@@ -1,5 +1,10 @@
 const path = require('path');
 
+// Fail fast in production if DB_CLIENT is not set
+if (process.env.NODE_ENV === 'production' && !process.env.DB_CLIENT) {
+  throw new Error('Set DB_CLIENT=pg and DATABASE_URL');
+}
+
 let client = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
 
 // Lazy verify better-sqlite3 availability

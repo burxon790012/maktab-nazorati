@@ -31,6 +31,8 @@ export class LeafletOsmAdapter implements MapAdapter {
   private isDrawPolygonReady = false;
   private activeDrawCircle: L.Circle | null = null;
   private drawPoints: [number, number][] = [];
+  private isDrawing = false; // Guard: prevents tile recovery during drawing
+  private currentMapType: MapLayerType = 'roadmap'; // Track active type for recovery
   private drawMarkers: L.Marker[] = [];
   private mapClickHandler: ((e: L.LeafletMouseEvent) => void) | null = null;
 
@@ -75,6 +77,10 @@ export class LeafletOsmAdapter implements MapAdapter {
 
   setMapType(type: MapLayerType): void {
     if (!this.map) return;
+
+    // Save current tile URL to track active type
+    this.currentMapType = type;
+
     if (this.tileLayer) {
       this.map.removeLayer(this.tileLayer);
       this.tileLayer = null;
@@ -376,6 +382,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.cancelDrawing();
     if (!this.map) return;
 
+    this.isDrawing = true;
     this.drawPoints = [];
     this.drawMarkers = [];
 
@@ -485,6 +492,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.cancelDrawing();
     if (!this.map) return;
 
+    this.isDrawing = true;
     let initialCenter: [number, number] = [41.311081, 69.240562];
     if (center && Array.isArray(center) && isFinite(center[0]) && isFinite(center[1])) {
       initialCenter = center;
@@ -534,6 +542,7 @@ export class LeafletOsmAdapter implements MapAdapter {
   }
 
   cancelDrawing(): void {
+    this.isDrawing = false;
     if (this.mapClickHandler && this.map) {
       this.map.off('click', this.mapClickHandler);
       this.mapClickHandler = null;
@@ -559,6 +568,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.stopMeasure();
     if (!this.map) return;
 
+    this.isDrawing = true;
     this.measurePoints = [];
     this.mapClickHandler = (e: L.LeafletMouseEvent) => {
       this.measurePoints.push([e.latlng.lat, e.latlng.lng]);
@@ -601,6 +611,7 @@ export class LeafletOsmAdapter implements MapAdapter {
   }
 
   stopMeasure(): void {
+    this.isDrawing = false;
     if (this.mapClickHandler && this.map) {
       this.map.off('click', this.mapClickHandler);
       this.mapClickHandler = null;
@@ -617,10 +628,13 @@ export class LeafletOsmAdapter implements MapAdapter {
   checkAndRecoverTileLayer(): void {
     if (!this.map) return;
 
+    // Do NOT touch tile layer while user is actively drawing — it would destroy draw state
+    if (this.isDrawing) return;
+
     // 1. Ensure tile layer is active
     if (!this.tileLayer || !this.map.hasLayer(this.tileLayer)) {
       console.warn('⚠️ Xarita plitkasi (tiles) yo\'qolgan, qayta tiklanmoqda...');
-      this.setMapType('roadmap');
+      this.setMapType(this.currentMapType);
     }
 
     // 2. Validate center and zoom

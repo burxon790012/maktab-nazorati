@@ -14,12 +14,6 @@ COPY package*.json ./
 # Install production dependencies (including better-sqlite3)
 RUN npm ci --omit=dev
 
-# Build frontend if source exists in build context
-COPY frontend ./frontend
-RUN if [ -f "frontend/package.json" ]; then \
-      cd frontend && npm install && npm run build; \
-    fi
-
 # ====================================================================
 # Stage 2: Clean, minimal runtime image
 # ====================================================================
@@ -40,11 +34,6 @@ COPY . .
 # If built from repository root, bring backend/ files to /app root
 RUN if [ -d "backend" ] && [ -f "backend/server.js" ]; then \
       cp -rn backend/* . 2>/dev/null || cp -r backend/* .; \
-    fi
-
-# Copy fresh frontend build from builder stage if compiled
-RUN if [ -d "/app/frontend/dist" ]; then \
-      mkdir -p public && cp -r /app/frontend/dist/* public/; \
     fi
 
 # Container environment

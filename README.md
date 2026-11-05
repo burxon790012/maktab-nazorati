@@ -195,12 +195,34 @@ To configure the production database:
 3. For local development, Knex automatically defaults to `better-sqlite3` when `DATABASE_URL` is omitted.
 
 #### Docker Deployment
-The backend Docker image uses `node:22-alpine` with production-only dependencies:
+The backend Docker image uses a multi-stage `node:22-alpine` build with built-in SQLite support for preview testing and PostgreSQL (`pg`) for production:
 ```bash
-cd backend
-docker build -t maktab-watch-backend .
-docker run -p 3000:3000 -e DB_CLIENT=pg -e DATABASE_URL="postgres://..." maktab-watch-backend
+# Build from repository root or backend folder:
+docker build -t maktab-watch-backend -f backend/Dockerfile .
+
+# 1. Tezkor sinov (Preview / Test Mode - SQLite vaqtinchalik xotira):
+docker run -p 3000:3000 -e NODE_ENV=production maktab-watch-backend
+
+# 2. Production (PostgreSQL bilan doimiy xotira):
+docker run -p 3000:3000 -e NODE_ENV=production -e DATABASE_URL="postgres://user:pass@host:5432/db" maktab-watch-backend
 ```
+
+### ⚙️ Muhit O'zgaruvchilari (Environment Variables)
+
+#### 🧪 Tezkor Sinov (Test / Preview Mode):
+Render yoki Railway'da PostgreSQL ulamasdan tezkor sinovdan o'tkazish:
+* `NODE_ENV=production`: Ishlab chiqarish rejimini belgilaydi.
+* `PORT=3000`: Server porti (Render avtomatik beradi, default `3000`).
+* `SQLITE_PATH`: (Ixtiyoriy) SQLite fayli manzili (default: `/tmp/data.sqlite`).
+* *Eslatma*: `DATABASE_URL` berilmasa, server qulamasdan avtomatik SQLite'ga tushadi va ogohlantirish beradi. Redeploy bo'lganda ma'lumotlar o'chadi.
+
+#### 🚀 Productionga O'tish (Doimiy PostgreSQL):
+* `DATABASE_URL`: PostgreSQL ulanish manzili (`postgres://user:pass@host:5432/dbname`). Berilsa, tizim avtomatik `pg` klientiga o'tadi.
+* `REQUIRE_PG=true`: (Tavsiya etiladi) Agar `DATABASE_URL` topilmasa, server SQLite'ga tushmasdan darhol xato bilan to'xtaydi (production xavfsizlik himoyasi).
+* `PGSSL=false`: (Ixtiyoriy) Agar PostgreSQL o'z-o'zidan imzolangan (self-signed) sertifikat talab qilsa, default `true` bo'ladi (`rejectUnauthorized: false`). Agar SSL butunlay o'chirilishi kerak bo'lsa `PGSSL=false` qo'ying.
+* `JWT_SECRET`: Autentifikatsiya tokenlarini imzolash uchun kuchli maxfiy kalit.
+* `RETENTION_DAYS`: Telemetriya ma'lumotlarini saqlash muddati (default `30` kun).
+
 
 #### Option B: Python 3 Engine (Standard Library, zero external pip dependencies needed)
 ```bash

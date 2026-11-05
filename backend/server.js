@@ -599,8 +599,8 @@ function evaluateStrictSchoolAttendance(student, lat, lng, accuracy) {
 // REST API ENDPOINTS
 // ====================================================================
 
-// Health Check Endpoint (Reports server status and active DB client with zero secrets)
-app.get('/api/v1/health', async (req, res) => {
+// Health Check Endpoints (Reports server status and active DB client with zero secrets)
+const handleHealthCheck = async (req, res) => {
   const activeClient = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
   let dbStatus = 'healthy';
   try {
@@ -609,7 +609,7 @@ app.get('/api/v1/health', async (req, res) => {
     dbStatus = 'degraded';
   }
 
-  res.json({
+  res.status(200).json({
     status: 'ok',
     uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
@@ -619,7 +619,10 @@ app.get('/api/v1/health', async (req, res) => {
     },
     version: '1.0.0'
   });
-});
+};
+
+app.get('/health', handleHealthCheck);
+app.get('/api/v1/health', handleHealthCheck);
 
 // 0. Configuration (Maps & Service Environment)
 app.get('/api/v1/config', (req, res) => {
@@ -2526,10 +2529,10 @@ async function startServer() {
   }
 
   return new Promise((resolve) => {
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`==================================================================`);
       console.log(`🚀 SMART CHILD Multi-School Platform Engine ishga tushdi!`);
-      console.log(`📡 URL: http://localhost:${PORT}`);
+      console.log(`📡 URL: http://0.0.0.0:${PORT}`);
       console.log(`🏫 Ro'yxatdagi maktablar: ${db.schools.map(s => `${s.name} (${s.id})`).join(', ')}`);
       console.log(`==================================================================`);
       resolve(server);

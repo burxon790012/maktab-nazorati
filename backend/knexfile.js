@@ -1,45 +1,72 @@
 const path = require('path');
+const fs = require('fs');
 
-// Auto-detect pg client if DATABASE_URL is provided in environment
-if (process.env.DATABASE_URL && !process.env.DB_CLIENT) {
+// 1. Check if PostgreSQL is configured via DATABASE_URL or explicit DB_CLIENT='pg'
+const hasDatabaseUrl = Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.trim());
+const requirePg = process.env.REQUIRE_PG === 'true';
+
+let client = 'better-sqlite3';
+
+if (hasDatabaseUrl || process.env.DB_CLIENT === 'pg') {
+  client = 'pg';
   process.env.DB_CLIENT = 'pg';
-}
-
-// Fail fast in production if DATABASE_URL and DB_CLIENT are not set
-if (process.env.NODE_ENV === 'production' && !process.env.DB_CLIENT) {
+} else if (requirePg) {
   console.error('\n==================================================================');
-  console.error('❌ XATOLIK: Ishlab chiqarish (production) rejimida PostgreSQL sozlanmagan!');
+  console.error('❌ XATOLIK: REQUIRE_PG=true belgilangan, lekin DATABASE_URL mavjud emas!');
+  console.error('👉 Ishlab chiqarish (production) rejimida PostgreSQL ma\'lumotlar bazasi ulanishi shart.');
   console.error('👉 Railway: Dashboard → + New → Database → Add PostgreSQL, keyin DATABASE_URL ni servisga ulang.');
   console.error('👉 Render: Dashboard → + New → PostgreSQL, keyin DATABASE_URL ni Environment bo\'limiga qo\'ying.');
   console.error('👉 Boshqa server: DATABASE_URL="postgres://user:pass@host:5432/db" deb env ga kiriting.');
   console.error('==================================================================\n');
-  throw new Error('Set DB_CLIENT=pg and DATABASE_URL');
-}
+  throw new Error('REQUIRE_PG is true, but DATABASE_URL is not set');
+} else {
+  // Sinov rejimi (Test / Temporary preview mode)
+  client = 'better-sqlite3';
+  process.env.DB_CLIENT = 'better-sqlite3';
+  
+  if (!global.__SQLITE_FALLBACK_WARNED__) {
+    global.__SQLITE_FALLBACK_WARNED__ = true;
+    const defaultSqlitePath = process.env.NODE_ENV === 'production'
+      ? '/tmp/data.sqlite'
+      : path.join(__dirname, 'data', 'child_safety.sqlite');
+    const activeSqliteFile = process.env.SQLITE_PATH || defaultSqlitePath;
 
-let client = process.env.DB_CLIENT || (process.env.DATABASE_URL ? 'pg' : 'better-sqlite3');
-
-// Lazy verify better-sqlite3 availability
-if (client === 'better-sqlite3') {
-  try {
-    require.resolve('better-sqlite3');
-  } catch (e) {
-    if (process.env.DATABASE_URL) {
-      console.warn('⚠️ Warning: better-sqlite3 mavjud emas. PostgreSQL (pg) mijoziga o\'tilmoqda.');
-      client = 'pg';
-    } else {
-      console.error('❌ Error: better-sqlite3 o\'rnatilmagan va DATABASE_URL belgilanmagan. Ishlab chiqarish muhitida DB_CLIENT=pg va DATABASE_URL ni o\'rnating.');
-    }
+    console.warn('\n==================================================================');
+    console.warn('⚠️  SINOV REJIMI (TEST MODE): DATABASE_URL topilmadi!');
+    console.warn(`⚠️  Ma'lumotlar vaqtinchalik SQLite'da saqlanmoqda: ${activeSqliteFile}`);
+    console.warn('⚠️  DIQQAT: Redeploy yoki server restart bo\'lganda ma\'lumotlar O\'CHIB KETADI!');
+    console.warn('👉 Doimiy saqlash uchun DATABASE_URL (PostgreSQL) ulang.');
+    console.warn('👉 Agar productionda SQLite taqiqlanishi kerak bo\'lsa: REQUIRE_PG=true qo\'ying.');
+    console.warn('==================================================================\n');
   }
 }
 
-// SSL handling for PostgreSQL (Render/Railway/Cloud providers require rejectUnauthorized: false for self-signed certificates)
-const useSsl = process.env.PG_SSL === 'true' || (
-  process.env.NODE_ENV === 'production' &&
-  !process.env.PG_NO_SSL &&
-  process.env.DATABASE_URL &&
-  !process.env.DATABASE_URL.includes('localhost') &&
-  !process.env.DATABASE_URL.includes('127.0.0.1')
+// 2. Resolve SQLite target file and ensure directory exists
+const sqlitePath = process.env.SQLITE_PATH || (
+  process.env.NODE_ENV === 'production'
+    ? '/tmp/data.sqlite'
+    : path.join(__dirname, 'data', 'child_safety.sqlite')
 );
+const sqliteDir = path.dirname(sqlitePath);
+if (!fs.existsSync(sqliteDir)) {
+  try {
+    fs.mkdirSync(sqliteDir, { recursive: true });
+  } catch (err) {
+    console.warn(`Could not create SQLite directory ${sqliteDir}:`, err.message);
+  }
+}
+
+// 3. PostgreSQL SSL configuration
+const isLocalhost = process.env.DATABASE_URL && (
+  process.env.DATABASE_URL.includes('localhost') ||
+  process.env.DATABASE_URL.includes('127.0.0.1')
+);
+const pgSslDisabled = (
+  process.env.PGSSL === 'false' ||
+  process.env.PG_NO_SSL === 'true' ||
+  process.env.PGSSLMODE === 'disable'
+);
+const useSsl = client === 'pg' && !isLocalhost && !pgSslDisabled;
 
 const config = {
   client: client,
@@ -58,13 +85,15 @@ const config = {
             ssl: useSsl ? { rejectUnauthorized: false } : false
           })
     : {
-        filename: process.env.SQLITE_PATH || path.join(__dirname, 'data', 'child_safety.sqlite')
+        filename: sqlitePath
       },
   useNullAsDefault: client === 'better-sqlite3',
   pool: client === 'better-sqlite3' ? {
     afterCreate: (conn, cb) => {
-      conn.pragma('journal_mode = WAL');
-      conn.pragma('foreign_keys = ON');
+      try {
+        conn.pragma('journal_mode = WAL');
+        conn.pragma('foreign_keys = ON');
+      } catch (e) {}
       cb();
     }
   } : { min: 2, max: 10 },

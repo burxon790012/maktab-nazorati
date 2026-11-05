@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: maktab-nazorati
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: REQUIRE_PG
+        value: "false"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RETENTION_DAYS
+        value: "30"
+      - key: MAP_API_KEY
+        sync: false

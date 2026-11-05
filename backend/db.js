@@ -1,3 +1,8 @@
+// Auto-detect pg client if DATABASE_URL is provided in environment
+if (process.env.DATABASE_URL && !process.env.DB_CLIENT) {
+  process.env.DB_CLIENT = 'pg';
+}
+
 // Fail fast in production if DB_CLIENT is not set
 if (process.env.NODE_ENV === 'production' && !process.env.DB_CLIENT) {
   throw new Error('Set DB_CLIENT=pg and DATABASE_URL');

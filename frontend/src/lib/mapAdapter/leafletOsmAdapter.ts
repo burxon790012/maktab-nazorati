@@ -33,6 +33,7 @@ export class LeafletOsmAdapter implements MapAdapter {
   private drawPoints: [number, number][] = [];
   private isDrawing = false; // Guard: prevents tile recovery during drawing
   private currentMapType: MapLayerType = 'roadmap'; // Track active type for recovery
+  private hasSwitchedToFallback = false; // Session guard: max 1 fallback attempt per session
   private drawMarkers: L.Marker[] = [];
   private mapClickHandler: ((e: L.LeafletMouseEvent) => void) | null = null;
 
@@ -55,6 +56,12 @@ export class LeafletOsmAdapter implements MapAdapter {
       zoomControl: true,
       attributionControl: false,
     });
+
+    // Dedicated overlay pane for all drawing tools (above tiles, never triggers tile pane repainting)
+    if (!this.map.getPane('drawPane')) {
+      const drawPane = this.map.createPane('drawPane');
+      drawPane.style.zIndex = '620';
+    }
 
     this.setMapType(options.mapType || 'roadmap');
     this.setTheme(options.isDark);
@@ -81,18 +88,17 @@ export class LeafletOsmAdapter implements MapAdapter {
     // Save current tile URL to track active type
     this.currentMapType = type;
 
-    if (this.tileLayer) {
-      this.map.removeLayer(this.tileLayer);
-      this.tileLayer = null;
-    }
-
     const isSatellite = type === 'satellite' || type === 'hybrid';
+    const oldLayer = this.tileLayer;
 
     if (isSatellite) {
       this.container?.classList.add('satellite-mode');
       this.container?.classList.remove('dark-tiles');
       this.tileLayer = L.tileLayer(ESRI_SATELLITE_URL, {
         maxZoom: 19,
+        keepBuffer: 4,
+        updateWhenIdle: false,
+        className: 'satellite-tile-layer',
         attribution: 'Tiles © Esri',
       });
     } else {
@@ -106,27 +112,45 @@ export class LeafletOsmAdapter implements MapAdapter {
       // Primary: High-reliability OpenStreetMap German cluster (never blocks Render or cloud IPs)
       this.tileLayer = L.tileLayer(OSM_GERMAN_URL, {
         maxZoom: 19,
+        keepBuffer: 4,
+        updateWhenIdle: false,
+        className: this.options?.isDark ? 'dark-tile-layer' : '',
         attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
       });
 
-      // Automatic fallback to Esri World Street Map if OSM mirror experiences any issue
-      let errorCount = 0;
+      // Safe guarded fallback: runs at most once per session, never during drawing, requires 6 consecutive tile errors
+      let consecutiveErrors = 0;
       this.tileLayer.on('tileerror', () => {
-        errorCount++;
-        if (errorCount >= 2 && this.map) {
-          console.warn('⚠️ OSM plitkasi xatosi, Esri World Street Map ga avtomatik o\'tkazilmoqda...');
-          if (this.tileLayer) {
-            this.map.removeLayer(this.tileLayer);
-          }
-          this.tileLayer = L.tileLayer(ESRI_STREET_URL, {
+        if (this.hasSwitchedToFallback || this.isDrawing || !this.map) return;
+        consecutiveErrors++;
+        if (consecutiveErrors >= 6) {
+          this.hasSwitchedToFallback = true;
+          console.warn('⚠️ OSM plitkasi xatosi (6+ xato), Esri World Street Map ga avtomatik o\'tkazilmoqda...');
+          const fallbackLayer = L.tileLayer(ESRI_STREET_URL, {
             maxZoom: 19,
+            keepBuffer: 4,
+            updateWhenIdle: false,
+            className: this.options?.isDark ? 'dark-tile-layer' : '',
             attribution: 'Tiles © Esri',
-          }).addTo(this.map);
+          });
+
+          // Wait for first tile of fallback to load before removing old layer
+          fallbackLayer.once('load', () => {
+            if (this.tileLayer && this.map?.hasLayer(this.tileLayer)) {
+              this.map.removeLayer(this.tileLayer);
+            }
+            this.tileLayer = fallbackLayer;
+          });
+
+          fallbackLayer.addTo(this.map);
         }
       });
     }
 
     this.tileLayer.addTo(this.map);
+    if (oldLayer && this.map.hasLayer(oldLayer)) {
+      this.map.removeLayer(oldLayer);
+    }
   }
 
   setTheme(isDark: boolean): void {
@@ -403,11 +427,15 @@ export class LeafletOsmAdapter implements MapAdapter {
         iconSize: [0, 0],
       });
 
-      const vertexMarker = L.marker([pt[0], pt[1]], { icon: vertexIcon, zIndexOffset: 3000 }).addTo(this.map!);
+      const vertexMarker = L.marker([pt[0], pt[1]], {
+        icon: vertexIcon,
+        pane: 'drawPane',
+        zIndexOffset: 3000,
+      }).addTo(this.map!);
       this.drawMarkers.push(vertexMarker);
 
       // Safe progressive rendering:
-      // Point 1: vertex marker only (no polygon/polyline to avoid degenerate Sutherland-Hodgman NaN crash)
+      // Point 1: vertex marker only
       // Point 2: guide polyline
       // Point >= 3: closed polygon
       if (this.drawPoints.length === 2) {
@@ -417,6 +445,7 @@ export class LeafletOsmAdapter implements MapAdapter {
         }
         this.isDrawPolygonReady = false;
         this.activeDrawLayer = L.polyline(this.drawPoints, {
+          pane: 'drawPane',
           color: '#ff2d78',
           weight: 3,
           dashArray: '4, 4',
@@ -428,6 +457,7 @@ export class LeafletOsmAdapter implements MapAdapter {
         }
         if (!this.activeDrawLayer) {
           this.activeDrawLayer = L.polygon(this.drawPoints, {
+            pane: 'drawPane',
             color: '#ff2d78',
             weight: 3,
             fillColor: '#ff2d78',
@@ -504,6 +534,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     }
 
     this.activeDrawCircle = L.circle(initialCenter, {
+      pane: 'drawPane',
       radius: initialRadius,
       color: '#2ee59d',
       weight: 3,
@@ -574,9 +605,10 @@ export class LeafletOsmAdapter implements MapAdapter {
       this.measurePoints.push([e.latlng.lat, e.latlng.lng]);
 
       const marker = L.marker([e.latlng.lat, e.latlng.lng], {
+        pane: 'drawPane',
         icon: L.divIcon({
           className: 'measure-pin',
-          html: `<div style="background:#4db5ff;color:#fff;width:18px;height:18px;border-radius:9px;text-align:center;font-size:11px;font-weight:bold;line-height:18px;">${
+          html: `<div style="background:#4db5ff;color:#fff;width:18px;height:18px;border-radius:9999px;text-align:center;font-size:11px;font-weight:bold;line-height:18px;">${
             this.measurePoints.length === 1 ? 'A' : 'B'
           }</div>`,
           iconSize: [18, 18],
@@ -587,6 +619,7 @@ export class LeafletOsmAdapter implements MapAdapter {
 
       if (this.measurePoints.length === 2) {
         this.measureLine = L.polyline(this.measurePoints as any, {
+          pane: 'drawPane',
           color: '#4db5ff',
           weight: 3,
           dashArray: '5, 5',

@@ -304,9 +304,6 @@ export const MapView: React.FC<MapViewProps> = ({
       }
     }
     // If 0 students: KEEP CURRENT MAP VIEW UNCHANGED. Never call fitBounds or setView on 0 markers!
-
-    // Refresh size and tile layer
-    adapter.resize();
   }, [students, selectedStudent, statusFilter]);
 
   // Render Trails

@@ -361,9 +361,7 @@ class _ParentMainScreenState extends State<ParentMainScreen> {
           ),
           children: [
             TileLayer(
-              urlTemplate: widget.isDark
-                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                  : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'uz.maktab.smartchild',
             ),
             // School geofence polygon

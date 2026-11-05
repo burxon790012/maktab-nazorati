@@ -84,6 +84,12 @@
   font-family: inherit;
 }
 
+/* Dark Mode CSS Filter for Leaflet Tiles (without breaking markers, popups, or halos) */
+.dark-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+  -webkit-filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}
+
 .leaflet-popup-content-wrapper {
   background: hsl(var(--card)) !important;
   color: hsl(var(--card-foreground)) !important;

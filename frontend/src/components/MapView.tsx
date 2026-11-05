@@ -48,7 +48,16 @@ import {
   ChevronRight,
   Info,
   Thermometer,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import {
+  TILE_CONFIG,
+  DEFAULT_TILE_LAYER_ID,
+  MapTileLayerType,
+  OSM_DEFAULT_URL,
+  OSM_ATTRIBUTION,
+} from '@/config/mapConfig';
 
 interface MapViewProps {
   schools: School[];
@@ -58,36 +67,8 @@ interface MapViewProps {
   onRefreshData?: () => Promise<void>;
 }
 
-type MapTileLayerType = 'dark' | 'satellite' | 'voyager' | 'streets';
 type GeofenceToolMode = 'NONE' | 'DRAW_POLYGON' | 'CIRCLE' | 'MEASURE';
 type ZoneType = 'SAFE' | 'DANGER';
-
-const TILE_CONFIGS: Record<MapTileLayerType, { name: string; url: string; attr: string; maxZoom: number }> = {
-  dark: {
-    name: 'Tungi Rejim',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attr: '&copy; CartoDB &copy; OpenStreetMap',
-    maxZoom: 19,
-  },
-  satellite: {
-    name: "Sun'iy Yo'ldosh (Esri)",
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attr: 'Tiles &copy; Esri &mdash; Earthstar Geographics',
-    maxZoom: 19,
-  },
-  voyager: {
-    name: 'Topografiya (Voyager)',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    attr: '&copy; CartoDB &copy; OpenStreetMap',
-    maxZoom: 19,
-  },
-  streets: {
-    name: "Standart Ko'cha",
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attr: '&copy; OpenStreetMap contributors',
-    maxZoom: 19,
-  },
-};
 
 export const MapView: React.FC<MapViewProps> = ({
   schools,
@@ -116,7 +97,26 @@ export const MapView: React.FC<MapViewProps> = ({
   const [showTrails, setShowTrails] = useState(true);
 
   // Map view layer & UI states
-  const [mapLayer, setMapLayer] = useState<MapTileLayerType>('dark');
+  const [mapLayer, setMapLayer] = useState<MapTileLayerType>(DEFAULT_TILE_LAYER_ID);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('smart_child_map_dark');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('smart_child_map_dark', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -176,6 +176,34 @@ export const MapView: React.FC<MapViewProps> = ({
     });
   }, [students]);
 
+  // Helper to create tile layer with automatic fallback to OpenStreetMap on error
+  const createTileLayer = (configKey: MapTileLayerType) => {
+    const tileConfig = TILE_CONFIG[configKey] || TILE_CONFIG[DEFAULT_TILE_LAYER_ID];
+    const layer = L.tileLayer(tileConfig.url, {
+      maxZoom: tileConfig.maxZoom,
+      attribution: tileConfig.attr,
+      subdomains: tileConfig.subdomains || 'abc',
+    });
+
+    let fallbackTriggered = false;
+    layer.on('tileerror', (error: any) => {
+      console.warn("⚠️ Xarita plitkasi (tile) yuklanmadi, avtomatik zaxira OpenStreetMap manbasiga o'tilmoqda:", error);
+      if (!fallbackTriggered && tileConfig.url !== OSM_DEFAULT_URL) {
+        fallbackTriggered = true;
+        if (mapInstanceRef.current && currentTileLayerRef.current) {
+          mapInstanceRef.current.removeLayer(currentTileLayerRef.current);
+          const fallbackLayer = L.tileLayer(OSM_DEFAULT_URL, {
+            maxZoom: 19,
+            attribution: OSM_ATTRIBUTION,
+          }).addTo(mapInstanceRef.current);
+          currentTileLayerRef.current = fallbackLayer;
+        }
+      }
+    });
+
+    return layer;
+  };
+
   // 1. Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -195,12 +223,7 @@ export const MapView: React.FC<MapViewProps> = ({
     L.control.attribution({ position: 'bottomright' }).addTo(map);
 
     // Apply initial Tile Layer
-    const tileConfig = TILE_CONFIGS[mapLayer];
-    const tileLayer = L.tileLayer(tileConfig.url, {
-      maxZoom: tileConfig.maxZoom,
-      attribution: tileConfig.attr,
-      subdomains: 'abcd',
-    }).addTo(map);
+    const tileLayer = createTileLayer(mapLayer).addTo(map);
 
     currentTileLayerRef.current = tileLayer;
     measureLayersRef.current = L.layerGroup().addTo(map);
@@ -221,13 +244,7 @@ export const MapView: React.FC<MapViewProps> = ({
       map.removeLayer(currentTileLayerRef.current);
     }
 
-    const tileConfig = TILE_CONFIGS[mapLayer];
-    const newLayer = L.tileLayer(tileConfig.url, {
-      maxZoom: tileConfig.maxZoom,
-      attribution: tileConfig.attr,
-      subdomains: 'abcd',
-    }).addTo(map);
-
+    const newLayer = createTileLayer(mapLayer).addTo(map);
     currentTileLayerRef.current = newLayer;
   }, [mapLayer]);
 
@@ -622,29 +639,59 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   };
 
-  // Geocoding Search (Nominatim)
-  const handleSearchSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim() || !mapInstanceRef.current) return;
+  // Geocoding Search (Nominatim) with Debounce >= 1s
+  const lastSearchTimeRef = useRef<number>(0);
+  const searchDebounceTimerRef = useRef<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
+  const executeNominatimSearch = async (query: string) => {
+    lastSearchTimeRef.current = Date.now();
+    setIsSearching(true);
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery + ' Tashkent Uzbekistan'
-        )}`
+          query + ' Tashkent Uzbekistan'
+        )}&limit=1`,
+        {
+          headers: {
+            'Accept-Language': 'uz,ru,en',
+          },
+        }
       );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data && data.length > 0) {
         const first = data[0];
         const lat = parseFloat(first.lat);
         const lon = parseFloat(first.lon);
-        mapInstanceRef.current.flyTo([lat, lon], 17, { duration: 1.2 });
+        mapInstanceRef.current?.flyTo([lat, lon], 17, { duration: 1.2 });
       } else {
         alert("Kiritilgan manzil topilmadi. Qidiruv so'zini tekshiring.");
       }
-    } catch {
+    } catch (err) {
+      console.warn("Nominatim qidiruvida xatolik:", err);
       alert("Qidiruv xizmatida vaqtinchalik xatolik yuz berdi.");
+    } finally {
+      setIsSearching(false);
     }
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query || !mapInstanceRef.current) return;
+
+    const now = Date.now();
+    const elapsed = now - lastSearchTimeRef.current;
+    if (elapsed < 1000) {
+      if (searchDebounceTimerRef.current) clearTimeout(searchDebounceTimerRef.current);
+      searchDebounceTimerRef.current = setTimeout(() => {
+        executeNominatimSearch(query);
+      }, 1000 - elapsed);
+      return;
+    }
+
+    executeNominatimSearch(query);
   };
 
   // Focus All Students & Schools
@@ -953,7 +1000,12 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* 2. RIGHT / MAIN: High-Tech Leaflet Map & Professional HUD Studio */}
       <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-border/80 shadow-2xl bg-zinc-950 flex flex-col">
         {/* Map Canvas */}
-        <div ref={mapContainerRef} className="w-full flex-1 min-h-[520px]" />
+        <div
+          ref={mapContainerRef}
+          className={`w-full flex-1 min-h-[520px] transition-all duration-300 ${
+            isDarkMode && mapLayer !== 'satellite' ? 'dark-tiles' : ''
+          }`}
+        />
 
         {/* --- TOP-LEFT CONTROLS HUD: Search & Tools --- */}
         <div className="absolute top-3 left-3 z-[1000] flex items-center gap-2 flex-wrap max-w-[90%]">
@@ -1170,6 +1222,24 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {/* --- TOP-RIGHT CONTROLS: Layer Switcher & Tools --- */}
         <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2">
+          {/* Night Mode Toggle Button (CSS Filter on .leaflet-tile-pane) */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={toggleDarkMode}
+            className={`h-8 text-xs gap-1.5 bg-background/90 backdrop-blur-md border-border shadow-lg font-bold transition-all ${
+              isDarkMode ? 'text-amber-300 border-amber-500/40 bg-amber-500/10' : 'text-muted-foreground'
+            }`}
+            title={isDarkMode ? "Kunduzgi rejimga o'tish" : "Tungi rejimga o'tish"}
+          >
+            {isDarkMode ? (
+              <Moon className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span className="hidden sm:inline">{isDarkMode ? 'Tungi Rejim' : 'Kunduzgi'}</span>
+          </Button>
+
           {/* Layer switcher menu */}
           <div className="relative">
             <Button
@@ -1179,12 +1249,12 @@ export const MapView: React.FC<MapViewProps> = ({
               className="h-8 text-xs gap-1.5 bg-background/90 backdrop-blur-md border-border shadow-lg font-bold"
             >
               <Layers className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">{TILE_CONFIGS[mapLayer].name}</span>
+              <span className="hidden sm:inline">{TILE_CONFIG[mapLayer]?.name || 'Qatlam'}</span>
             </Button>
 
             {showLayerMenu && (
-              <div className="absolute right-0 mt-1.5 w-44 bg-card border border-border rounded-xl shadow-2xl p-1.5 space-y-1 backdrop-blur-xl z-[1001]">
-                {(Object.keys(TILE_CONFIGS) as MapTileLayerType[]).map((key) => (
+              <div className="absolute right-0 mt-1.5 w-48 bg-card border border-border rounded-xl shadow-2xl p-1.5 space-y-1 backdrop-blur-xl z-[1001]">
+                {(Object.keys(TILE_CONFIG) as MapTileLayerType[]).map((key) => (
                   <button
                     key={key}
                     onClick={() => {
@@ -1197,7 +1267,7 @@ export const MapView: React.FC<MapViewProps> = ({
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
-                    <span>{TILE_CONFIGS[key].name}</span>
+                    <span>{TILE_CONFIG[key].name}</span>
                     {mapLayer === key && <Check className="w-3.5 h-3.5" />}
                   </button>
                 ))}

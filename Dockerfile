@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files (present both in root and backend)
 COPY package*.json ./
 
-# Install production dependencies only using locked versions
-RUN npm ci --omit=dev
+# Install production dependencies only (omit dev and optional like better-sqlite3)
+RUN npm ci --omit=dev --omit=optional
 
 # Copy application source files
 COPY . .

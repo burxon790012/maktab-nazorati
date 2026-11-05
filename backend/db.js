@@ -5,6 +5,12 @@ if (process.env.DATABASE_URL && !process.env.DB_CLIENT) {
 
 // Fail fast in production if DB_CLIENT is not set
 if (process.env.NODE_ENV === 'production' && !process.env.DB_CLIENT) {
+  console.error('\n==================================================================');
+  console.error('❌ XATOLIK: Ishlab chiqarish (production) rejimida PostgreSQL sozlanmagan!');
+  console.error('👉 Railway: Dashboard → + New → Database → Add PostgreSQL, keyin DATABASE_URL ni servisga ulang.');
+  console.error('👉 Render: Dashboard → + New → PostgreSQL, keyin DATABASE_URL ni Environment bo\'limiga qo\'ying.');
+  console.error('👉 Boshqa server: DATABASE_URL="postgres://user:pass@host:5432/db" deb env ga kiriting.');
+  console.error('==================================================================\n');
   throw new Error('Set DB_CLIENT=pg and DATABASE_URL');
 }
 

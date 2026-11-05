@@ -43,8 +43,10 @@ export interface MapAdapter {
   setSearchMarker(lat: number, lng: number, title?: string): void;
   clearSearchMarker(): void;
   startDrawingPolygon(onPointAdded?: (pointsCount: number) => void): void;
+  undoLastPolygonPoint?(): number;
   finishDrawingPolygon(): [number, number][] | null;
-  startDrawingCircle(): void;
+  startDrawingCircle(center?: [number, number], radius?: number): void;
+  setCircleRadius?(radius: number): void;
   finishDrawingCircle(): { center: [number, number]; radius: number } | null;
   cancelDrawing(): void;
   startMeasure(onUpdate?: (distMeters: number) => void): void;

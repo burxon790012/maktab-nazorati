@@ -94,6 +94,7 @@ export const MapView: React.FC<MapViewProps> = ({
   // Drawing & Tools state
   const [drawingMode, setDrawingMode] = useState<'NONE' | 'POLYGON' | 'CIRCLE' | 'MEASURE'>('NONE');
   const [polygonPointCount, setPolygonPointCount] = useState(0);
+  const [circleRadius, setCircleRadius] = useState(200);
   const [measuredDistance, setMeasuredDistance] = useState<number | null>(null);
   const [isSavingGeofence, setIsSavingGeofence] = useState(false);
 
@@ -316,33 +317,54 @@ export const MapView: React.FC<MapViewProps> = ({
     });
   };
 
+  const handleUndoPolygonPoint = () => {
+    if (adapterRef.current?.undoLastPolygonPoint) {
+      const remaining = adapterRef.current.undoLastPolygonPoint();
+      setPolygonPointCount(remaining);
+    }
+  };
+
   const handleFinishPolygonDraw = async () => {
     if (!adapterRef.current) return;
     const points = adapterRef.current.finishDrawingPolygon();
     setDrawingMode('NONE');
+    setPolygonPointCount(0);
     if (points && points.length >= 3) {
+      const area = Math.round(calculatePolygonArea(points));
       setIsSavingGeofence(true);
       try {
+        activeSchool.polygon = points;
         await onSaveGeofence(activeSchool.id, points);
-        showToast(`✅ "${activeSchool.name}" uchun yangi geozona poligoni muvaffaqiyatli saqlandi!`, 'success');
+        showToast(`✅ "${activeSchool.name}" uchun ${formatArea(area)} maydonli yangi geozona muvaffaqiyatli saqlandi!`, 'success');
+        adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
+        adapterRef.current?.fitBounds(points);
       } catch (e: any) {
         showToast("Xatolik: " + e.message, 'error');
       } finally {
         setIsSavingGeofence(false);
+        setSearchPin(null);
       }
     } else {
-      showToast("⚠️ Poligon uchun kamida 3 ta nuqta belgilanishi shart!", 'info');
+      showToast("⚠️ Poligon uchun kamida 3 ta burchak nuqtasi belgilanishi shart!", 'info');
     }
   };
 
-  const handleStartCircleDraw = () => {
+  const handleStartCircleDraw = (customCenter?: [number, number]) => {
     if (drawingMode === 'CIRCLE') {
       adapterRef.current?.cancelDrawing();
       setDrawingMode('NONE');
       return;
     }
     setDrawingMode('CIRCLE');
-    adapterRef.current?.startDrawingCircle();
+    const initCenter: [number, number] = customCenter || (activeSchool.lat && activeSchool.lng
+      ? [activeSchool.lat, activeSchool.lng]
+      : [41.311081, 69.240562]);
+    adapterRef.current?.startDrawingCircle(initCenter, circleRadius);
+  };
+
+  const handleChangeCircleRadius = (newRadius: number) => {
+    setCircleRadius(newRadius);
+    adapterRef.current?.setCircleRadius?.(newRadius);
   };
 
   const handleFinishCircleDraw = async () => {
@@ -359,14 +381,20 @@ export const MapView: React.FC<MapViewProps> = ({
         const dLng = (circle.radius / (111320 * Math.cos((circle.center[0] * Math.PI) / 180))) * Math.sin(theta);
         poly.push([circle.center[0] + dLat, circle.center[1] + dLng]);
       }
+      activeSchool.lat = circle.center[0];
+      activeSchool.lng = circle.center[1];
+      activeSchool.polygon = poly;
       setIsSavingGeofence(true);
       try {
         await onSaveGeofence(activeSchool.id, poly);
         showToast(`✅ "${activeSchool.name}" uchun ${circle.radius}m radiusli doiraviy geozona saqlandi!`, 'success');
+        adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
+        adapterRef.current?.fitBounds(poly);
       } catch (e: any) {
         showToast("Xatolik: " + e.message, 'error');
       } finally {
         setIsSavingGeofence(false);
+        setSearchPin(null);
       }
     }
   };
@@ -403,39 +431,25 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   };
 
-  const handleSetAsSchoolCenter = async () => {
-    if (!searchPin) return;
-    const centerLat = searchPin.lat;
-    const centerLng = searchPin.lng;
-
-    // Approximate 200m circular geofence
-    const radius = 200;
-    const steps = 16;
-    const poly: [number, number][] = [];
-    for (let i = 0; i < steps; i++) {
-      const theta = (i / steps) * 2 * Math.PI;
-      const dLat = (radius / 111320) * Math.cos(theta);
-      const dLng = (radius / (111320 * Math.cos((centerLat * Math.PI) / 180))) * Math.sin(theta);
-      poly.push([centerLat + dLat, centerLng + dLng]);
+  // User manually triggers custom polygon drawing around the searched place
+  const handleStartPolygonFromPin = () => {
+    if (searchPin) {
+      activeSchool.lat = searchPin.lat;
+      activeSchool.lng = searchPin.lng;
     }
+    setDrawingMode('POLYGON');
+    setPolygonPointCount(0);
+    adapterRef.current?.startDrawingPolygon((count) => {
+      setPolygonPointCount(count);
+    });
+  };
 
-    activeSchool.lat = centerLat;
-    activeSchool.lng = centerLng;
-    activeSchool.polygon = poly;
-
-    setIsSavingGeofence(true);
-    try {
-      if (onSaveGeofence) {
-        await onSaveGeofence(activeSchool.id, poly);
-      }
-      showToast(`🎯 "${activeSchool.name}" markazi (${centerLat.toFixed(5)}, ${centerLng.toFixed(5)}) va 200m geozonasi belgilandi!`, 'success');
-      adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
-      adapterRef.current?.flyTo(centerLat, centerLng, 17.5);
-    } catch (e: any) {
-      showToast("Geozonani saqlashda xatolik: " + e.message, 'error');
-    } finally {
-      setIsSavingGeofence(false);
-      setSearchPin(null);
+  // User triggers custom circle drawing around the searched place
+  const handleStartCircleFromPin = () => {
+    if (searchPin) {
+      activeSchool.lat = searchPin.lat;
+      activeSchool.lng = searchPin.lng;
+      handleStartCircleDraw([searchPin.lat, searchPin.lng]);
     }
   };
 
@@ -480,7 +494,11 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* 1. MAP ENGINE CANVAS (Full Viewport Height) */}
       <div
         ref={containerRef}
-        className={`w-full h-full flex-1 min-h-0 relative z-0 ${isMapPickMode ? 'cursor-crosshair' : ''}`}
+        className={`w-full h-full flex-1 min-h-0 relative z-0 ${
+          isMapPickMode || drawingMode === 'POLYGON' || drawingMode === 'CIRCLE'
+            ? 'cursor-crosshair'
+            : ''
+        }`}
         style={{ width: '100%', height: '100%', minHeight: '100%' }}
       />
 
@@ -519,33 +537,149 @@ export const MapView: React.FC<MapViewProps> = ({
       )}
 
       {/* 1.3 Search Pin Action Banner */}
-      {searchPin && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-lg w-[92%] bg-[#1b1b33]/95 border border-[#2ee59d]/60 backdrop-blur-xl p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+      {searchPin && drawingMode === 'NONE' && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-xl w-[94%] bg-[#1b1b33]/95 border border-[#2ee59d]/60 backdrop-blur-xl p-3.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto">
             <div className="w-8 h-8 rounded-xl bg-[#2ee59d]/20 border border-[#2ee59d]/40 flex items-center justify-center shrink-0 text-[#2ee59d]">
               <MapPin className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-bold text-[#e8e8f5] truncate">{searchPin.title}</div>
               <div className="text-[11px] text-[#9a9ac0] font-mono truncate">
                 {searchPin.subtitle || `${searchPin.lat.toFixed(5)}, ${searchPin.lng.toFixed(5)}`}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end w-full sm:w-auto">
             <button
-              onClick={handleSetAsSchoolCenter}
-              disabled={isSavingGeofence}
-              className="px-3 py-1.5 rounded-xl bg-[#2ee59d] hover:bg-[#25c485] text-[#1b1b33] font-black text-xs flex items-center gap-1.5 shadow-lg shadow-[#2ee59d]/20 transition disabled:opacity-50"
+              onClick={handleStartPolygonFromPin}
+              className="px-3 py-1.5 rounded-xl bg-[#ff2d78] hover:bg-[#ff1a6d] text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-[#ff2d78]/25 transition"
+              title="Xarita ustida maktab hududi burchaklarini o'zingiz nuqtalar qo'yib chizasiz"
             >
-              <Target className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">🎯 Shu joyni maktab markazi qilish</span>
-              <span className="sm:hidden">🎯 Markaz qilish</span>
+              <PenTool className="w-3.5 h-3.5" />
+              <span>✏️ Chegarani o'zim chizish</span>
+            </button>
+            <button
+              onClick={handleStartCircleFromPin}
+              className="px-3 py-1.5 rounded-xl bg-[#2ee59d] hover:bg-[#25c485] text-[#1b1b33] font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-[#2ee59d]/20 transition"
+              title="Doiraviy radiusli geozona"
+            >
+              <CircleIcon className="w-3.5 h-3.5" />
+              <span>⭕ Aylana</span>
             </button>
             <button
               onClick={() => setSearchPin(null)}
               className="p-1.5 rounded-xl text-[#9a9ac0] hover:text-[#e8e8f5] hover:bg-[#2a2a4a]"
               title="Yopish"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 1.4 Active Polygon Drawing HUD Banner */}
+      {drawingMode === 'POLYGON' && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-xl w-[94%] bg-[#1b1b33]/95 border-2 border-[#ff2d78] backdrop-blur-xl p-3.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="w-9 h-9 rounded-xl bg-[#ff2d78]/20 border border-[#ff2d78]/40 flex items-center justify-center shrink-0 text-[#ff2d78] animate-pulse">
+              <PenTool className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-black text-[#e8e8f5] flex items-center gap-2">
+                <span>✏️ Geozona chegarasini chizish</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#ff2d78] text-white text-[10px] font-extrabold">
+                  {polygonPointCount} ta nuqta
+                </span>
+              </div>
+              <div className="text-[11px] text-[#9a9ac0] mt-0.5">
+                {polygonPointCount < 3
+                  ? "Xaritada maktab hududi burchaklarini ketma-ket bosing (kamida 3 ta)"
+                  : "Chegara tayyor! Yana nuqta qo'shishingiz yoki Saqlashni bosishingiz mumkin"}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end w-full sm:w-auto">
+            <button
+              onClick={handleUndoPolygonPoint}
+              disabled={polygonPointCount === 0}
+              className="px-2.5 py-1.5 rounded-xl bg-[#2a2a4a] hover:bg-[#3a3a63] disabled:opacity-40 text-[#e8e8f5] font-semibold text-xs flex items-center gap-1 border border-[#3a3a63] transition"
+              title="Oxirgi nuqtani bekor qilish"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#ffb020]" />
+              <span>Orqaga</span>
+            </button>
+            <button
+              onClick={handleFinishPolygonDraw}
+              disabled={polygonPointCount < 3 || isSavingGeofence}
+              className="px-3.5 py-1.5 rounded-xl bg-[#2ee59d] hover:bg-[#25c485] disabled:opacity-40 text-[#1b1b33] font-black text-xs flex items-center gap-1.5 shadow-lg shadow-[#2ee59d]/25 transition"
+            >
+              <Check className="w-4 h-4" />
+              <span>{isSavingGeofence ? 'Saqlanmoqda...' : 'Saqlash'}</span>
+            </button>
+            <button
+              onClick={() => {
+                adapterRef.current?.cancelDrawing();
+                setDrawingMode('NONE');
+                setPolygonPointCount(0);
+              }}
+              className="p-1.5 rounded-xl text-[#9a9ac0] hover:text-[#ff4d5e] hover:bg-[#2a2a4a]"
+              title="Bekor qilish"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 1.5 Active Circle Drawing HUD Banner */}
+      {drawingMode === 'CIRCLE' && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 max-w-xl w-[94%] bg-[#1b1b33]/95 border-2 border-[#2ee59d] backdrop-blur-xl p-3.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="w-9 h-9 rounded-xl bg-[#2ee59d]/20 border border-[#2ee59d]/40 flex items-center justify-center shrink-0 text-[#2ee59d] animate-pulse">
+              <CircleIcon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-black text-[#e8e8f5] flex items-center gap-2">
+                <span>⭕ Doiraviy geozona</span>
+                <span className="font-mono text-[#2ee59d] font-bold">R = {circleRadius} metr</span>
+              </div>
+              <div className="text-[11px] text-[#9a9ac0] mt-0.5">
+                Xaritada bosib markazni ko'chirishingiz yoki radiusni tanlashingiz mumkin
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end w-full sm:w-auto">
+            <div className="flex items-center gap-1 bg-[#2a2a4a] p-1 rounded-xl border border-[#3a3a63]">
+              {[50, 100, 200, 300, 500].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => handleChangeCircleRadius(r)}
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition ${
+                    circleRadius === r
+                      ? 'bg-[#2ee59d] text-[#1b1b33]'
+                      : 'text-[#9a9ac0] hover:text-[#e8e8f5]'
+                  }`}
+                >
+                  {r}m
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleFinishCircleDraw}
+              disabled={isSavingGeofence}
+              className="px-3.5 py-1.5 rounded-xl bg-[#2ee59d] hover:bg-[#25c485] text-[#1b1b33] font-black text-xs flex items-center gap-1.5 shadow-lg shadow-[#2ee59d]/25 transition"
+            >
+              <Check className="w-4 h-4" />
+              <span>{isSavingGeofence ? 'Saqlanmoqda...' : 'Saqlash'}</span>
+            </button>
+            <button
+              onClick={() => {
+                adapterRef.current?.cancelDrawing();
+                setDrawingMode('NONE');
+              }}
+              className="p-1.5 rounded-xl text-[#9a9ac0] hover:text-[#ff4d5e] hover:bg-[#2a2a4a]"
+              title="Bekor qilish"
             >
               <X className="w-4 h-4" />
             </button>
@@ -610,7 +744,7 @@ export const MapView: React.FC<MapViewProps> = ({
           )}
 
           <button
-            onClick={handleStartCircleDraw}
+            onClick={() => handleStartCircleDraw()}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
               drawingMode === 'CIRCLE'
                 ? 'bg-[#2ee59d] text-[#1b1b33]'

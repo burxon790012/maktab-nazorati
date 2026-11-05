@@ -28,6 +28,7 @@ export class LeafletOsmAdapter implements MapAdapter {
   private activeDrawLayer: L.Polygon | L.Polyline | null = null;
   private activeDrawCircle: L.Circle | null = null;
   private drawPoints: [number, number][] = [];
+  private drawMarkers: L.Marker[] = [];
   private mapClickHandler: ((e: L.LeafletMouseEvent) => void) | null = null;
 
   // Measure state
@@ -304,14 +305,34 @@ export class LeafletOsmAdapter implements MapAdapter {
     if (!this.map) return;
 
     this.drawPoints = [];
+    this.drawMarkers = [];
+
     this.mapClickHandler = (e: L.LeafletMouseEvent) => {
-      this.drawPoints.push([e.latlng.lat, e.latlng.lng]);
+      const pt: [number, number] = [e.latlng.lat, e.latlng.lng];
+      this.drawPoints.push(pt);
+
+      // Add numbered vertex marker
+      const markerIndex = this.drawPoints.length;
+      const vertexIcon = L.divIcon({
+        className: 'draw-vertex-pin',
+        html: `
+          <div style="background: #ff2d78; color: #ffffff; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.6); transform: translate(-50%, -50%);">
+            ${markerIndex}
+          </div>
+        `,
+        iconSize: [0, 0],
+      });
+
+      const vertexMarker = L.marker([pt[0], pt[1]], { icon: vertexIcon, zIndexOffset: 3000 }).addTo(this.map!);
+      this.drawMarkers.push(vertexMarker);
+
       if (!this.activeDrawLayer) {
         this.activeDrawLayer = L.polygon(this.drawPoints, {
           color: '#ff2d78',
-          weight: 2.5,
+          weight: 3,
           fillColor: '#ff2d78',
-          fillOpacity: 0.2,
+          fillOpacity: 0.25,
+          dashArray: '4, 4',
         }).addTo(this.map!);
       } else {
         (this.activeDrawLayer as L.Polygon).setLatLngs(this.drawPoints as any);
@@ -320,6 +341,24 @@ export class LeafletOsmAdapter implements MapAdapter {
     };
 
     this.map.on('click', this.mapClickHandler);
+  }
+
+  undoLastPolygonPoint(): number {
+    if (this.drawPoints.length === 0) return 0;
+    this.drawPoints.pop();
+    const lastMarker = this.drawMarkers.pop();
+    if (lastMarker && this.map) {
+      this.map.removeLayer(lastMarker);
+    }
+    if (this.activeDrawLayer && this.map) {
+      if (this.drawPoints.length === 0) {
+        this.map.removeLayer(this.activeDrawLayer);
+        this.activeDrawLayer = null;
+      } else {
+        (this.activeDrawLayer as L.Polygon).setLatLngs(this.drawPoints as any);
+      }
+    }
+    return this.drawPoints.length;
   }
 
   finishDrawingPolygon(): [number, number][] | null {
@@ -338,18 +377,33 @@ export class LeafletOsmAdapter implements MapAdapter {
     return res;
   }
 
-  startDrawingCircle(): void {
+  startDrawingCircle(center?: [number, number], initialRadius = 200): void {
     this.cancelDrawing();
     if (!this.map) return;
 
-    const center = this.map.getCenter();
-    this.activeDrawCircle = L.circle([center.lat, center.lng], {
-      radius: 200,
+    const initialCenter: [number, number] = center || [this.map.getCenter().lat, this.map.getCenter().lng];
+    this.activeDrawCircle = L.circle(initialCenter, {
+      radius: initialRadius,
       color: '#2ee59d',
-      weight: 2.5,
+      weight: 3,
       fillColor: '#2ee59d',
-      fillOpacity: 0.2,
+      fillOpacity: 0.25,
+      dashArray: '6, 6',
     }).addTo(this.map);
+
+    // Clicking anywhere on map relocates the circle center
+    this.mapClickHandler = (e: L.LeafletMouseEvent) => {
+      if (this.activeDrawCircle) {
+        this.activeDrawCircle.setLatLng(e.latlng);
+      }
+    };
+    this.map.on('click', this.mapClickHandler);
+  }
+
+  setCircleRadius(radius: number): void {
+    if (this.activeDrawCircle) {
+      this.activeDrawCircle.setRadius(radius);
+    }
   }
 
   finishDrawingCircle(): { center: [number, number]; radius: number } | null {
@@ -376,6 +430,10 @@ export class LeafletOsmAdapter implements MapAdapter {
     if (this.activeDrawCircle && this.map) {
       this.map.removeLayer(this.activeDrawCircle);
       this.activeDrawCircle = null;
+    }
+    if (this.drawMarkers && this.map) {
+      this.drawMarkers.forEach((m) => this.map?.removeLayer(m));
+      this.drawMarkers = [];
     }
     this.drawPoints = [];
   }

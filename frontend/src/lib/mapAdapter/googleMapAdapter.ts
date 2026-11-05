@@ -77,6 +77,7 @@ export class GoogleMapAdapter implements MapAdapter {
   private activeDrawPolygon: any = null;
   private activeDrawCircle: any = null;
   private drawPoints: { lat: number; lng: number }[] = [];
+  private drawMarkers: any[] = [];
   private mapClickListener: any = null;
 
   // Measure state
@@ -416,14 +417,16 @@ export class GoogleMapAdapter implements MapAdapter {
     const g = window.google;
 
     this.drawPoints = [];
+    this.drawMarkers = [];
+
     this.activeDrawPolygon = new g.maps.Polygon({
       paths: [],
       strokeColor: '#ff2d78',
       strokeOpacity: 0.9,
       strokeWeight: 2.5,
       fillColor: '#ff2d78',
-      fillOpacity: 0.2,
-      editable: true,
+      fillOpacity: 0.22,
+      editable: false,
       draggable: false,
       map: this.map,
     });
@@ -432,8 +435,46 @@ export class GoogleMapAdapter implements MapAdapter {
       const pt = { lat: e.latLng.lat(), lng: e.latLng.lng() };
       this.drawPoints.push(pt);
       this.activeDrawPolygon.setPath(this.drawPoints);
+
+      const markerIndex = this.drawPoints.length;
+      const markerContainer = document.createElement('div');
+      markerContainer.innerHTML = `
+        <div style="background: #ff2d78; color: #ffffff; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.6); transform: translate(-50%, -50%);">
+          ${markerIndex}
+        </div>
+      `;
+
+      let marker: any;
+      if (g.maps.marker && g.maps.marker.AdvancedMarkerElement) {
+        marker = new g.maps.marker.AdvancedMarkerElement({
+          map: this.map,
+          position: pt,
+          content: markerContainer,
+          zIndex: 3000,
+        });
+      } else {
+        marker = new g.maps.Marker({
+          map: this.map,
+          position: pt,
+        });
+      }
+      this.drawMarkers.push(marker);
       onPointAdded?.(this.drawPoints.length);
     });
+  }
+
+  undoLastPolygonPoint(): number {
+    if (this.drawPoints.length === 0) return 0;
+    this.drawPoints.pop();
+    const lastMarker = this.drawMarkers.pop();
+    if (lastMarker) {
+      if (lastMarker.map !== undefined) lastMarker.map = null;
+      if (lastMarker.setMap) lastMarker.setMap(null);
+    }
+    if (this.activeDrawPolygon) {
+      this.activeDrawPolygon.setPath(this.drawPoints);
+    }
+    return this.drawPoints.length;
   }
 
   finishDrawingPolygon(): [number, number][] | null {
@@ -454,24 +495,39 @@ export class GoogleMapAdapter implements MapAdapter {
     return result;
   }
 
-  startDrawingCircle(): void {
+  startDrawingCircle(center?: [number, number], initialRadius = 200): void {
     this.cancelDrawing();
     if (!this.map || !window.google) return;
     const g = window.google;
 
-    const center = this.map.getCenter();
+    const initialCenter = center
+      ? { lat: center[0], lng: center[1] }
+      : this.map.getCenter();
+
     this.activeDrawCircle = new g.maps.Circle({
       strokeColor: '#2ee59d',
       strokeOpacity: 0.9,
       strokeWeight: 2.5,
       fillColor: '#2ee59d',
-      fillOpacity: 0.2,
+      fillOpacity: 0.22,
       map: this.map,
-      center: center,
-      radius: 200, // 200 meters initial
+      center: initialCenter,
+      radius: initialRadius,
       editable: true,
       draggable: true,
     });
+
+    this.mapClickListener = this.map.addListener('click', (e: any) => {
+      if (this.activeDrawCircle) {
+        this.activeDrawCircle.setCenter(e.latLng);
+      }
+    });
+  }
+
+  setCircleRadius(radius: number): void {
+    if (this.activeDrawCircle) {
+      this.activeDrawCircle.setRadius(radius);
+    }
   }
 
   finishDrawingCircle(): { center: [number, number]; radius: number } | null {
@@ -498,6 +554,13 @@ export class GoogleMapAdapter implements MapAdapter {
     if (this.activeDrawCircle) {
       this.activeDrawCircle.setMap(null);
       this.activeDrawCircle = null;
+    }
+    if (this.drawMarkers) {
+      this.drawMarkers.forEach((m) => {
+        if (m.map !== undefined) m.map = null;
+        if (m.setMap) m.setMap(null);
+      });
+      this.drawMarkers = [];
     }
     this.drawPoints = [];
   }

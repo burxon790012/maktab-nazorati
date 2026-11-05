@@ -70,3 +70,4 @@ export function loadGoogleMapsScript(apiKey: string): Promise<boolean> {
 
   return window.__googleMapsLoadedPromise;
 }
+

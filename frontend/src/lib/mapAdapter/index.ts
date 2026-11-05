@@ -58,3 +58,4 @@ export async function createMapAdapter(preferredApiKey?: string): Promise<MapAda
     message: 'OpenStreetMap zaxira rejimi faol (Kalit talab etilmaydi)',
   };
 }
+

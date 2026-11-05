@@ -141,17 +141,41 @@ export class GoogleMapAdapter implements MapAdapter {
 
   flyTo(lat: number, lng: number, zoom?: number): void {
     if (!this.map) return;
+    if (typeof lat !== 'number' || isNaN(lat) || !isFinite(lat) || typeof lng !== 'number' || isNaN(lng) || !isFinite(lng)) {
+      return;
+    }
     this.map.panTo({ lat, lng });
-    if (zoom) {
+    if (zoom && typeof zoom === 'number' && isFinite(zoom)) {
       this.map.setZoom(zoom);
     }
   }
 
   fitBounds(bounds: [number, number][]): void {
-    if (!this.map || !bounds || bounds.length === 0 || !window.google) return;
+    if (!this.map || !bounds || !Array.isArray(bounds) || bounds.length === 0 || !window.google) return;
+
+    const valid = bounds.filter(
+      (pt) =>
+        Array.isArray(pt) &&
+        pt.length >= 2 &&
+        typeof pt[0] === 'number' &&
+        !isNaN(pt[0]) &&
+        isFinite(pt[0]) &&
+        typeof pt[1] === 'number' &&
+        !isNaN(pt[1]) &&
+        isFinite(pt[1])
+    );
+
+    if (valid.length === 0) return;
+
+    if (valid.length === 1) {
+      this.map.setCenter({ lat: valid[0][0], lng: valid[0][1] });
+      this.map.setZoom(16);
+      return;
+    }
+
     const g = window.google;
     const gBounds = new g.maps.LatLngBounds();
-    bounds.forEach(([lat, lng]) => gBounds.extend({ lat, lng }));
+    valid.forEach(([lat, lng]) => gBounds.extend({ lat, lng }));
     this.map.fitBounds(gBounds);
   }
 

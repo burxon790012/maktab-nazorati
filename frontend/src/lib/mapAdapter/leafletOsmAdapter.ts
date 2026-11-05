@@ -101,12 +101,49 @@ export class LeafletOsmAdapter implements MapAdapter {
 
   flyTo(lat: number, lng: number, zoom?: number): void {
     if (!this.map) return;
-    this.map.flyTo([lat, lng], zoom || 17, { duration: 0.8 });
+    if (typeof lat !== 'number' || isNaN(lat) || !isFinite(lat) || typeof lng !== 'number' || isNaN(lng) || !isFinite(lng)) {
+      console.warn('flyTo: Noto\'g\'ri koordinatalar:', lat, lng);
+      return;
+    }
+    const targetZoom = typeof zoom === 'number' && isFinite(zoom) && !isNaN(zoom) ? zoom : 16.5;
+    try {
+      this.map.flyTo([lat, lng], targetZoom, { duration: 0.8 });
+    } catch (e) {
+      this.map.setView([lat, lng], targetZoom);
+    }
   }
 
   fitBounds(bounds: [number, number][]): void {
-    if (!this.map || !bounds || bounds.length === 0) return;
-    this.map.fitBounds(L.latLngBounds(bounds as any));
+    if (!this.map || !bounds || !Array.isArray(bounds) || bounds.length === 0) return;
+
+    // Filter strictly finite, valid coordinates
+    const valid = bounds.filter(
+      (pt) =>
+        Array.isArray(pt) &&
+        pt.length >= 2 &&
+        typeof pt[0] === 'number' &&
+        !isNaN(pt[0]) &&
+        isFinite(pt[0]) &&
+        typeof pt[1] === 'number' &&
+        !isNaN(pt[1]) &&
+        isFinite(pt[1])
+    );
+
+    if (valid.length === 0) return;
+
+    if (valid.length === 1) {
+      this.map.setView([valid[0][0], valid[0][1]], 16);
+      return;
+    }
+
+    try {
+      const llBounds = L.latLngBounds(valid as any);
+      if (llBounds.isValid()) {
+        this.map.fitBounds(llBounds, { maxZoom: 18, padding: [40, 40] });
+      }
+    } catch (e) {
+      console.warn('fitBounds xatosi:', e);
+    }
   }
 
   upsertStudentMarker(student: Student, isSelected: boolean): void {
@@ -498,9 +535,34 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.measurePoints = [];
   }
 
+  checkAndRecoverTileLayer(): void {
+    if (!this.map) return;
+
+    // 1. Ensure tile layer is active
+    if (!this.tileLayer || !this.map.hasLayer(this.tileLayer)) {
+      console.warn('⚠️ Xarita plitkasi (tiles) yo\'qolgan, qayta tiklanmoqda...');
+      this.setMapType('roadmap');
+    }
+
+    // 2. Validate center and zoom
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    const isCenterInvalid = !center || !isFinite(center.lat) || !isFinite(center.lng) || isNaN(center.lat) || isNaN(center.lng);
+    const isZoomInvalid = typeof zoom !== 'number' || isNaN(zoom) || !isFinite(zoom) || zoom < 1 || zoom > 19;
+
+    if (isCenterInvalid || isZoomInvalid) {
+      console.warn('⚠️ Noto\'g\'ri xarita markazi yoki zoom aniqlandi, standart markazga tiklanmoqda');
+      const defCenter: [number, number] = this.options?.center && isFinite(this.options.center[0]) && isFinite(this.options.center[1])
+        ? this.options.center
+        : [41.311081, 69.240562];
+      this.map.setView(defCenter, 16.5);
+    }
+  }
+
   resize(): void {
     if (!this.map) return;
-    this.map.invalidateSize();
+    this.checkAndRecoverTileLayer();
+    this.map.invalidateSize({ pan: false });
   }
 
   destroy(): void {

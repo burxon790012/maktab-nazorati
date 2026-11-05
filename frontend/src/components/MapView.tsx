@@ -141,9 +141,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
   // Sync activeFilter prop
   useEffect(() => {
-    if (activeFilter) {
-      setStatusFilter(activeFilter);
-    }
+    setStatusFilter(activeFilter || 'ALL');
   }, [activeFilter]);
 
   // 1. Initialize Map Engine (Google Maps with OSM Fallback)
@@ -192,10 +190,15 @@ export const MapView: React.FC<MapViewProps> = ({
       // Initial School Geofences
       res.adapter.renderSchoolGeofences(schools, targetSchoolId);
 
-      // Fit bounds to school if polygon available
-      if (activeSchool.polygon && activeSchool.polygon.length > 2) {
+      // Fit bounds to school if polygon available and valid
+      if (activeSchool.polygon && Array.isArray(activeSchool.polygon) && activeSchool.polygon.length > 2) {
         res.adapter.fitBounds(activeSchool.polygon);
       }
+
+      // Staggered size invalidation to ensure full render after flex layout stabilizes
+      setTimeout(() => res.adapter.resize(), 100);
+      setTimeout(() => res.adapter.resize(), 300);
+      setTimeout(() => res.adapter.resize(), 600);
     });
 
     return () => {
@@ -207,7 +210,7 @@ export const MapView: React.FC<MapViewProps> = ({
     };
   }, [googleMapsApiKey]);
 
-  // 2. ResizeObserver for robust layout adaptation
+  // 2. ResizeObserver and Window Resize listener for robust layout adaptation
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -217,8 +220,14 @@ export const MapView: React.FC<MapViewProps> = ({
     });
     ro.observe(container);
 
+    const handleWinResize = () => {
+      adapterRef.current?.resize();
+    };
+    window.addEventListener('resize', handleWinResize);
+
     return () => {
       ro.disconnect();
+      window.removeEventListener('resize', handleWinResize);
     };
   }, []);
 
@@ -229,12 +238,14 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [schools, targetSchoolId]);
 
-  // 4. Update Student Markers and Trails
+  // 4. Update Student Markers and Trails (Guarded View: Never break tiles on 0 results)
   useEffect(() => {
     if (!adapterRef.current) return;
     const adapter = adapterRef.current;
 
     adapter.clearStudentMarkers();
+
+    const matchingStudents: Student[] = [];
 
     students.forEach((s) => {
       const telem = s.telemetry;
@@ -255,6 +266,7 @@ export const MapView: React.FC<MapViewProps> = ({
         if (statusFilter === 'OFFLINE' && !isOffline) return;
       }
 
+      matchingStudents.push(s);
       adapter.upsertStudentMarker(s, selectedStudent?.id === s.id);
 
       // Track history update (in-memory last 30 minutes trail)
@@ -269,6 +281,18 @@ export const MapView: React.FC<MapViewProps> = ({
         return prev;
       });
     });
+
+    // If exactly 1 student matches: focus with sensible zoom (16)
+    if (statusFilter !== 'ALL' && matchingStudents.length === 1) {
+      const single = matchingStudents[0];
+      if (single.telemetry?.latitude && single.telemetry?.longitude) {
+        adapter.flyTo(single.telemetry.latitude, single.telemetry.longitude, 16);
+      }
+    }
+    // If 0 students: KEEP CURRENT MAP VIEW UNCHANGED. Never call fitBounds or setView on 0 markers!
+
+    // Refresh size and tile layer
+    adapter.resize();
   }, [students, selectedStudent, statusFilter]);
 
   // Render Trails
@@ -456,18 +480,24 @@ export const MapView: React.FC<MapViewProps> = ({
   // Filtered Students List
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      const matchesSearch =
-        s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        s.uniqueId.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        s.className.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        (s.telemetry?.address && s.telemetry.address.toLowerCase().includes(studentSearch.toLowerCase()));
+      // 1. Independent student text search (Ism, ID yoki sinf)
+      if (studentSearch.trim()) {
+        const query = studentSearch.trim().toLowerCase();
+        const matchesName = s.name.toLowerCase().includes(query);
+        const matchesId = s.uniqueId.toLowerCase().includes(query);
+        const matchesClass = s.className.toLowerCase().includes(query);
+        const matchesAddr = s.telemetry?.address && s.telemetry.address.toLowerCase().includes(query);
+        if (!matchesName && !matchesId && !matchesClass && !matchesAddr) {
+          return false;
+        }
+      }
 
-      if (!matchesSearch) return false;
-
-      const isInside = s.telemetry?.geofenceStatus === 'INSIDE';
-      const isVerifying = s.telemetry?.geofenceStatus === 'VERIFYING';
-      const isSos = s.telemetry?.isSos;
-      const isOffline = s.telemetry?.deviceStatus === 'OFFLINE' || (s.telemetry?.lastSeen && Date.now() - s.telemetry.lastSeen > 300000);
+      // 2. Status filter
+      const telem = s.telemetry;
+      const isInside = telem?.geofenceStatus === 'INSIDE';
+      const isVerifying = telem?.geofenceStatus === 'VERIFYING';
+      const isSos = telem?.isSos;
+      const isOffline = telem?.deviceStatus === 'OFFLINE' || (telem?.lastSeen && Date.now() - telem.lastSeen > 300000);
 
       if (statusFilter === 'INSIDE') return isInside;
       if (statusFilter === 'OUTSIDE') return !isInside;
@@ -838,16 +868,75 @@ export const MapView: React.FC<MapViewProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-[#2ee59d] animate-ping" />
               <span className="font-bold text-xs text-[#e8e8f5]">Jonli Telemetriya</span>
             </div>
-            <span className="text-[11px] font-mono text-[#2ee59d] font-bold">
-              {filteredStudents.length} / {students.length}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {statusFilter !== 'ALL' && (
+                <span className="text-[10px] font-bold text-[#ffb020] bg-[#ffb020]/15 px-2 py-0.5 rounded-full border border-[#ffb020]/30">
+                  {statusFilter}
+                </span>
+              )}
+              <span className="text-[11px] font-mono text-[#2ee59d] font-bold">
+                {filteredStudents.length} / {students.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Dedicated Student Search Field */}
+          <div className="p-2 border-b border-[#3a3a63]/40 bg-[#1b1b33]/60">
+            <div className="relative flex items-center">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 text-[#9a9ac0] pointer-events-none" />
+              <input
+                type="text"
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                placeholder="Ism, ID yoki sinf..."
+                className="w-full h-8 pl-8 pr-7 bg-[#2a2a4a]/90 border border-[#3a3a63]/50 rounded-xl text-xs text-[#e8e8f5] placeholder:text-[#9a9ac0] focus:outline-none focus:border-[#2ee59d] transition"
+              />
+              {studentSearch && (
+                <button
+                  onClick={() => setStudentSearch('')}
+                  className="absolute right-2 p-0.5 text-[#9a9ac0] hover:text-[#e8e8f5]"
+                  title="Qidiruvni tozalash"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Student Cards List */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin">
             {filteredStudents.length === 0 ? (
-              <div className="text-center py-12 text-xs text-[#9a9ac0]">
-                O'quvchilar topilmadi
+              <div className="text-center py-10 px-4 space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#2a2a4a] border border-[#3a3a63]/50 flex items-center justify-center mx-auto text-[#9a9ac0]">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="text-xs text-[#9a9ac0] font-medium leading-relaxed">
+                  {statusFilter !== 'ALL'
+                    ? "Bu holatda o'quvchi yo'q"
+                    : studentSearch.trim()
+                    ? `"${studentSearch}" bo'yicha o'quvchi topilmadi`
+                    : "O'quvchilar topilmadi"}
+                </div>
+                {statusFilter !== 'ALL' && (
+                  <button
+                    onClick={() => {
+                      setStatusFilter('ALL');
+                      onSelectFilter?.('ALL');
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-[#2a2a4a] hover:bg-[#3a3a63] text-xs font-semibold text-[#2ee59d] border border-[#2ee59d]/40 transition inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Filtrni tozalash</span>
+                  </button>
+                )}
+                {studentSearch && (
+                  <button
+                    onClick={() => setStudentSearch('')}
+                    className="px-2.5 py-1 rounded-xl bg-[#2a2a4a] text-xs text-[#9a9ac0] hover:text-[#e8e8f5] border border-[#3a3a63]/40 block mx-auto transition"
+                  >
+                    Qidiruvni tozalash
+                  </button>
+                )}
               </div>
             ) : (
               filteredStudents.map((std) => {

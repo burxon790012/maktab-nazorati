@@ -107,28 +107,6 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
       }
     });
 
-    // B) Search Local Students
-    students.forEach((std) => {
-      const nameLower = std.name.toLowerCase();
-      const idLower = (std.uniqueId || '').toLowerCase();
-      const classLower = (std.className || '').toLowerCase();
-
-      if (nameLower.includes(text) || idLower.includes(text) || classLower.includes(text)) {
-        if (std.telemetry && std.telemetry.latitude && std.telemetry.longitude) {
-          localItems.push({
-            id: `local_std_${std.id}`,
-            title: std.name,
-            subtitle: `${std.className} • ${std.schoolName || ''}`,
-            lat: std.telemetry.latitude,
-            lng: std.telemetry.longitude,
-            category: 'local_student',
-            source: 'db',
-            originalItem: std,
-          });
-        }
-      }
-    });
-
     return localItems;
   };
 

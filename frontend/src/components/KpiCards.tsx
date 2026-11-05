@@ -7,7 +7,8 @@ import {
   BatteryCharging,
   Flame,
   CheckCircle2,
-  Users
+  Users,
+  X,
 } from 'lucide-react';
 
 export type KpiFilter = 'ALL' | 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'SOS' | 'ONLINE' | 'OFFLINE';
@@ -169,7 +170,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({
             <div className="text-[11px] text-[#9a9ac0] truncate flex items-center justify-between">
               <span>{card.desc}</span>
               {isSelected && (
-                <span className="text-[10px] font-bold text-[#2ee59d] uppercase">Faol</span>
+                <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#2ee59d] bg-[#2ee59d]/20 px-2 py-0.5 rounded-full border border-[#2ee59d]/40 shadow-sm animate-pulse">
+                  <span>Faol</span>
+                  <X className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
               )}
             </div>
           </div>

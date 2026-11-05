@@ -191,6 +191,18 @@ export const App: React.FC = () => {
     fetchStudents();
   }, [selectedSchoolId]);
 
+  // Invalidate Map size on Tab or ViewMode switch (Xarita / Kartalar / Ro'yxat)
+  useEffect(() => {
+    if (currentTab === 'map') {
+      const t1 = setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+      const t2 = setTimeout(() => window.dispatchEvent(new Event('resize')), 250);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [currentTab, viewMode]);
+
   // Real-Time SSE Stream Setup
   useEffect(() => {
     let sse: EventSource | null = null;
@@ -431,7 +443,8 @@ export const App: React.FC = () => {
 
           {/* Active View / Main Tab Display */}
           <div className="flex-1 flex flex-col min-h-0 bg-[#2a2a4a]/40 border border-[#3a3a63]/40 rounded-2xl overflow-hidden shadow-xl">
-            {currentTab === 'map' && (
+            {/* Map Container View (Kept mounted with real size so Leaflet tiles and sizing are never destroyed) */}
+            <div className={`flex-1 flex flex-col min-h-0 w-full h-full ${currentTab === 'map' ? 'flex' : 'hidden'}`}>
               <MapView
                 schools={schools}
                 students={students}
@@ -439,9 +452,10 @@ export const App: React.FC = () => {
                 selectedSchoolId={selectedSchoolId}
                 onRefreshData={fetchStudents}
                 activeFilter={kpiFilter}
+                onSelectFilter={(f) => setKpiFilter(f as KpiFilter)}
                 googleMapsApiKey={googleMapsApiKey}
               />
-            )}
+            </div>
 
             {currentTab === 'students' && (
               <div className="flex-1 overflow-y-auto p-4">
@@ -454,7 +468,10 @@ export const App: React.FC = () => {
                     await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
                     fetchStudents();
                   }}
-                  onViewOnMap={() => setCurrentTab('map')}
+                  onViewOnMap={() => {
+                    setCurrentTab('map');
+                    setViewMode('map');
+                  }}
                 />
               </div>
             )}

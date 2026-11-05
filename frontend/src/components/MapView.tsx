@@ -58,6 +58,7 @@ interface MapViewProps {
   activeFilter?: string;
   onSelectFilter?: (f: string) => void;
   googleMapsApiKey?: string;
+  activeNavTab?: string;
 }
 
 export const MapView: React.FC<MapViewProps> = ({
@@ -69,6 +70,7 @@ export const MapView: React.FC<MapViewProps> = ({
   activeFilter = 'ALL',
   onSelectFilter,
   googleMapsApiKey,
+  activeNavTab = 'map',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const adapterRef = useRef<MapAdapter | null>(null);
@@ -123,6 +125,18 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [searchPin]);
 
+  // Re-size and invalidate map tiles when switching between main tabs
+  useEffect(() => {
+    if (activeNavTab === 'map' || activeNavTab === 'geozones' || activeNavTab === 'routes') {
+      const t1 = setTimeout(() => adapterRef.current?.resize(), 60);
+      const t2 = setTimeout(() => adapterRef.current?.resize(), 250);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [activeNavTab]);
+
   // Movement Trails (last 30 minutes)
   const [trailsHistory, setTrailsHistory] = useState<Record<string, [number, number][]>>({});
   const [copiedCoords, setCopiedCoords] = useState(false);
@@ -163,7 +177,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
       res.adapter.init(container, {
         center: initCenter,
-        zoom: 16.5,
+        zoom: 16,
         isDark: true,
         mapType: mapLayer,
         events: {
@@ -446,7 +460,7 @@ export const MapView: React.FC<MapViewProps> = ({
       subtitle: item.subtitle,
     });
 
-    adapterRef.current?.flyTo(item.lat, item.lng, 17.5);
+    adapterRef.current?.flyTo(item.lat, item.lng, 17);
 
     if (item.category === 'local_student' && item.originalItem) {
       setSelectedStudent(item.originalItem);

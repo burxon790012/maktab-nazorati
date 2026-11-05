@@ -26,6 +26,7 @@ export class LeafletOsmAdapter implements MapAdapter {
 
   // Custom Drawing state
   private activeDrawLayer: L.Polygon | L.Polyline | null = null;
+  private isDrawPolygonReady = false;
   private activeDrawCircle: L.Circle | null = null;
   private drawPoints: [number, number][] = [];
   private drawMarkers: L.Marker[] = [];
@@ -56,7 +57,11 @@ export class LeafletOsmAdapter implements MapAdapter {
 
     if (options.events?.onMapClick) {
       this.map.on('click', (e: L.LeafletMouseEvent) => {
-        options.events?.onMapClick?.(e.latlng.lat, e.latlng.lng);
+        // Drawing or measuring handler has priority; do not trigger global onMapClick
+        if (this.mapClickHandler) return;
+        if (e && e.latlng && isFinite(e.latlng.lat) && isFinite(e.latlng.lng)) {
+          options.events?.onMapClick?.(e.latlng.lat, e.latlng.lng);
+        }
       });
     }
 
@@ -105,7 +110,7 @@ export class LeafletOsmAdapter implements MapAdapter {
       console.warn('flyTo: Noto\'g\'ri koordinatalar:', lat, lng);
       return;
     }
-    const targetZoom = typeof zoom === 'number' && isFinite(zoom) && !isNaN(zoom) ? zoom : 16.5;
+    const targetZoom = typeof zoom === 'number' && isFinite(zoom) && !isNaN(zoom) ? Math.round(zoom) : 16;
     try {
       this.map.flyTo([lat, lng], targetZoom, { duration: 0.8 });
     } catch (e) {
@@ -116,18 +121,15 @@ export class LeafletOsmAdapter implements MapAdapter {
   fitBounds(bounds: [number, number][]): void {
     if (!this.map || !bounds || !Array.isArray(bounds) || bounds.length === 0) return;
 
-    // Filter strictly finite, valid coordinates
-    const valid = bounds.filter(
-      (pt) =>
-        Array.isArray(pt) &&
-        pt.length >= 2 &&
-        typeof pt[0] === 'number' &&
-        !isNaN(pt[0]) &&
-        isFinite(pt[0]) &&
-        typeof pt[1] === 'number' &&
-        !isNaN(pt[1]) &&
-        isFinite(pt[1])
-    );
+    // Filter strictly finite, valid coordinates (supports both [lat, lng] and {lat, lng})
+    const valid: [number, number][] = [];
+    for (const pt of bounds) {
+      if (Array.isArray(pt) && pt.length >= 2 && typeof pt[0] === 'number' && isFinite(pt[0]) && typeof pt[1] === 'number' && isFinite(pt[1])) {
+        valid.push([pt[0], pt[1]]);
+      } else if (pt && typeof (pt as any).lat === 'number' && isFinite((pt as any).lat) && typeof (pt as any).lng === 'number' && isFinite((pt as any).lng)) {
+        valid.push([(pt as any).lat, (pt as any).lng]);
+      }
+    }
 
     if (valid.length === 0) return;
 
@@ -309,6 +311,7 @@ export class LeafletOsmAdapter implements MapAdapter {
 
   setSearchMarker(lat: number, lng: number, title?: string): void {
     if (!this.map) return;
+    if (typeof lat !== 'number' || !isFinite(lat) || typeof lng !== 'number' || !isFinite(lng)) return;
     this.clearSearchMarker();
 
     const icon = L.divIcon({
@@ -316,7 +319,7 @@ export class LeafletOsmAdapter implements MapAdapter {
       html: `
         <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); pointer-events: none;">
           <div style="background: #2ee59d; color: #1b1b33; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0,0,0,0.6); white-space: nowrap; margin-bottom: 3px; border: 1.5px solid #ffffff; max-width: 220px; overflow: hidden; text-overflow: ellipsis;">
-            📍 ${title || 'Qidirilgan joy'}
+            📍 ${title || 'Tanlangan manzil'}
           </div>
           <div style="width: 26px; height: 26px; background: #2ee59d; border: 2.5px solid #ffffff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 14px rgba(46, 229, 157, 0.7); display: flex; align-items: center; justify-content: center;">
             <div style="width: 8px; height: 8px; background: #1b1b33; border-radius: 50%;"></div>
@@ -326,7 +329,11 @@ export class LeafletOsmAdapter implements MapAdapter {
       iconSize: [0, 0],
     });
 
-    this.searchMarker = L.marker([lat, lng], { icon, zIndexOffset: 2000 }).addTo(this.map);
+    try {
+      this.searchMarker = L.marker([lat, lng], { icon, zIndexOffset: 2000 }).addTo(this.map);
+    } catch (err) {
+      console.warn('Search marker qo\'shishda xato:', err);
+    }
   }
 
   clearSearchMarker(): void {
@@ -345,6 +352,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.drawMarkers = [];
 
     this.mapClickHandler = (e: L.LeafletMouseEvent) => {
+      if (!e || !e.latlng || !isFinite(e.latlng.lat) || !isFinite(e.latlng.lng)) return;
       const pt: [number, number] = [e.latlng.lat, e.latlng.lng];
       this.drawPoints.push(pt);
 
@@ -363,16 +371,38 @@ export class LeafletOsmAdapter implements MapAdapter {
       const vertexMarker = L.marker([pt[0], pt[1]], { icon: vertexIcon, zIndexOffset: 3000 }).addTo(this.map!);
       this.drawMarkers.push(vertexMarker);
 
-      if (!this.activeDrawLayer) {
-        this.activeDrawLayer = L.polygon(this.drawPoints, {
+      // Safe progressive rendering:
+      // Point 1: vertex marker only (no polygon/polyline to avoid degenerate Sutherland-Hodgman NaN crash)
+      // Point 2: guide polyline
+      // Point >= 3: closed polygon
+      if (this.drawPoints.length === 2) {
+        if (this.activeDrawLayer) {
+          this.map!.removeLayer(this.activeDrawLayer);
+          this.activeDrawLayer = null;
+        }
+        this.isDrawPolygonReady = false;
+        this.activeDrawLayer = L.polyline(this.drawPoints, {
           color: '#ff2d78',
           weight: 3,
-          fillColor: '#ff2d78',
-          fillOpacity: 0.25,
           dashArray: '4, 4',
         }).addTo(this.map!);
-      } else {
-        (this.activeDrawLayer as L.Polygon).setLatLngs(this.drawPoints as any);
+      } else if (this.drawPoints.length >= 3) {
+        if (this.activeDrawLayer && !this.isDrawPolygonReady) {
+          this.map!.removeLayer(this.activeDrawLayer);
+          this.activeDrawLayer = null;
+        }
+        if (!this.activeDrawLayer) {
+          this.activeDrawLayer = L.polygon(this.drawPoints, {
+            color: '#ff2d78',
+            weight: 3,
+            fillColor: '#ff2d78',
+            fillOpacity: 0.25,
+            dashArray: '4, 4',
+          }).addTo(this.map!);
+          this.isDrawPolygonReady = true;
+        } else {
+          (this.activeDrawLayer as any).setLatLngs(this.drawPoints);
+        }
       }
       onPointAdded?.(this.drawPoints.length);
     };
@@ -388,11 +418,20 @@ export class LeafletOsmAdapter implements MapAdapter {
       this.map.removeLayer(lastMarker);
     }
     if (this.activeDrawLayer && this.map) {
-      if (this.drawPoints.length === 0) {
+      if (this.drawPoints.length < 2) {
         this.map.removeLayer(this.activeDrawLayer);
         this.activeDrawLayer = null;
+        this.isDrawPolygonReady = false;
+      } else if (this.drawPoints.length === 2) {
+        this.map.removeLayer(this.activeDrawLayer);
+        this.isDrawPolygonReady = false;
+        this.activeDrawLayer = L.polyline(this.drawPoints, {
+          color: '#ff2d78',
+          weight: 3,
+          dashArray: '4, 4',
+        }).addTo(this.map);
       } else {
-        (this.activeDrawLayer as L.Polygon).setLatLngs(this.drawPoints as any);
+        (this.activeDrawLayer as any).setLatLngs(this.drawPoints);
       }
     }
     return this.drawPoints.length;
@@ -418,7 +457,16 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.cancelDrawing();
     if (!this.map) return;
 
-    const initialCenter: [number, number] = center || [this.map.getCenter().lat, this.map.getCenter().lng];
+    let initialCenter: [number, number] = [41.311081, 69.240562];
+    if (center && Array.isArray(center) && isFinite(center[0]) && isFinite(center[1])) {
+      initialCenter = center;
+    } else {
+      const c = this.map.getCenter();
+      if (c && isFinite(c.lat) && isFinite(c.lng)) {
+        initialCenter = [c.lat, c.lng];
+      }
+    }
+
     this.activeDrawCircle = L.circle(initialCenter, {
       radius: initialRadius,
       color: '#2ee59d',
@@ -430,15 +478,17 @@ export class LeafletOsmAdapter implements MapAdapter {
 
     // Clicking anywhere on map relocates the circle center
     this.mapClickHandler = (e: L.LeafletMouseEvent) => {
-      if (this.activeDrawCircle) {
-        this.activeDrawCircle.setLatLng(e.latlng);
+      if (e && e.latlng && isFinite(e.latlng.lat) && isFinite(e.latlng.lng)) {
+        if (this.activeDrawCircle) {
+          this.activeDrawCircle.setLatLng(e.latlng);
+        }
       }
     };
     this.map.on('click', this.mapClickHandler);
   }
 
   setCircleRadius(radius: number): void {
-    if (this.activeDrawCircle) {
+    if (this.activeDrawCircle && isFinite(radius)) {
       this.activeDrawCircle.setRadius(radius);
     }
   }
@@ -464,6 +514,7 @@ export class LeafletOsmAdapter implements MapAdapter {
       this.map.removeLayer(this.activeDrawLayer);
       this.activeDrawLayer = null;
     }
+    this.isDrawPolygonReady = false;
     if (this.activeDrawCircle && this.map) {
       this.map.removeLayer(this.activeDrawCircle);
       this.activeDrawCircle = null;

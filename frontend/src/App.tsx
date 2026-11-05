@@ -362,7 +362,7 @@ export const App: React.FC = () => {
       fetchStudents();
       fetchAuditLogs();
     } else {
-      alert(d.message);
+      throw new Error(d.message || "Geozonani saqlashda xatolik yuz berdi");
     }
   };
 
@@ -443,8 +443,8 @@ export const App: React.FC = () => {
 
           {/* Active View / Main Tab Display */}
           <div className="flex-1 flex flex-col min-h-0 bg-[#2a2a4a]/40 border border-[#3a3a63]/40 rounded-2xl overflow-hidden shadow-xl">
-            {/* Map Container View (Kept mounted with real size so Leaflet tiles and sizing are never destroyed) */}
-            <div className={`flex-1 flex flex-col min-h-0 w-full h-full ${currentTab === 'map' ? 'flex' : 'hidden'}`}>
+            {/* Map Container View (Kept mounted for map, geozones, and routes so Leaflet tiles and sizing are never destroyed) */}
+            <div className={`flex-1 flex flex-col min-h-0 w-full h-full ${currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes' ? 'flex' : 'hidden'}`}>
               <MapView
                 schools={schools}
                 students={students}
@@ -454,6 +454,7 @@ export const App: React.FC = () => {
                 activeFilter={kpiFilter}
                 onSelectFilter={(f) => setKpiFilter(f as KpiFilter)}
                 googleMapsApiKey={googleMapsApiKey}
+                activeNavTab={currentTab}
               />
             </div>
 
@@ -483,30 +484,6 @@ export const App: React.FC = () => {
                 onRefresh={fetchDevices}
                 onRegisterDevice={handleRegisterDevice}
                 onRegenerateToken={handleRegenerateToken}
-              />
-            )}
-
-            {currentTab === 'geozones' && (
-              <MapView
-                schools={schools}
-                students={students}
-                onSaveGeofence={handleSaveGeofence}
-                selectedSchoolId={selectedSchoolId}
-                onRefreshData={fetchStudents}
-                activeFilter={kpiFilter}
-                googleMapsApiKey={googleMapsApiKey}
-              />
-            )}
-
-            {currentTab === 'routes' && (
-              <MapView
-                schools={schools}
-                students={students}
-                onSaveGeofence={handleSaveGeofence}
-                selectedSchoolId={selectedSchoolId}
-                onRefreshData={fetchStudents}
-                activeFilter={kpiFilter}
-                googleMapsApiKey={googleMapsApiKey}
               />
             )}
 

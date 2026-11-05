@@ -115,7 +115,10 @@ export class GoogleMapAdapter implements MapAdapter {
 
     if (options.events?.onMapClick) {
       this.map.addListener('click', (e: any) => {
-        options.events?.onMapClick?.(e.latLng.lat(), e.latLng.lng());
+        if (this.mapClickListener) return; // Ignore global onMapClick when drawing or measuring
+        if (e && e.latLng) {
+          options.events?.onMapClick?.(e.latLng.lat(), e.latLng.lng());
+        }
       });
     }
   }

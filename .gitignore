@@ -26,6 +26,8 @@ upload_log.txt
 *.sqlite
 *.sqlite3
 *.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
 *.db
 
 

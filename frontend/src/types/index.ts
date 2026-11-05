@@ -28,9 +28,13 @@ export interface StudentTelemetry {
   heartRate?: number;
   bodyTemperature?: number;
   stepCount?: number;
+  steps?: number;
   batteryLevel?: number;
   isCharging?: boolean;
   isSos?: boolean;
+  isWorn?: boolean;
+  address?: string;
+  deviceStatus?: string;
   geofenceStatus?: 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'UNKNOWN';
   statusColor?: 'GREEN' | 'RED' | 'YELLOW' | 'GRAY';
   statusDisplay?: string;

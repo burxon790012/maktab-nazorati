@@ -1,15 +1,18 @@
 /// <reference path="./declarations.d.ts" />
-// SMART CHILD — Production Multi-School React TSX Dashboard with shadcn/ui
-import React, { useEffect, useState } from 'react';
+// SMART CHILD — Production Multi-School Fleet Management Platform
+import React, { useEffect, useState, useMemo } from 'react';
 import { School, Student, User, AuditLog, NotificationItem, Role } from '@/types';
-import { Navbar } from '@/components/Navbar';
+import { Sidebar, NavTab } from '@/components/Sidebar';
+import { Topbar, ViewMode } from '@/components/Topbar';
+import { KpiCards, KpiFilter } from '@/components/KpiCards';
 import { MapView } from '@/components/MapView';
-import { SuperAdminTab } from '@/components/SuperAdminTab';
-import { AttendanceTab } from '@/components/AttendanceTab';
+import { DevicesTab, DeviceInfo } from '@/components/DevicesTab';
 import { StudentsTab } from '@/components/StudentsTab';
+import { AttendanceTab } from '@/components/AttendanceTab';
 import { HealthTab } from '@/components/HealthTab';
 import { ParentTab } from '@/components/ParentTab';
 import { ReportsTab } from '@/components/ReportsTab';
+import { SuperAdminTab } from '@/components/SuperAdminTab';
 import {
   AddSchoolDialog,
   EditSchoolDialog,
@@ -18,8 +21,6 @@ import {
   CorrectionDialog,
   NotificationDrawer,
 } from '@/components/Modals';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Map, Shield, ClipboardCheck, Users, Heart, Smartphone, BarChart3 } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
@@ -27,13 +28,21 @@ export const App: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [devicesList, setDevicesList] = useState<DeviceInfo[]>([]);
 
-  // Navigation & Role states
-  const [activeTab, setActiveTab] = useState('tab-map');
+  // Navigation & View State
+  const [currentTab, setCurrentTab] = useState<NavTab>('map');
+  const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [kpiFilter, setKpiFilter] = useState<KpiFilter>('ALL');
   const [currentRole, setCurrentRole] = useState<Role>('SUPER_ADMIN');
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('ALL');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [token, setToken] = useState<string>(() => localStorage.getItem('maktab_auth_token') || '');
+
+  // Layout UI State
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
   // Modals state
   const [openAddSchool, setOpenAddSchool] = useState(false);
@@ -60,7 +69,7 @@ export const App: React.FC = () => {
       const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, password: 'password123' })
+        body: JSON.stringify({ role, password: 'password123' }),
       });
       const data = await res.json();
       if (data.success && data.token) {
@@ -77,7 +86,7 @@ export const App: React.FC = () => {
     return null;
   };
 
-  // 1. Fetch initial data
+  // Data Fetching
   const fetchSchools = async () => {
     try {
       const res = await authFetch('/api/v1/schools');
@@ -128,13 +137,25 @@ export const App: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await authFetch('/api/v1/notifications');
+      const res = await authFetch('/api/alerts');
       const data = await res.json();
-      if (data.success) {
-        setNotifications(data.notifications);
+      if (data.success && data.alerts) {
+        setNotifications(data.alerts);
       }
     } catch (err) {
-      console.error('Error fetching notifications:', err);
+      console.error('Error fetching alerts:', err);
+    }
+  };
+
+  const fetchDevices = async () => {
+    try {
+      const res = await authFetch('/api/devices');
+      const data = await res.json();
+      if (data.success && data.devices) {
+        setDevicesList(data.devices);
+      }
+    } catch (err) {
+      console.error('Error fetching devices:', err);
     }
   };
 
@@ -147,6 +168,7 @@ export const App: React.FC = () => {
       fetchAuditLogs();
       fetchNotifications();
       fetchStudents();
+      fetchDevices();
     });
     return () => {
       isMounted = false;
@@ -157,7 +179,7 @@ export const App: React.FC = () => {
     fetchStudents();
   }, [selectedSchoolId]);
 
-  // 2. Real-Time SSE Stream Setup with single-use ticket
+  // Real-Time SSE Stream Setup
   useEffect(() => {
     let sse: EventSource | null = null;
     let active = true;
@@ -189,9 +211,11 @@ export const App: React.FC = () => {
             d.event === 'attendance_updated' ||
             d.event === 'geofence_updated' ||
             d.event === 'geofence_alert' ||
-            d.event === 'student_added'
+            d.event === 'student_added' ||
+            d.event === 'device_status_update'
           ) {
             fetchStudents();
+            fetchDevices();
           } else if (
             d.event === 'school_added' ||
             d.event === 'school_updated' ||
@@ -228,89 +252,78 @@ export const App: React.FC = () => {
     }
   };
 
-  // API Actions
-  const handleAddSchool = async (schoolData: any) => {
-    const res = await authFetch('/api/v1/schools', {
+  // KPI Statistics Calculations
+  const stats = useMemo(() => {
+    let inside = 0;
+    let outside = 0;
+    let verifying = 0;
+    let sos = 0;
+    let totalBattery = 0;
+    let batteryCount = 0;
+
+    students.forEach((s) => {
+      const t = s.telemetry;
+      if (!t) return;
+      if (t.geofenceStatus === 'INSIDE') inside++;
+      else if (t.geofenceStatus === 'VERIFYING') verifying++;
+      else outside++;
+
+      if (t.isSos) sos++;
+      if (t.batteryLevel !== undefined && t.batteryLevel !== null) {
+        totalBattery += t.batteryLevel;
+        batteryCount++;
+      }
+    });
+
+    const onlineWatches = devicesList.filter((d) => d.status === 'ONLINE').length;
+    const offlineWatches = devicesList.filter((d) => d.status === 'OFFLINE' || d.status === 'DELAYED').length;
+    const avgBattery = batteryCount > 0 ? Math.round(totalBattery / batteryCount) : 86;
+
+    return {
+      inside,
+      outside,
+      verifying,
+      sos,
+      onlineWatches,
+      offlineWatches,
+      totalStudents: students.length,
+      avgBattery,
+    };
+  }, [students, devicesList]);
+
+  // Actions
+  const handleRegisterDevice = async (deviceData: any) => {
+    const res = await authFetch('/api/devices/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(schoolData),
+      body: JSON.stringify(deviceData),
     });
     const d = await res.json();
     if (d.success) {
-      fetchSchools();
-    } else {
-      alert(d.message);
-    }
-  };
-
-  const handleUpdateSchool = async (id: string, updates: any) => {
-    const res = await authFetch(`/api/v1/schools/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchSchools();
+      fetchDevices();
       fetchStudents();
-      fetchAuditLogs();
+      return d;
     } else {
-      alert(d.message);
+      throw new Error(d.message || "Xatolik yuz berdi");
     }
   };
 
-  const handleDeleteSchool = async (id: string) => {
-    const res = await authFetch(`/api/v1/schools/${id}`, { method: 'DELETE' });
-    const d = await res.json();
-    if (d.success) {
-      fetchSchools();
-      fetchStudents();
-      fetchAuditLogs();
-    } else {
-      alert(d.message);
-    }
-  };
-
-  const handleAddStudent = async (data: any) => {
-    const res = await authFetch('/api/v1/students', {
+  const handleRegenerateToken = async (deviceId: string) => {
+    const res = await authFetch(`/api/devices/${deviceId}/regenerate-token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
     });
     const d = await res.json();
     if (d.success) {
-      fetchStudents();
-      fetchAuditLogs();
+      fetchDevices();
+      return d;
     } else {
-      alert(d.message);
+      throw new Error(d.message || "Xatolik yuz berdi");
     }
   };
 
-  const handleBulkImport = async (schoolId: string, text: string) => {
-    const lines = text.trim().split('\n');
-    const studentsArr = lines.map((l) => {
-      const p = l.split(',').map((x) => x.trim());
-      return {
-        studentId: p[0],
-        name: p[1],
-        className: p[2] || '5-B',
-        parentPhone: p[3] || '+998901112233',
-        deviceId: p[4] || `watch-5pro-${p[0]}`,
-      };
-    });
-
-    const res = await authFetch('/api/v1/students/bulk', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ schoolId, students: studentsArr }),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchStudents();
-      fetchAuditLogs();
-    } else {
-      alert(d.message);
-    }
+  const handleMarkAllAlertsRead = async () => {
+    await authFetch('/api/alerts/mark-all-read', { method: 'POST' });
+    fetchNotifications();
   };
 
   const handleSaveGeofence = async (schoolId: string, polygon: [number, number][]) => {
@@ -329,44 +342,6 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleSubmitCorrection = async (studentId: string, status: string, reason: string) => {
-    const res = await authFetch('/api/v1/attendance/correct', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId, status, reason, teacherId: "Dilnoza Karimova (O'qituvchi)" }),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchStudents();
-      fetchAuditLogs();
-    } else {
-      alert(d.message);
-    }
-  };
-
-  const handleDeleteStudent = async (id: string) => {
-    const res = await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
-    const d = await res.json();
-    if (d.success) {
-      fetchStudents();
-      fetchAuditLogs();
-    } else {
-      alert(d.message);
-    }
-  };
-
-  const handleSimulateWalk = async (stage: 'ENTER_SCHOOL' | 'LEAVE_SCHOOL') => {
-    const res = await authFetch('/api/v1/telemetry/simulate-walk', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: '10001', stage }),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchStudents();
-    }
-  };
-
   const handleTriggerSos = async () => {
     await authFetch('/api/v1/sos', {
       method: 'POST',
@@ -378,184 +353,286 @@ export const App: React.FC = () => {
     alert("🚨 SOS SIGNAL YUBORILDI!");
   };
 
+  const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Navigation Bar */}
-      <Navbar
-        currentRole={currentRole}
-        setCurrentRole={setCurrentRole}
-        selectedSchoolId={selectedSchoolId}
-        setSelectedSchoolId={setSelectedSchoolId}
-        schools={schools}
-        onOpenAddSchool={() => setOpenAddSchool(true)}
-        onSimulateWalk={handleSimulateWalk}
-        unreadCount={notifications.length}
-        onToggleNotif={() => setOpenNotifDrawer(true)}
-        theme={theme}
-        toggleTheme={toggleTheme}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#1b1b33] text-[#e8e8f5]">
+      {/* 1. Left Sidebar Navigation */}
+      <Sidebar
+        currentTab={currentTab}
+        onSelectTab={(tab) => {
+          setCurrentTab(tab);
+          if (tab === 'map') setViewMode('map');
+          else if (tab === 'students') setViewMode('cards');
+        }}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
+        unreadAlertsCount={unreadAlertsCount}
       />
 
-      {/* Main App Content & Tabs */}
-      <main className="flex-1 p-4 max-w-[1600px] w-full mx-auto space-y-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="overflow-x-auto pb-1">
-            <TabsList>
-              <TabsTrigger value="tab-map" className="gap-1.5">
-                <Map className="w-4 h-4 text-emerald-400" />
-                Xarita & Chegara
-              </TabsTrigger>
+      {/* 2. Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Topbar */}
+        <Topbar
+          onToggleMobileMenu={() => setMobileMenuOpen(true)}
+          viewMode={viewMode}
+          onChangeViewMode={(mode) => {
+            setViewMode(mode);
+            if (mode === 'map') setCurrentTab('map');
+            else if (mode === 'cards' || mode === 'list') setCurrentTab('students');
+          }}
+          schools={schools}
+          selectedSchoolId={selectedSchoolId}
+          onSelectSchool={setSelectedSchoolId}
+          alerts={notifications}
+          unreadAlertsCount={unreadAlertsCount}
+          onOpenAlerts={() => setOpenNotifDrawer(true)}
+          onMarkAllAlertsRead={handleMarkAllAlertsRead}
+          darkMode={theme === 'dark'}
+          onToggleDarkMode={toggleTheme}
+          currentRole={currentRole}
+          onChangeRole={(r) => setCurrentRole(r as Role)}
+          onLogout={() => {
+            localStorage.removeItem('maktab_auth_token');
+            setToken('');
+            loginWithRole('PARENT');
+          }}
+          isDemoMode={isDemoMode}
+          onToggleDemoMode={() => setIsDemoMode(!isDemoMode)}
+        />
 
-              {currentRole === 'SUPER_ADMIN' && (
-                <TabsTrigger value="tab-superadmin" className="gap-1.5">
-                  <Shield className="w-4 h-4 text-amber-400" />
-                  Super Admin
-                </TabsTrigger>
-              )}
+        {/* Dashboard Workspace */}
+        <div className="flex-1 flex flex-col min-h-0 p-3 sm:p-4 gap-3 overflow-hidden">
+          {/* KPI Summary Cards Row */}
+          <KpiCards
+            stats={stats}
+            activeFilter={kpiFilter}
+            onSelectFilter={(f) => {
+              setKpiFilter(f);
+              if (currentTab !== 'map' && currentTab !== 'students') {
+                setCurrentTab('map');
+              }
+            }}
+          />
 
-              <TabsTrigger value="tab-attendance" className="gap-1.5">
-                <ClipboardCheck className="w-4 h-4 text-blue-400" />
-                Aqlli Davomat
-              </TabsTrigger>
-
-              <TabsTrigger value="tab-students" className="gap-1.5">
-                <Users className="w-4 h-4 text-purple-400" />
-                O'quvchilar
-              </TabsTrigger>
-
-              <TabsTrigger value="tab-health" className="gap-1.5">
-                <Heart className="w-4 h-4 text-rose-400" />
-                Salomatlik
-              </TabsTrigger>
-
-              <TabsTrigger value="tab-parent" className="gap-1.5">
-                <Smartphone className="w-4 h-4 text-teal-400" />
-                Ota-ona Ilovasi
-              </TabsTrigger>
-
-              <TabsTrigger value="tab-reports" className="gap-1.5">
-                <BarChart3 className="w-4 h-4 text-cyan-400" />
-                Hisobotlar
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          {/* TAB 1: LIVE MAP */}
-          <TabsContent value="tab-map" className="h-full min-h-0 flex-1 outline-none mt-0">
-            <MapView
-              schools={schools}
-              students={students}
-              onSaveGeofence={handleSaveGeofence}
-              selectedSchoolId={selectedSchoolId}
-              onRefreshData={async () => {
-                await fetchStudents();
-                await fetchSchools();
-              }}
-            />
-          </TabsContent>
-
-          {/* TAB 2: SUPER ADMIN */}
-          {currentRole === 'SUPER_ADMIN' && (
-            <TabsContent value="tab-superadmin">
-              <SuperAdminTab
+          {/* Active View / Main Tab Display */}
+          <div className="flex-1 flex flex-col min-h-0 bg-[#2a2a4a]/40 border border-[#3a3a63]/40 rounded-2xl overflow-hidden shadow-xl">
+            {currentTab === 'map' && (
+              <MapView
                 schools={schools}
                 students={students}
-                users={users}
-                onOpenAddSchool={() => setOpenAddSchool(true)}
-                onOpenEditSchool={(sch) => {
-                  setSchoolToEdit(sch);
-                  setOpenEditSchool(true);
-                }}
-                onOpenAddUser={() => alert("Admin/O'qituvchi qo'shish oynasi")}
-                onFlyToSchool={(sch) => {
-                  setSelectedSchoolId(sch.id);
-                  setActiveTab('tab-map');
-                }}
+                onSaveGeofence={handleSaveGeofence}
+                selectedSchoolId={selectedSchoolId}
+                onRefreshData={fetchStudents}
+                activeFilter={kpiFilter}
               />
-            </TabsContent>
-          )}
+            )}
 
-          {/* TAB 3: ATTENDANCE */}
-          <TabsContent value="tab-attendance">
-            <AttendanceTab
-              students={students}
-              selectedSchoolId={selectedSchoolId}
-              onOpenCorrection={(std) => {
-                setStudentToCorrect(std);
-                setOpenCorrection(true);
-              }}
-              onViewOnMap={(std) => {
-                if (std.schoolId) setSelectedSchoolId(std.schoolId);
-                setActiveTab('tab-map');
-              }}
-            />
-          </TabsContent>
+            {currentTab === 'students' && (
+              <div className="flex-1 overflow-y-auto p-4">
+                <StudentsTab
+                  students={students}
+                  onOpenAddSingle={() => setOpenAddStudent(true)}
+                  onOpenBulkImport={() => setOpenBulkImport(true)}
+                  onOpenTransfer={() => {}}
+                  onDeleteStudent={async (id) => {
+                    await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
+                    fetchStudents();
+                  }}
+                  onViewOnMap={() => setCurrentTab('map')}
+                />
+              </div>
+            )}
 
-          {/* TAB 4: STUDENTS */}
-          <TabsContent value="tab-students">
-            <StudentsTab
-              students={students}
-              onOpenAddSingle={() => setOpenAddStudent(true)}
-              onOpenBulkImport={() => setOpenBulkImport(true)}
-              onOpenTransfer={() => alert("Transfer oynasi")}
-              onDeleteStudent={handleDeleteStudent}
-              onViewOnMap={(std) => {
-                if (std.schoolId) setSelectedSchoolId(std.schoolId);
-                setActiveTab('tab-map');
-              }}
-            />
-          </TabsContent>
+            {currentTab === 'devices' && (
+              <DevicesTab
+                devices={devicesList}
+                students={students}
+                onRefresh={fetchDevices}
+                onRegisterDevice={handleRegisterDevice}
+                onRegenerateToken={handleRegenerateToken}
+              />
+            )}
 
-          {/* TAB 5: HEALTH */}
-          <TabsContent value="tab-health">
-            <HealthTab students={students} />
-          </TabsContent>
+            {currentTab === 'geozones' && (
+              <MapView
+                schools={schools}
+                students={students}
+                onSaveGeofence={handleSaveGeofence}
+                selectedSchoolId={selectedSchoolId}
+                onRefreshData={fetchStudents}
+                activeFilter={kpiFilter}
+              />
+            )}
 
-          {/* TAB 6: PARENT */}
-          <TabsContent value="tab-parent">
-            <ParentTab students={students} onTriggerSos={handleTriggerSos} />
-          </TabsContent>
+            {currentTab === 'routes' && (
+              <MapView
+                schools={schools}
+                students={students}
+                onSaveGeofence={handleSaveGeofence}
+                selectedSchoolId={selectedSchoolId}
+                onRefreshData={fetchStudents}
+                activeFilter={kpiFilter}
+              />
+            )}
 
-          {/* TAB 7: REPORTS */}
-          <TabsContent value="tab-reports">
-            <ReportsTab auditLogs={auditLogs} />
-          </TabsContent>
-        </Tabs>
-      </main>
+            {currentTab === 'alerts' && (
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#3a3a63]/40">
+                  <h2 className="text-lg font-bold text-[#e8e8f5]">Barcha Ogohlantirishlar va SOS Hodisalari</h2>
+                  {unreadAlertsCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAlertsRead}
+                      className="px-3 py-1.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] text-xs font-bold"
+                    >
+                      Barchasini o'qilgan deb belgilash
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className={`p-4 rounded-xl border transition ${
+                        n.isRead
+                          ? 'bg-[#2a2a4a]/40 border-[#3a3a63]/30 text-[#9a9ac0]'
+                          : 'bg-[#2a2a4a] border-[#ff4d5e]/50 text-[#e8e8f5] shadow-lg shadow-[#ff4d5e]/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-sm text-[#e8e8f5]">{n.title}</span>
+                        <span className="text-xs text-[#9a9ac0]">{n.time}</span>
+                      </div>
+                      <p className="text-xs text-[#9a9ac0] mt-1.5">{n.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-      {/* DIALOGS */}
+            {currentTab === 'health' && (
+              <div className="flex-1 overflow-y-auto p-4">
+                <HealthTab students={students} />
+              </div>
+            )}
+
+            {currentTab === 'parents' && (
+              <div className="flex-1 overflow-y-auto p-4">
+                <ParentTab students={students} onTriggerSos={handleTriggerSos} />
+              </div>
+            )}
+
+            {currentTab === 'reports' && (
+              <div className="flex-1 overflow-y-auto p-4">
+                <ReportsTab auditLogs={auditLogs} />
+              </div>
+            )}
+
+            {currentTab === 'superadmin' && (
+              <div className="flex-1 overflow-y-auto p-4">
+                <SuperAdminTab
+                  schools={schools}
+                  students={students}
+                  users={users}
+                  onOpenAddSchool={() => setOpenAddSchool(true)}
+                  onOpenEditSchool={(s) => {
+                    setSchoolToEdit(s);
+                    setOpenEditSchool(true);
+                  }}
+                  onOpenAddUser={() => {}}
+                  onFlyToSchool={() => setCurrentTab('map')}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dialog Modals */}
       <AddSchoolDialog
         open={openAddSchool}
         onOpenChange={setOpenAddSchool}
-        onAddSchool={handleAddSchool}
+        onAddSchool={async (sch) => {
+          await authFetch('/api/v1/schools', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sch),
+          });
+          fetchSchools();
+        }}
       />
 
       <EditSchoolDialog
         open={openEditSchool}
         onOpenChange={setOpenEditSchool}
         school={schoolToEdit}
-        onUpdateSchool={handleUpdateSchool}
-        onDeleteSchool={handleDeleteSchool}
+        onUpdateSchool={async (id, updates) => {
+          await authFetch(`/api/v1/schools/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+          });
+          fetchSchools();
+        }}
+        onDeleteSchool={async (id) => {
+          await authFetch(`/api/v1/schools/${id}`, { method: 'DELETE' });
+          fetchSchools();
+        }}
       />
 
       <AddStudentDialog
         open={openAddStudent}
         onOpenChange={setOpenAddStudent}
         schools={schools}
-        onAddStudent={handleAddStudent}
+        onAddStudent={async (data) => {
+          await authFetch('/api/v1/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          fetchStudents();
+        }}
       />
 
       <BulkImportDialog
         open={openBulkImport}
         onOpenChange={setOpenBulkImport}
         schools={schools}
-        onBulkImport={handleBulkImport}
+        onBulkImport={async (schoolId, text) => {
+          const lines = text.trim().split('\n');
+          const studentsArr = lines.map((l) => {
+            const p = l.split(',').map((x) => x.trim());
+            return {
+              studentId: p[0],
+              name: p[1],
+              className: p[2] || '5-B',
+              parentPhone: p[3] || '+998901112233',
+              deviceId: p[4] || `watch-5pro-${p[0]}`,
+            };
+          });
+          await authFetch('/api/v1/students/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ schoolId, students: studentsArr }),
+          });
+          fetchStudents();
+        }}
       />
 
       <CorrectionDialog
         open={openCorrection}
         onOpenChange={setOpenCorrection}
         student={studentToCorrect}
-        onSubmitCorrection={handleSubmitCorrection}
+        onSubmitCorrection={async (studentId, status, reason) => {
+          await authFetch('/api/v1/attendance/correct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, status, reason, teacherId: "Dilnoza Karimova" }),
+          });
+          fetchStudents();
+        }}
       />
 
       <NotificationDrawer
@@ -566,4 +643,5 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
 export default App;

@@ -99,6 +99,17 @@ declare module 'leaflet' {
 
 declare module 'lucide-react' {
   export type LucideIcon = any;
+  export const Menu: any;
+  export const User: any;
+  export const LayoutGrid: any;
+  export const List: any;
+  export const LogOut: any;
+  export const ChevronDown: any;
+  export const ChevronLeft: any;
+  export const ChevronRight: any;
+  export const FileText: any;
+  export const QrCode: any;
+  export const BatteryWarning: any;
   export const Shield: any;
   export const Plus: any;
   export const Bell: any;

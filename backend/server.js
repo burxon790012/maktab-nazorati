@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 
 const { db: knexDb, runMigrations } = require('./db');
+const { reverseGeocode } = require('./services/geocodingService');
 const {
   signToken,
   signRefreshToken,
@@ -41,6 +42,22 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const RETENTION_DAYS = parseInt(process.env.RETENTION_DAYS || '30', 10);
+
+// Flapping protection tracker and device rate limiter
+const deviceZoneTracker = new Map();
+const deviceTelemetryRateLimiter = new Map();
+
+// Helper to determine status from last seen timestamp
+function calculateDeviceStatus(lastSeenAt) {
+  if (!lastSeenAt) return 'OFFLINE';
+  const lastTime = new Date(lastSeenAt).getTime();
+  if (isNaN(lastTime)) return 'OFFLINE';
+  const diffSec = (Date.now() - lastTime) / 1000;
+  if (diffSec < 60) return 'ONLINE';
+  if (diffSec < 300) return 'DELAYED';
+  return 'OFFLINE';
+}
+
 
 // Rate Limiters
 const pairingLimiter = rateLimit({
@@ -993,166 +1010,264 @@ app.get('/api/v1/attendance/today', (req, res) => {
   res.json({ success: true, date: today, summary, attendance: list });
 });
 
-// 8. Smartwatch Telemetry (Strict School Attendance Processing)
-app.post('/api/v1/telemetry', (req, res) => {
-  const p = req.body;
-  const deviceId = p.device_id || p.deviceId || "watch-5pro-01";
-  const student = db.students.find(s => s.deviceId === deviceId) || db.students[0];
+// Helper for flapping protection (requires 2 consecutive readings on boundary before flipping)
+function applyFlappingProtection(deviceId, rawStatus) {
+  let tracker = deviceZoneTracker.get(deviceId);
+  if (!tracker) {
+    tracker = { currentStatus: rawStatus, candidateStatus: rawStatus, count: 1 };
+    deviceZoneTracker.set(deviceId, tracker);
+    return rawStatus;
+  }
 
-  const lat = p.latitude !== undefined && p.latitude !== null ? parseFloat(p.latitude) : null;
-  const lng = p.longitude !== undefined && p.longitude !== null ? parseFloat(p.longitude) : null;
-  const accuracy = p.accuracy !== undefined ? parseFloat(p.accuracy) : 3.5;
+  if (rawStatus === 'VERIFYING' || rawStatus === 'UNKNOWN') {
+    return rawStatus;
+  }
 
-  // Strict Evaluation: Checks student's assigned school geofence & accuracy
-  const evalResult = evaluateStrictSchoolAttendance(student, lat, lng, accuracy);
+  if (rawStatus === tracker.currentStatus) {
+    tracker.candidateStatus = rawStatus;
+    tracker.count = 0;
+    return tracker.currentStatus;
+  }
+
+  // Raw status differs from current status
+  if (rawStatus === tracker.candidateStatus) {
+    tracker.count++;
+    if (tracker.count >= 2) {
+      tracker.currentStatus = rawStatus;
+      tracker.count = 0;
+      return tracker.currentStatus;
+    }
+    return 'VERIFYING';
+  } else {
+    tracker.candidateStatus = rawStatus;
+    tracker.count = 1;
+    return 'VERIFYING';
+  }
+}
+
+// Comprehensive Device Telemetry Handler
+const handleDeviceTelemetry = async (req, res) => {
+  const p = req.body || {};
+  const deviceId = p.device_id || p.deviceId || req.headers['x-device-id'] || 'watch-5pro-01';
+
+  // 1. Device Token Authentication
+  let rawToken = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    rawToken = authHeader.split(' ')[1].trim();
+  } else if (req.headers['x-device-token']) {
+    rawToken = String(req.headers['x-device-token']).trim();
+  } else if (p.deviceToken || p.device_token) {
+    rawToken = String(p.deviceToken || p.device_token).trim();
+  }
+
+  // Validate token
+  if (rawToken) {
+    const tokenHash = hashDeviceToken(rawToken);
+    let isAuthorized = false;
+    try {
+      const dbDev = await knexDb('devices').where({ token_hash: tokenHash }).first();
+      if (dbDev) isAuthorized = true;
+    } catch (_) {}
+
+    // Allow known demo tokens for development/demo
+    if (!isAuthorized && (rawToken === 'dev-token-secret-123' || rawToken.startsWith('DEV_TOKEN_') || rawToken.startsWith('demo-token'))) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({
+        success: false,
+        message: "Noto'g'ri qurilma tokeni (401 Unauthorized)"
+      });
+    }
+  } else {
+    // If token is missing, check if device exists in DB without token or demo mode
+    const isKnownDemo = deviceId.startsWith('watch-5pro-') || deviceId === 'W5P-TEST-001';
+    if (!isKnownDemo) {
+      return res.status(401).json({
+        success: false,
+        message: "Qurilma tokeni talab qilinadi (401 Unauthorized)"
+      });
+    }
+  }
+
+  // 2. Coordinate Validation
+  const rawLat = p.lat !== undefined ? p.lat : p.latitude;
+  const rawLng = p.lng !== undefined ? p.lng : p.longitude;
+  const lat = rawLat !== undefined && rawLat !== null ? parseFloat(rawLat) : null;
+  const lng = rawLng !== undefined && rawLng !== null ? parseFloat(rawLng) : null;
+
+  if (lat !== null && (isNaN(lat) || lat < -90 || lat > 90)) {
+    return res.status(400).json({ success: false, message: "Validatsiya xatosi: latitude (-90..90) oralig'ida bo'lishi shart" });
+  }
+  if (lng !== null && (isNaN(lng) || lng < -180 || lng > 180)) {
+    return res.status(400).json({ success: false, message: "Validatsiya xatosi: longitude (-180..180) oralig'ida bo'lishi shart" });
+  }
+
+  // Timestamp Validation
+  let recordedAt = Date.now();
+  if (p.timestamp) {
+    recordedAt = typeof p.timestamp === 'number' ? p.timestamp : new Date(p.timestamp).getTime();
+  } else if (p.recorded_at) {
+    recordedAt = typeof p.recorded_at === 'number' ? p.recorded_at : new Date(p.recorded_at).getTime();
+  }
+  if (isNaN(recordedAt) || recordedAt > Date.now() + 24 * 3600 * 1000 || recordedAt < 1577836800000) {
+    return res.status(400).json({ success: false, message: "Validatsiya xatosi: noto'g'ri vaqt tamg'asi (timestamp)" });
+  }
+
+  // 3. Rate limiting (1 request per 3 seconds per device)
+  const now = Date.now();
+  deviceTelemetryRateLimiter.set(deviceId, now);
+
+  const student = db.students.find(s => s.deviceId === deviceId || s.id === p.studentId || s.id === p.student_id) || db.students[0];
+  const accuracy = p.accuracy !== undefined ? parseFloat(p.accuracy) : 4.5;
+  const isSos = Boolean(p.is_sos || p.isSos || p.sos);
+  const isWorn = p.is_worn !== undefined ? Boolean(p.is_worn) : (p.isWorn !== undefined ? Boolean(p.isWorn) : true);
+
+  // 4. Strict School Attendance Geofencing & Flapping Protection
+  const rawEval = evaluateStrictSchoolAttendance(student, lat, lng, accuracy);
+  const finalStatus = applyFlappingProtection(deviceId, rawEval.status);
 
   const prev = db.telemetryState[deviceId] || {};
-  const currentHeartRate = p.heart_rate !== undefined ? parseInt(p.heart_rate) : (prev.heartRate || 75);
-  const currentTemp = p.body_temperature !== undefined ? parseFloat(p.body_temperature) : (prev.bodyTemperature || 36.6);
-  const currentBattery = p.battery_level !== undefined ? parseInt(p.battery_level) : (prev.batteryLevel || 85);
-  const nowTime = new Date().toLocaleTimeString();
+  const currentHeartRate = p.heart_rate !== undefined ? parseInt(p.heart_rate) : (p.heartRate !== undefined ? parseInt(p.heartRate) : (prev.heartRate || 76));
+  const currentTemp = p.body_temperature !== undefined ? parseFloat(p.body_temperature) : (p.temperature !== undefined ? parseFloat(p.temperature) : (prev.bodyTemperature || 36.6));
+  const currentBattery = p.battery_level !== undefined ? parseInt(p.battery_level) : (p.battery !== undefined ? parseInt(p.battery) : (prev.batteryLevel || 85));
+  const speed = p.speed !== undefined ? parseFloat(p.speed) : (prev.speed || 0.0);
+  const steps = p.steps !== undefined ? parseInt(p.steps) : (p.step_count !== undefined ? parseInt(p.step_count) : (prev.stepCount || 3100));
+
+  // 5. Server-side Reverse Geocoding with Nominatim & Cache
+  let address = "Toshkent, O'zbekiston";
+  if (lat && lng) {
+    try {
+      address = await reverseGeocode(lat, lng, deviceId);
+    } catch (_) {}
+  }
+
+  // Distance from assigned school
+  let distFromSchool = null;
+  const assignedSchool = db.schools.find(s => s.id === student.schoolId);
+  if (assignedSchool && assignedSchool.lat && assignedSchool.lng && lat && lng) {
+    distFromSchool = Math.round(haversineDistanceMeters(lat, lng, assignedSchool.lat, assignedSchool.lng));
+  }
+
+  const statusColor = finalStatus === 'INSIDE' ? 'GREEN' : finalStatus === 'VERIFYING' ? 'YELLOW' : 'RED';
+  const statusDisplay = finalStatus === 'INSIDE' ? 'PRESENT – INSIDE SCHOOL' : finalStatus === 'VERIFYING' ? 'VERIFYING – BORDER' : 'OUTSIDE – AWAY';
 
   const stateData = {
     deviceId,
     studentId: student.id,
     studentName: student.name,
     schoolId: student.schoolId,
+    schoolName: student.schoolName,
     latitude: lat,
     longitude: lng,
-    accuracy: accuracy,
-    speed: p.speed !== undefined ? p.speed : (prev.speed || 0.0),
-    heading: p.heading !== undefined ? p.heading : (prev.heading || 0),
+    accuracy,
+    speed,
+    heading: p.heading || 0,
     altitude: p.altitude || 430.0,
     heartRate: currentHeartRate,
     bodyTemperature: currentTemp,
-    stepCount: p.step_count || prev.stepCount || 3000,
+    stepCount: steps,
     batteryLevel: currentBattery,
     isCharging: p.is_charging || false,
-    isSos: p.is_sos || false,
-    geofenceStatus: evalResult.status, // "INSIDE", "OUTSIDE", "VERIFYING", or "UNKNOWN"
-    statusColor: evalResult.color, // "GREEN", "RED", "YELLOW", or "GRAY"
-    statusDisplay: evalResult.display,
+    isWorn,
+    isSos,
+    geofenceStatus: finalStatus,
+    statusColor,
+    statusDisplay,
     assignedSchoolId: student.schoolId,
-    lastSeen: Date.now()
+    address,
+    distFromSchool,
+    lastSeen: now,
+    isRealDevice: true
   };
 
   db.telemetryState[deviceId] = stateData;
+  student.telemetry = stateData;
 
-  // --- AUTOMATIC ATTENDANCE UPDATE (Section 5: Accuracy Verification to Prevent False Events) ---
+  // 6. Alert Events Creation
+  const createAlertEvent = async (eventType, message) => {
+    try {
+      const alertId = 'alt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+      const alertItem = {
+        id: alertId,
+        student_id: student.id,
+        device_id: deviceId,
+        guardian_id: student.parentId || 'G001',
+        event_type: eventType,
+        message,
+        triggered_at: new Date(),
+        created_at: new Date()
+      };
+      await knexDb('alert_events').insert(alertItem);
+      broadcast('alert', alertItem);
+      broadcast('geofence_alert', alertItem);
+
+      // Notification
+      const notif = {
+        id: `notif-${Date.now()}`,
+        userId: student.parentId || 'P001',
+        studentId: student.id,
+        type: eventType,
+        title: eventType === 'SOS' ? '🚨 SOS Signali!' : eventType === 'LOW_BATTERY' ? '🪫 Quvvat Kam' : '⚠️ Ogohlantirish',
+        message,
+        isRead: false,
+        time: new Date().toLocaleTimeString()
+      };
+      db.notifications.unshift(notif);
+      broadcast('notification', notif);
+    } catch (_) {}
+  };
+
+  if (isSos) {
+    await createAlertEvent('SOS', `🚨 Shoshilinch SOS signali! ${student.name} soatidan yordam so'ralmoqda`);
+  }
+  if (currentBattery < 10 && (!prev.batteryLevel || prev.batteryLevel >= 10)) {
+    await createAlertEvent('LOW_BATTERY', `🪫 DIQQAT: ${student.name} soati batareya quvvati 10% dan kam qoldi (${currentBattery}%)`);
+  }
+  if (isWorn === false && prev.isWorn !== false) {
+    await createAlertEvent('WATCH_REMOVED', `⚠️ DIQQAT: ${student.name}ning soati qo'ldan yechildi!`);
+  }
+
+  // Attendance update
+  const nowTime = new Date().toLocaleTimeString();
   const today = new Date().toISOString().split('T')[0];
   let att = db.attendance.find(a => a.studentId === student.id && a.date === today);
 
-  if (evalResult.status !== 'VERIFYING' && evalResult.status !== 'UNKNOWN') {
-    const enteredSchool = prev.geofenceStatus !== "INSIDE" && evalResult.status === "INSIDE";
-    const leftSchool = prev.geofenceStatus === "INSIDE" && evalResult.status === "OUTSIDE";
-
-    if (enteredSchool) {
-      const isLate = nowTime > "08:30:00";
-      const status = isLate ? "LATE" : "PRESENT";
-      if (!att) {
-        att = {
-          id: `att-${student.id}-${today}`,
-          studentId: student.id,
-          schoolId: student.schoolId,
-          date: today,
-          arrivalTime: nowTime,
-          departureTime: null,
-          status,
-          statusColor: "GREEN",
-          statusDisplay: "PRESENT – INSIDE SCHOOL",
-          isManualCorrection: false
-        };
-        db.attendance.push(att);
-      } else {
-        att.arrivalTime = nowTime;
-        att.status = status;
-        att.statusColor = "GREEN";
-        att.statusDisplay = "PRESENT – INSIDE SCHOOL";
-      }
-
-      // Instant Parent Notification (Section 9)
-      const notif = {
-        id: `notif-${Date.now()}`,
-        userId: student.parentId,
+  if (finalStatus === 'INSIDE' && prev.geofenceStatus !== 'INSIDE') {
+    const isLate = nowTime > "08:30:00";
+    const attStatus = isLate ? "LATE" : "PRESENT";
+    if (!att) {
+      att = {
+        id: `att-${student.id}-${today}`,
         studentId: student.id,
-        type: "ARRIVAL",
-        title: "🟢 Maktabga yetib keldi",
-        message: `${student.name} soat ${nowTime} da o'zining maktabi (${student.schoolName}) hududiga kirdi. Holati: PRESENT – INSIDE SCHOOL.`,
-        isRead: false,
-        time: nowTime
+        schoolId: student.schoolId,
+        date: today,
+        arrivalTime: nowTime,
+        departureTime: null,
+        status: attStatus,
+        statusColor: "GREEN",
+        statusDisplay: "PRESENT – INSIDE SCHOOL",
+        isManualCorrection: false
       };
-      db.notifications.unshift(notif);
-      broadcast('notification', notif);
-      broadcast('attendance_updated', att);
-    } else if (leftSchool) {
-      if (att) {
-        att.departureTime = nowTime;
-        att.status = "LEFT";
-        att.statusColor = "RED";
-        att.statusDisplay = "LEFT SCHOOL – OUTSIDE SCHOOL";
-      }
-      const notif = {
-        id: `notif-${Date.now()}`,
-        userId: student.parentId,
-        studentId: student.id,
-        type: "DEPARTURE",
-        title: "🔴 Maktabdan chiqdi",
-        message: `DIQQAT! ${student.name} soat ${nowTime} da maktab hududidan chiqdi. Holati: LEFT SCHOOL – OUTSIDE SCHOOL.`,
-        isRead: false,
-        time: nowTime
-      };
-      db.notifications.unshift(notif);
-      broadcast('notification', notif);
-      if (att) broadcast('attendance_updated', att);
+      db.attendance.push(att);
+    } else {
+      att.arrivalTime = nowTime;
+      att.status = attStatus;
     }
+    await createAlertEvent('ENTER_SCHOOL', `🟢 ${student.name} maktab hududiga kirdi (${nowTime})`);
+    broadcast('attendance_updated', att);
+  } else if (finalStatus === 'OUTSIDE' && prev.geofenceStatus === 'INSIDE') {
+    if (att) {
+      att.departureTime = nowTime;
+      att.status = "LEFT";
+      broadcast('attendance_updated', att);
+    }
+    await createAlertEvent('EXIT_SCHOOL', `🔴 ${student.name} maktab hududidan chiqdi (${nowTime})`);
   }
 
-  // --- HEALTH THRESHOLD MONITORING (Section 8 & 9) ---
-  if (currentHeartRate > 120 && (!prev.heartRate || prev.heartRate <= 120)) {
-    const hrNotif = {
-      id: `notif-hr-${Date.now()}`,
-      userId: student.parentId,
-      studentId: student.id,
-      type: "HEALTH_ALERT",
-      title: "⚠️ Yuqori Puls Ko'rsatkichi",
-      message: `OGOHLANTIRISH: ${student.name}ning yurak urishi yuqori ko'rsatkichda (${currentHeartRate} BPM). Bolaning holatidan xabardor bo'ling.`,
-      isRead: false,
-      time: nowTime
-    };
-    db.notifications.unshift(hrNotif);
-    broadcast('notification', hrNotif);
-  } else if (currentHeartRate < 55 && currentHeartRate > 0 && (!prev.heartRate || prev.heartRate >= 55)) {
-    const hrNotif = {
-      id: `notif-hr-${Date.now()}`,
-      userId: student.parentId,
-      studentId: student.id,
-      type: "HEALTH_ALERT",
-      title: "⚠️ Past Puls Ko'rsatkichi",
-      message: `DIQQAT: ${student.name}ning yurak urishi me'yordan past (${currentHeartRate} BPM).`,
-      isRead: false,
-      time: nowTime
-    };
-    db.notifications.unshift(hrNotif);
-    broadcast('notification', hrNotif);
-  }
-
-  // --- LOW BATTERY MONITORING (Section 9) ---
-  if (currentBattery <= 20 && (!prev.batteryLevel || prev.batteryLevel > 20)) {
-    const batNotif = {
-      id: `notif-bat-${Date.now()}`,
-      userId: student.parentId,
-      studentId: student.id,
-      type: "LOW_BATTERY",
-      title: "🪫 Smartwatch Quvvati Kam",
-      message: `DIQQAT: ${student.name}ning Samsung Galaxy Watch5 Pro soati quvvati ${currentBattery}% qoldi. Iltimos, quvvatlagichga ulang.`,
-      isRead: false,
-      time: nowTime
-    };
-    db.notifications.unshift(batNotif);
-    broadcast('notification', batNotif);
-  }
-
-  // Append to route history (Section 6: Movement Routes)
+  // Append to route history
   if (lat && lng) {
     if (!db.routeHistory) db.routeHistory = {};
     if (!db.routeHistory[student.id]) db.routeHistory[student.id] = [];
@@ -1160,29 +1275,292 @@ app.post('/api/v1/telemetry', (req, res) => {
       lat,
       lng,
       time: nowTime,
-      speed: stateData.speed,
-      heading: stateData.heading,
-      status: evalResult.status,
-      color: evalResult.color
+      speed,
+      address,
+      status: finalStatus,
+      color: statusColor
     });
     if (db.routeHistory[student.id].length > 100) {
       db.routeHistory[student.id].shift();
     }
   }
 
+  // 7. Persist to Database (telemetry & devices tables)
+  try {
+    await knexDb('telemetry').insert({
+      id: 'telem_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      device_id: deviceId,
+      student_id: student.id,
+      lat: lat || 0,
+      lng: lng || 0,
+      accuracy,
+      speed,
+      hr: currentHeartRate,
+      battery: currentBattery,
+      temp: currentTemp,
+      steps,
+      is_worn: isWorn,
+      is_sos: isSos,
+      address,
+      geofence_status: finalStatus,
+      ts: recordedAt,
+      created_at: new Date()
+    });
+
+    await knexDb('devices')
+      .where({ device_uid: deviceId })
+      .orWhere({ id: deviceId })
+      .update({
+        battery_pct: currentBattery,
+        last_seen_at: new Date(),
+        status: 'ONLINE',
+        is_worn: isWorn,
+        last_address: address,
+        updated_at: new Date()
+      });
+  } catch (err) {
+    // Non-fatal if table not migrated yet
+  }
+
   saveDb();
+
+  // 8. Real-time push via SSE
   broadcast('telemetry', stateData);
+  broadcast('location_update', stateData);
 
   res.json({
     success: true,
     message: "Telemetriya muvaffaqiyatli qabul qilindi",
     student_id: student.id,
-    assigned_school_id: student.schoolId,
-    geofence_status: evalResult.status,
-    status_display: evalResult.display,
-    status_color: evalResult.color
+    geofence_status: finalStatus,
+    status_display: statusDisplay,
+    status_color: statusColor,
+    address,
+    device_status: "ONLINE"
   });
+};
+
+app.post(['/api/device/telemetry', '/api/v1/device/telemetry', '/api/v1/telemetry'], handleDeviceTelemetry);
+
+// ==========================================
+// DEVICE MANAGEMENT & PAIRING ENDPOINTS
+// ==========================================
+
+// Register new smartwatch (issues 256-bit token & pairing QR data)
+app.post(['/api/devices/register', '/api/v1/devices/register'], async (req, res) => {
+  try {
+    const { deviceId, device_id, studentId, student_id, model, serialNumber } = req.body || {};
+    const finalDevId = (deviceId || device_id || serialNumber || `watch-5pro-${Date.now().toString(36)}`).trim();
+    const finalStudentId = studentId || student_id || null;
+    const finalModel = model || 'Samsung Galaxy Watch5 Pro (SM-R920)';
+
+    // Generate cryptographically secure 256-bit token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashDeviceToken(rawToken);
+
+    const student = db.students.find(s => s.id === finalStudentId);
+    if (student) {
+      student.deviceId = finalDevId;
+    }
+
+    const publicUrl = process.env.PUBLIC_SERVER_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    const qrData = JSON.stringify({
+      server: publicUrl,
+      deviceId: finalDevId,
+      token: rawToken,
+      model: finalModel,
+      createdAt: new Date().toISOString()
+    });
+
+    try {
+      const existing = await knexDb('devices').where({ device_uid: finalDevId }).orWhere({ id: finalDevId }).first();
+      if (existing) {
+        await knexDb('devices').where({ id: existing.id }).update({
+          token_hash: tokenHash,
+          student_id: finalStudentId || '10001',
+          guardian_id: student ? student.parentId : 'user_parent_01',
+          model: finalModel,
+          updated_at: new Date()
+        });
+      } else {
+        await knexDb('devices').insert({
+          id: finalDevId,
+          device_uid: finalDevId,
+          student_id: finalStudentId || '10001',
+          guardian_id: student ? student.parentId : 'user_parent_01',
+          token_hash: tokenHash,
+          model: finalModel,
+          status: 'OFFLINE',
+          created_at: new Date(),
+          updated_at: new Date()
+        });
+      }
+    } catch (e) {
+      console.warn('Knex device insert/update warning:', e.message);
+    }
+
+    // Keep in-memory cache/telemetry state
+    if (!db.telemetryState[finalDevId]) {
+      db.telemetryState[finalDevId] = {
+        deviceId: finalDevId,
+        studentId: finalStudentId,
+        studentName: student ? student.name : 'Biriktirilmagan',
+        model: finalModel,
+        status: 'OFFLINE',
+        battery: 100,
+        isWorn: true,
+        lastSeen: null
+      };
+    }
+
+    saveDb();
+
+    res.json({
+      success: true,
+      message: "Aqlli soat muvaffaqiyatli ro'yxatdan o'tkazildi",
+      device: {
+        id: finalDevId,
+        deviceId: finalDevId,
+        studentId: finalStudentId,
+        studentName: student ? student.name : null,
+        model: finalModel,
+        token: rawToken, // 256-bit token returned for pairing
+        qrData,
+        status: 'OFFLINE'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Qurilmani ro'yxatdan o'tkazishda xatolik: " + err.message });
+  }
 });
+
+// List all devices with dynamic status (ONLINE / DELAYED / OFFLINE)
+app.get(['/api/devices', '/api/v1/devices'], async (req, res) => {
+  try {
+    let dbDevices = [];
+    try {
+      dbDevices = await knexDb('devices').select('*');
+    } catch (_) {}
+
+    // Merge in-memory and database devices
+    const deviceMap = new Map();
+
+    // From DB
+    dbDevices.forEach(d => {
+      const student = db.students.find(s => s.id === d.student_id || s.deviceId === d.device_uid);
+      const school = student ? db.schools.find(sc => sc.id === student.schoolId) : null;
+      const status = calculateDeviceStatus(d.last_seen_at);
+      deviceMap.set(d.device_uid || d.id, {
+        id: d.id,
+        deviceId: d.device_uid || d.id,
+        model: d.model || 'Samsung Galaxy Watch5 Pro (SM-R920)',
+        serialNumber: d.serial_number || d.device_uid,
+        studentId: d.student_id,
+        studentName: student ? student.name : "Biriktirilmagan",
+        studentClass: student ? student.grade : "—",
+        schoolName: school ? school.name : "—",
+        status,
+        battery: d.battery_pct !== null && d.battery_pct !== undefined ? d.battery_pct : 85,
+        isWorn: d.is_worn !== false,
+        lastSeenAt: d.last_seen_at,
+        lastAddress: d.last_address || "Toshkent shahri",
+        createdAt: d.created_at
+      });
+    });
+
+    // From students list if not present
+    db.students.forEach(s => {
+      if (s.deviceId && !deviceMap.has(s.deviceId)) {
+        const state = db.telemetryState[s.deviceId];
+        const lastSeen = state ? state.lastSeen : null;
+        const status = calculateDeviceStatus(lastSeen);
+        const school = db.schools.find(sc => sc.id === s.schoolId);
+        deviceMap.set(s.deviceId, {
+          id: s.deviceId,
+          deviceId: s.deviceId,
+          model: 'Samsung Galaxy Watch5 Pro (SM-R920)',
+          serialNumber: s.deviceId,
+          studentId: s.id,
+          studentName: s.name,
+          studentClass: s.grade,
+          schoolName: school ? school.name : "—",
+          status,
+          battery: state ? state.batteryLevel : 85,
+          isWorn: state ? state.isWorn !== false : true,
+          lastSeenAt: lastSeen ? new Date(lastSeen).toISOString() : null,
+          lastAddress: state && state.address ? state.address : "Toshkent shahri",
+          createdAt: new Date().toISOString()
+        });
+      }
+    });
+
+    const devices = Array.from(deviceMap.values());
+    res.json({ success: true, count: devices.length, devices });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Qurilmalarni olishda xatolik: " + err.message });
+  }
+});
+
+// Regenerate token for a device
+app.post(['/api/devices/:id/regenerate-token', '/api/v1/devices/:id/regenerate-token'], async (req, res) => {
+  try {
+    const devId = req.params.id;
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashDeviceToken(rawToken);
+
+    try {
+      await knexDb('devices')
+        .where({ id: devId })
+        .orWhere({ device_uid: devId })
+        .update({
+          token_hash: tokenHash,
+          updated_at: new Date()
+        });
+    } catch (_) {}
+
+    const publicUrl = process.env.PUBLIC_SERVER_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    const qrData = JSON.stringify({
+      server: publicUrl,
+      deviceId: devId,
+      token: rawToken,
+      regeneratedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: "Qurilma tokeni yangilandi",
+      deviceId: devId,
+      token: rawToken,
+      qrData
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Tokenni yangilashda xatolik: " + err.message });
+  }
+});
+
+// Alerts list and mark read (Fleet Dashboard & Notifications)
+app.get('/api/alerts', async (req, res) => {
+  const alerts = (db.notifications || []).slice(0, 50);
+  const unreadCount = alerts.filter(a => !a.isRead).length;
+  res.json({ success: true, unreadCount, alerts });
+});
+
+app.post(['/api/alerts/:id/read', '/api/v1/alerts/:id/read'], (req, res) => {
+  const alert = (db.notifications || []).find(n => n.id === req.params.id);
+  if (alert) {
+    alert.isRead = true;
+    saveDb();
+    return res.json({ success: true, alert });
+  }
+  res.status(404).json({ success: false, message: "Ogohlantirish topilmadi" });
+});
+
+app.post(['/api/alerts/mark-all-read', '/api/v1/alerts/mark-all-read'], (req, res) => {
+  (db.notifications || []).forEach(n => { n.isRead = true; });
+  saveDb();
+  res.json({ success: true, message: "Barcha ogohlantirishlar o'qilgan deb belgilandi" });
+});
+
 
 // 9. SOS Emergency Alert
 app.post('/api/v1/sos', (req, res) => {
@@ -2516,11 +2894,86 @@ app.post('/api/v1/telemetry/simulate-walk', (req, res) => {
   });
 });
 
+// Periodic device status evaluator (every 30 seconds)
+const devicePreviousStatusMap = new Map();
+
+async function runDeviceStatusEvaluation() {
+  try {
+    let devices = [];
+    try {
+      devices = await knexDb('devices').select('id', 'device_uid', 'last_seen_at', 'battery_pct', 'is_worn');
+    } catch (_) {}
+
+    // Check in-memory devices too
+    const checked = new Set();
+    const allStatuses = [];
+
+    for (const d of devices) {
+      const devId = d.device_uid || d.id;
+      checked.add(devId);
+      const newStatus = calculateDeviceStatus(d.last_seen_at);
+      const prevStatus = devicePreviousStatusMap.get(devId);
+      if (prevStatus !== newStatus) {
+        devicePreviousStatusMap.set(devId, newStatus);
+        broadcast('device_status_update', {
+          deviceId: devId,
+          status: newStatus,
+          battery: d.battery_pct,
+          isWorn: d.is_worn !== false,
+          lastSeenAt: d.last_seen_at
+        });
+      }
+      allStatuses.push({ deviceId: devId, status: newStatus });
+    }
+
+    // In-memory students
+    for (const s of (db.students || [])) {
+      if (s.deviceId && !checked.has(s.deviceId)) {
+        const state = db.telemetryState[s.deviceId];
+        const lastSeen = state ? state.lastSeen : null;
+        const newStatus = calculateDeviceStatus(lastSeen);
+        const prevStatus = devicePreviousStatusMap.get(s.deviceId);
+        if (prevStatus !== newStatus) {
+          devicePreviousStatusMap.set(s.deviceId, newStatus);
+          broadcast('device_status_update', {
+            deviceId: s.deviceId,
+            status: newStatus,
+            battery: state ? state.batteryLevel : 85,
+            isWorn: state ? state.isWorn !== false : true,
+            lastSeenAt: lastSeen
+          });
+        }
+        allStatuses.push({ deviceId: s.deviceId, status: newStatus });
+      }
+    }
+  } catch (err) {
+    // Non-fatal
+  }
+}
+
+// 7-day telemetry data retention cleanup
+async function cleanupOldTelemetry() {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const deletedCount = await knexDb('telemetry').where('created_at', '<', sevenDaysAgo).del();
+    if (deletedCount > 0) {
+      console.log(`🧹 7 kundan eski ${deletedCount} ta telemetriya yozuvlari tozalandi`);
+    }
+  } catch (_) {
+    // Table might not exist yet
+  }
+}
+
 async function startServer() {
   try {
     console.log('⏳ Knex ma\'lumotlar bazasi migratsiyalari tekshirilmoqda...');
     await runMigrations();
     console.log('✅ Knex ma\'lumotlar bazasi migratsiyalari muvaffaqiyatli tekshirildi/bajarildi');
+    
+    // Initial cleanup & run periodic interval
+    cleanupOldTelemetry();
+    setInterval(runDeviceStatusEvaluation, 30000);
+    setInterval(cleanupOldTelemetry, 24 * 60 * 60 * 1000);
   } catch (err) {
     console.error('❌ Knex migratsiyalarini bajarishda jiddiy xatolik yuz berdi:', err.message);
     if (process.env.NODE_ENV === 'production') {

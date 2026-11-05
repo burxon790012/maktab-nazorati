@@ -4,65 +4,82 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --bg: #1b1b33;
+    --surface: #2a2a4a;
+    --surface-2: #3a3a63;
+    --text: #e8e8f5;
+    --muted: #9a9ac0;
+    --accent: #ff2d78;
+    --ok: #2ee59d;
+    --warn: #ffb020;
+    --danger: #ff4d5e;
+    --info: #4db5ff;
 
-    --card: 240 10% 5%;
-    --card-foreground: 0 0% 98%;
+    --background: 240 30% 15%;
+    --foreground: 240 20% 95%;
 
-    --popover: 240 10% 5%;
-    --popover-foreground: 0 0% 98%;
+    --card: 240 27% 23%;
+    --card-foreground: 240 20% 95%;
 
-    --primary: 158 64% 52%;
-    --primary-foreground: 240 10% 3.9%;
+    --popover: 240 27% 23%;
+    --popover-foreground: 240 20% 95%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 158 79% 54%;
+    --primary-foreground: 240 30% 15%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --secondary: 240 26% 31%;
+    --secondary-foreground: 240 20% 95%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 240 20% 68%;
+    --muted-foreground: 240 18% 75%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 338 100% 59%;
+    --accent-foreground: 0 0% 100%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 158 64% 52%;
+    --destructive: 354 100% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 26% 31%;
+    --input: 240 26% 31%;
+    --ring: 158 79% 54%;
 
     --radius: 0.75rem;
   }
 
   .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --bg: #f4f5fa;
+    --surface: #ffffff;
+    --surface-2: #e8eaf2;
+    --text: #1b1b33;
+    --muted: #64648c;
+
+    --background: 230 33% 97%;
+    --foreground: 240 30% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 240 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 240 30% 15%;
 
-    --primary: 158 64% 42%;
+    --primary: 158 79% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 230 20% 92%;
+    --secondary-foreground: 240 30% 15%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 240 16% 47%;
+    --muted-foreground: 240 16% 40%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 338 100% 59%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 354 100% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 158 64% 42%;
+    --border: 230 20% 88%;
+    --input: 230 20% 88%;
+    --ring: 158 79% 40%;
   }
 }
 
@@ -73,6 +90,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -81,26 +100,37 @@
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
-  background: #09090b !important;
+  background: var(--bg) !important;
   font-family: inherit;
 }
 
-/* Dark Mode CSS Filter for Leaflet Tiles (without breaking markers, popups, or halos) */
+/* Dark Mode CSS Filter for Leaflet Tiles - Applied ONCE */
 .dark-tiles .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
-  -webkit-filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+  filter: invert(1) hue-rotate(200deg) brightness(0.85) contrast(0.9) saturate(0.7) !important;
+  -webkit-filter: invert(1) hue-rotate(200deg) brightness(0.85) contrast(0.9) saturate(0.7) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--card-foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  border-radius: var(--radius) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  background: #2a2a4a !important;
+  color: #e8e8f5 !important;
+  border: 1px solid #3a3a63 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  padding: 4px !important;
+}
+
+.light .leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #1b1b33 !important;
+  border: 1px solid #e8eaf2 !important;
 }
 
 .leaflet-popup-tip {
-  background: hsl(var(--card)) !important;
+  background: #2a2a4a !important;
+}
+
+.light .leaflet-popup-tip {
+  background: #ffffff !important;
 }
 
 /* Scrollbar */
@@ -112,14 +142,14 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
+  background: rgba(154, 154, 192, 0.3);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: rgba(154, 154, 192, 0.6);
 }
 
-/* Professional GPS & Radar Animations */
+/* Radar & Pulsing Ring Animations */
 @keyframes pulse-radar {
   0% {
     transform: scale(0.6);
@@ -140,6 +170,18 @@
   }
 }
 
+@keyframes sos-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 94, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 77, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 94, 0);
+  }
+}
+
 .radar-ring {
   animation: pulse-radar 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
@@ -148,17 +190,6 @@
   animation: heartbeat 1.2s ease-in-out infinite;
 }
 
-/* Custom leaflet tooltip */
-.custom-leaflet-tooltip {
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--card-foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  border-radius: 8px !important;
-  padding: 4px 8px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
-}
-.custom-leaflet-tooltip::before {
-  border-top-color: hsl(var(--border)) !important;
+.sos-badge-pulse {
+  animation: sos-pulse 1.4s infinite;
 }

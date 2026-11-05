@@ -65,6 +65,8 @@ interface MapViewProps {
   onSaveGeofence: (schoolId: string, polygon: [number, number][]) => Promise<void>;
   selectedSchoolId: string;
   onRefreshData?: () => Promise<void>;
+  activeFilter?: string;
+  onSelectFilter?: (f: string) => void;
 }
 
 type GeofenceToolMode = 'NONE' | 'DRAW_POLYGON' | 'CIRCLE' | 'MEASURE';
@@ -76,6 +78,8 @@ export const MapView: React.FC<MapViewProps> = ({
   onSaveGeofence,
   selectedSchoolId,
   onRefreshData,
+  activeFilter = 'ALL',
+  onSelectFilter,
 }) => {
   // Map container & Leaflet instance refs
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -425,45 +429,68 @@ export const MapView: React.FC<MapViewProps> = ({
       const isInside = telem.geofenceStatus === 'INSIDE';
       const isVerifying = telem.geofenceStatus === 'VERIFYING';
       const isSos = telem.isSos || false;
+      const devStatus = telem.deviceStatus || (telem.lastSeen && Date.now() - telem.lastSeen > 300000 ? 'OFFLINE' : 'ONLINE');
+      const isOffline = devStatus === 'OFFLINE';
+
+      // KPI / Status filtering check
+      if (activeFilter && activeFilter !== 'ALL') {
+        if (activeFilter === 'INSIDE' && !isInside) return;
+        if (activeFilter === 'OUTSIDE' && isInside) return;
+        if (activeFilter === 'VERIFYING' && !isVerifying) return;
+        if (activeFilter === 'SOS' && !isSos) return;
+        if (activeFilter === 'ONLINE' && isOffline) return;
+        if (activeFilter === 'OFFLINE' && !isOffline) return;
+      }
 
       // Status-dependent palette
-      let color = '#ef4444'; // Red (Outside)
+      let color = '#ff4d5e'; // Red (Outside)
       let statusLabel = 'TASHQARIDA';
-      if (isInside) {
-        color = '#10b981'; // Green (Inside)
+      if (isOffline) {
+        color = '#9a9ac0'; // Gray (Offline)
+        statusLabel = "OFFLINE (oxirgi ma'lum joy)";
+      } else if (isInside) {
+        color = '#2ee59d'; // Green (Inside)
         statusLabel = 'MAKTABDA';
       } else if (isVerifying) {
-        color = '#f59e0b'; // Amber (Verifying)
-        statusLabel = 'TEKSHIRUV';
+        color = '#ffb020'; // Amber (Verifying)
+        statusLabel = 'CHEGARADA (VERIFYING)';
       }
 
       if (isSos) {
-        color = '#ef4444';
-        statusLabel = '🚨 SOS!';
+        color = '#ff4d5e';
+        statusLabel = '🚨 SOS FAVQULODDA!';
       }
 
       const isSelected = selectedStudent?.id === std.id;
-      const markerSize = isSelected ? 50 : 42;
+      const markerSize = isSelected ? 52 : 44;
       const pulseHtml = isSos
-        ? `<div class="radar-ring" style="position: absolute; inset: -10px; border-radius: 9999px; background: rgba(239, 68, 68, 0.4); border: 2px solid #ef4444;"></div>`
-        : isInside
-        ? `<div class="radar-ring" style="position: absolute; inset: -4px; border-radius: 9999px; background: rgba(16, 185, 129, 0.25);"></div>`
+        ? `<div class="radar-ring" style="position: absolute; inset: -10px; border-radius: 9999px; background: rgba(255, 77, 94, 0.45); border: 2px solid #ff4d5e;"></div>`
+        : isInside && !isOffline
+        ? `<div class="radar-ring" style="position: absolute; inset: -4px; border-radius: 9999px; background: rgba(46, 229, 157, 0.25);"></div>`
         : '';
+
+      // Calculate distance to assigned school
+      const school = schools.find((s) => s.id === std.schoolId) || schools[0];
+      let distText = '—';
+      if (school && school.lat && school.lng) {
+        const dMeters = Math.round(haversineDistance(telem.latitude, telem.longitude, school.lat, school.lng));
+        distText = formatDistance(dMeters);
+      }
 
       const customIcon = L.divIcon({
         className: 'student-pro-marker',
         html: `
           <div style="position: relative; width: ${markerSize}px; height: ${markerSize}px; display: flex; align-items: center; justify-content: center; cursor: pointer; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));">
             ${pulseHtml}
-            <div style="width: ${markerSize - 8}px; height: ${markerSize - 8}px; border-radius: 9999px; border: 3px solid ${color}; overflow: hidden; background: #000; position: relative; z-index: 2; transition: all 0.2s;">
+            <div style="width: ${markerSize - 8}px; height: ${markerSize - 8}px; border-radius: 9999px; border: 3px solid ${color}; overflow: hidden; background: #1b1b33; position: relative; z-index: 2; transition: all 0.2s; ${isOffline ? 'filter: grayscale(80%) opacity(0.85);' : ''}">
               <img src="${std.photo || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=80'}" style="width: 100%; height: 100%; object-fit: cover;" alt="${std.name}" />
             </div>
-            <div style="position: absolute; bottom: 0; right: 0; z-index: 3; background: ${color}; color: #fff; font-size: 8px; font-weight: 800; border-radius: 9999px; border: 1.5px solid #000; padding: 1px 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-              ${isInside ? '✓' : isSos ? 'SOS' : '!'}
+            <div style="position: absolute; bottom: 0; right: 0; z-index: 3; background: ${color}; color: #fff; font-size: 8px; font-weight: 800; border-radius: 9999px; border: 1.5px solid #1b1b33; padding: 1px 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+              ${isOffline ? 'OFF' : isInside ? '✓' : isSos ? 'SOS' : '!'}
             </div>
             ${
               isSelected
-                ? `<div style="position: absolute; top: -18px; background: #10b981; color: #000; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; z-index: 4;">${std.name}</div>`
+                ? `<div style="position: absolute; top: -18px; background: #2ee59d; color: #1b1b33; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; white-space: nowrap; z-index: 4;">${std.name}</div>`
                 : ''
             }
           </div>
@@ -474,9 +501,43 @@ export const MapView: React.FC<MapViewProps> = ({
 
       const marker = L.marker([telem.latitude, telem.longitude], { icon: customIcon }).addTo(map);
 
+      // Rich Telemetry Popup
+      const popupHtml = `
+        <div style="min-width: 220px; font-size: 12px; line-height: 1.4; color: #e8e8f5;">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 6px;">
+            <div>
+              <b style="font-size: 13px; color: #fff;">${std.name}</b>
+              <div style="font-size: 11px; color: #9a9ac0;">${std.className} • ${std.schoolName}</div>
+            </div>
+            <span style="background: ${color}20; color: ${color}; border: 1px solid ${color}40; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 10px;">
+              ${statusLabel}
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px; font-size: 11px;">
+            <div>⌚ <b>Soat:</b> Galaxy Watch5 Pro</div>
+            <div>🔋 <b>Batareya:</b> <span style="color: ${telem.batteryLevel > 20 ? '#2ee59d' : '#ff4d5e'}; font-weight: bold;">${telem.batteryLevel || 85}%</span></div>
+            <div>❤️ <b>Yurak:</b> ${telem.heartRate || 76} BPM</div>
+            <div>👣 <b>Qadam:</b> ${telem.steps || 3200}</div>
+          </div>
+
+          <div style="background: rgba(0,0,0,0.25); padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-bottom: 6px;">
+            <div>📍 <b>Manzil:</b> ${telem.address || "Toshkent shahri"}</div>
+            <div>📏 <b>Maktabdan masofa:</b> <b style="color: #4db5ff;">${distText}</b></div>
+            <div>🎯 <b>Aniqlik:</b> ±${telem.accuracy || 3.5}m</div>
+          </div>
+
+          <div style="font-size: 10px; color: #9a9ac0; text-align: right;">
+            Holat: <b style="color: ${isOffline ? '#9a9ac0' : '#2ee59d'}">${devStatus}</b> • ${telem.lastSeen ? new Date(telem.lastSeen).toLocaleTimeString() : 'Hozir'}
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, { maxWidth: 280 });
+
       // Tooltip on hover
       marker.bindTooltip(
-        `<b>${std.name}</b> (${std.className})<br/><span style="color: ${color}; font-weight: bold;">● ${statusLabel}</span> • ❤️ ${telem.heartRate || 75} BPM`,
+        `<b>${std.name}</b> (${std.className})<br/><span style="color: ${color}; font-weight: bold;">● ${statusLabel}</span><br/>📍 ${telem.address || "Toshkent shahri"}`,
         { className: 'custom-leaflet-tooltip', direction: 'top', offset: [0, -18] }
       );
 
@@ -495,7 +556,7 @@ export const MapView: React.FC<MapViewProps> = ({
         color: color,
         weight: 1,
         fillColor: color,
-        fillOpacity: 0.12,
+        fillOpacity: isOffline ? 0.05 : 0.12,
         dashArray: '3, 3',
       }).addTo(map);
 
@@ -506,13 +567,13 @@ export const MapView: React.FC<MapViewProps> = ({
         const polyline = L.polyline(historyTrails[std.id], {
           color: color,
           weight: 2.5,
-          opacity: 0.65,
+          opacity: isOffline ? 0.3 : 0.65,
           dashArray: '4, 6',
         }).addTo(map);
         trailPolylinesRef.current[std.id] = polyline;
       }
     });
-  }, [students, selectedStudent, showTrails, historyTrails]);
+  }, [students, selectedStudent, showTrails, historyTrails, activeFilter, schools]);
 
   // 5. Drawing & Distance Measuring Click Handler
   useEffect(() => {
@@ -1044,12 +1105,21 @@ export const MapView: React.FC<MapViewProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 mt-1 pt-1 border-t border-border/40">
-                        <span className="truncate max-w-[130px]">🏫 {std.schoolName}</span>
+                        <span className="truncate max-w-[130px]" title={telem?.address || std.schoolName}>
+                          📍 {telem?.address || std.schoolName}
+                        </span>
                         <span className="flex items-center gap-1 font-mono text-emerald-400">
                           <Battery className="w-3 h-3 text-emerald-400" />
                           {telem?.batteryLevel || 85}%
                         </span>
                       </div>
+
+                      {telem?.isWorn === false && (
+                        <div className="text-[10px] font-bold text-rose-500 mt-1 flex items-center gap-1 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                          <AlertTriangle className="w-3 h-3" />
+                          Soat qo'ldan yechilgan!
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

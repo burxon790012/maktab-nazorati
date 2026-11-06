@@ -95,6 +95,7 @@ export class LeafletOsmAdapter implements MapAdapter {
       this.container?.classList.add('satellite-mode');
       this.container?.classList.remove('dark-tiles');
       this.tileLayer = L.tileLayer(ESRI_SATELLITE_URL, {
+        maxNativeZoom: 19,
         maxZoom: 19,
         keepBuffer: 4,
         updateWhenIdle: false,
@@ -106,7 +107,9 @@ export class LeafletOsmAdapter implements MapAdapter {
       this.container?.classList.remove('dark-tiles');
 
       // Primary: High-reliability Esri World Street Map (Full street names, zero watermark, zero key, global coverage)
+      // maxNativeZoom: 17 prevents Esri 2521-byte "Map data not yet available" placeholder at zoom >= 18
       this.tileLayer = L.tileLayer(ESRI_STREET_URL, {
+        maxNativeZoom: 17,
         maxZoom: 19,
         keepBuffer: 4,
         updateWhenIdle: false,
@@ -123,6 +126,7 @@ export class LeafletOsmAdapter implements MapAdapter {
           this.hasSwitchedToFallback = true;
           console.warn('⚠️ Esri Street plitkasi xatosi (6+ xato), Esri Topo Map ga avtomatik o\'tkazilmoqda...');
           const fallbackLayer = L.tileLayer(ESRI_TOPO_URL, {
+            maxNativeZoom: 17,
             maxZoom: 19,
             keepBuffer: 4,
             updateWhenIdle: false,
@@ -195,7 +199,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     try {
       const llBounds = L.latLngBounds(valid as any);
       if (llBounds.isValid()) {
-        this.map.fitBounds(llBounds, { maxZoom: 18, padding: [40, 40] });
+        this.map.fitBounds(llBounds, { maxZoom: 17, padding: [40, 40] });
       }
     } catch (e) {
       console.warn('fitBounds xatosi:', e);

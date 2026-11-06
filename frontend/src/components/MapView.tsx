@@ -972,7 +972,7 @@ export const MapView: React.FC<MapViewProps> = ({
                     onClick={() => {
                       setSelectedStudent(std);
                       if (telem?.latitude && telem?.longitude) {
-                        adapterRef.current?.flyTo(telem.latitude, telem.longitude, 17.5);
+                        adapterRef.current?.flyTo(telem.latitude, telem.longitude, 17);
                       }
                     }}
                     className={`p-2.5 rounded-xl border transition-all cursor-pointer relative ${
@@ -1184,7 +1184,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   adapterRef.current?.flyTo(
                     selectedStudent.telemetry.latitude,
                     selectedStudent.telemetry.longitude,
-                    18
+                    17
                   );
                 }
               }}

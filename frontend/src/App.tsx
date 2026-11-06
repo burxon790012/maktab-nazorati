@@ -350,19 +350,50 @@ export const App: React.FC = () => {
     fetchNotifications();
   };
 
-  const handleSaveGeofence = async (schoolId: string, polygon: [number, number][]) => {
-    const res = await authFetch(`/api/v1/schools/${schoolId}/geofence`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ polygon }),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchSchools();
-      fetchStudents();
-      fetchAuditLogs();
+  const handleSaveGeofence = async (
+    schoolId: string,
+    polygon: [number, number][],
+    name?: string,
+    isNewSchool?: boolean
+  ) => {
+    if (isNewSchool) {
+      const avgLat = polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
+      const avgLng = polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
+      const res = await authFetch('/api/v1/schools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name || '30-maktab',
+          polygon,
+          lat: avgLat,
+          lng: avgLng,
+          address: "O'zbekiston",
+        }),
+      });
+      const d = await res.json();
+      if (d.success) {
+        await fetchSchools();
+        await fetchStudents();
+        await fetchAuditLogs();
+        return d.school;
+      } else {
+        throw new Error(d.message || "Yangi maktabni saqlashda xatolik yuz berdi");
+      }
     } else {
-      throw new Error(d.message || "Geozonani saqlashda xatolik yuz berdi");
+      const res = await authFetch(`/api/v1/schools/${schoolId}/geofence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ polygon, name }),
+      });
+      const d = await res.json();
+      if (d.success) {
+        await fetchSchools();
+        await fetchStudents();
+        await fetchAuditLogs();
+        return d.school;
+      } else {
+        throw new Error(d.message || "Geozonani saqlashda xatolik yuz berdi");
+      }
     }
   };
 

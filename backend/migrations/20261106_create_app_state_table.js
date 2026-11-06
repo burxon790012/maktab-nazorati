@@ -17,3 +17,4 @@ exports.down = async function(knex) {
     await knex.schema.dropTable('app_state');
   }
 };
+

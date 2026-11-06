@@ -886,26 +886,52 @@ app.delete('/api/v1/schools/:id', (req, res) => {
 // 4. Interactive School GPS Boundary Drawing System: Save Drawn Polygon
 app.post('/api/v1/schools/:id/geofence', (req, res) => {
   const schoolId = req.params.id;
-  const { polygon } = req.body;
-
-  const school = db.schools.find(s => s.id === schoolId || s.code === schoolId);
-  if (!school) return res.status(404).json({ success: false, message: "Maktab topilmadi" });
+  const { polygon, name, address } = req.body;
 
   if (!Array.isArray(polygon) || polygon.length < 3) {
     return res.status(400).json({ success: false, message: "Kamida 3 ta GPS nuqta kerak" });
   }
 
-  // Update polygon coordinates
-  school.polygon = polygon;
-  if (!school.geofenceId) {
-    school.geofenceId = `GEO${school.id.replace('SCH', '')}`;
-  }
-
-  // Calculate new center
   const avgLat = polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
   const avgLng = polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
-  school.lat = avgLat;
-  school.lng = avgLng;
+
+  let school = db.schools.find(s => s.id === schoolId || s.code === schoolId);
+
+  if (!school) {
+    const count = db.schools.length + 1;
+    const newId = schoolId && schoolId !== 'NEW' && schoolId.startsWith('SCH') ? schoolId : `SCH${count.toString().padStart(3, '0')}`;
+    const geofenceId = `GEO${count.toString().padStart(3, '0')}`;
+    school = {
+      id: newId,
+      geofenceId,
+      name: (name && typeof name === 'string' && name.trim()) ? name.trim() : "Yangi Maktab",
+      code: newId,
+      address: (address && typeof address === 'string' && address.trim()) ? address.trim() : "O'zbekiston",
+      lat: avgLat,
+      lng: avgLng,
+      startTime: "08:30",
+      endTime: "13:30",
+      color: "#2ee59d",
+      polygon,
+      totalStudents: 0
+    };
+    db.schools.push(school);
+  } else {
+    // Update polygon coordinates
+    school.polygon = polygon;
+    school.lat = avgLat;
+    school.lng = avgLng;
+
+    if (name && typeof name === 'string' && name.trim()) {
+      school.name = name.trim();
+    }
+    if (address && typeof address === 'string' && address.trim()) {
+      school.address = address.trim();
+    }
+    if (!school.geofenceId) {
+      school.geofenceId = `GEO${school.id.replace('SCH', '')}`;
+    }
+  }
 
   // Audit log entry (Section 2, 10 & 13)
   if (!db.auditLogs) db.auditLogs = [];
@@ -920,12 +946,12 @@ app.post('/api/v1/schools/:id/geofence', (req, res) => {
   });
 
   saveDb();
-  broadcast('geofence_updated', { schoolId: school.id, geofenceId: school.geofenceId, polygon });
+  broadcast('geofence_updated', { schoolId: school.id, geofenceId: school.geofenceId, polygon, name: school.name });
 
   console.log(`🗺️ [GEOFENCE SAVED] Maktab: ${school.name} (${school.id}) -> Geofence ID: ${school.geofenceId}, Nuqtalar: ${polygon.length} ta.`);
   res.json({
     success: true,
-    message: `Maktab GPS chegarasi (${school.geofenceId}) muvaffaqiyatli saqlandi!`,
+    message: `"${school.name}" GPS chegarasi (${school.geofenceId}) muvaffaqiyatli saqlandi!`,
     school
   });
 });

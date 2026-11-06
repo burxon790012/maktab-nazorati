@@ -52,7 +52,7 @@ import { SearchCombobox, SearchResultItem } from './SearchCombobox';
 interface MapViewProps {
   schools: School[];
   students: Student[];
-  onSaveGeofence: (schoolId: string, polygon: [number, number][]) => Promise<void>;
+  onSaveGeofence: (schoolId: string, polygon: [number, number][], name?: string, isNewSchool?: boolean) => Promise<any>;
   selectedSchoolId: string;
   onRefreshData?: () => Promise<void>;
   activeFilter?: string;
@@ -99,6 +99,12 @@ export const MapView: React.FC<MapViewProps> = ({
   const [circleRadius, setCircleRadius] = useState(200);
   const [measuredDistance, setMeasuredDistance] = useState<number | null>(null);
   const [isSavingGeofence, setIsSavingGeofence] = useState(false);
+
+  // Geofence Name Confirmation Dialog state
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [pendingPolygon, setPendingPolygon] = useState<[number, number][] | null>(null);
+  const [geofenceNameInput, setGeofenceNameInput] = useState('');
+  const [saveAsNewSchool, setSaveAsNewSchool] = useState(true);
 
   // Search Pin & Map Pick Mode state
   const [searchPin, setSearchPin] = useState<{ lat: number; lng: number; title: string; subtitle?: string } | null>(null);
@@ -359,26 +365,17 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   };
 
-  const handleFinishPolygonDraw = async () => {
+  const handleFinishPolygonDraw = () => {
     if (!adapterRef.current) return;
     const points = adapterRef.current.finishDrawingPolygon();
     setDrawingMode('NONE');
     setPolygonPointCount(0);
     if (points && points.length >= 3) {
-      const area = Math.round(calculatePolygonArea(points));
-      setIsSavingGeofence(true);
-      try {
-        activeSchool.polygon = points;
-        await onSaveGeofence(activeSchool.id, points);
-        showToast(`✅ "${activeSchool.name}" uchun ${formatArea(area)} maydonli yangi geozona muvaffaqiyatli saqlandi!`, 'success');
-        adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
-        adapterRef.current?.fitBounds(points);
-      } catch (e: any) {
-        showToast("Xatolik: " + e.message, 'error');
-      } finally {
-        setIsSavingGeofence(false);
-        setSearchPin(null);
-      }
+      setPendingPolygon(points);
+      const defaultName = searchPin?.title || (schools.length > 0 ? `${schools.length + 1}-maktab` : '30-maktab');
+      setGeofenceNameInput(defaultName);
+      setSaveAsNewSchool(Boolean(searchPin || !selectedSchoolId));
+      setSaveModalOpen(true);
     } else {
       showToast("⚠️ Poligon uchun kamida 3 ta burchak nuqtasi belgilanishi shart!", 'info');
     }
@@ -402,7 +399,7 @@ export const MapView: React.FC<MapViewProps> = ({
     adapterRef.current?.setCircleRadius?.(newRadius);
   };
 
-  const handleFinishCircleDraw = async () => {
+  const handleFinishCircleDraw = () => {
     if (!adapterRef.current) return;
     const circle = adapterRef.current.finishDrawingCircle();
     setDrawingMode('NONE');
@@ -416,21 +413,40 @@ export const MapView: React.FC<MapViewProps> = ({
         const dLng = (circle.radius / (111320 * Math.cos((circle.center[0] * Math.PI) / 180))) * Math.sin(theta);
         poly.push([circle.center[0] + dLat, circle.center[1] + dLng]);
       }
-      activeSchool.lat = circle.center[0];
-      activeSchool.lng = circle.center[1];
-      activeSchool.polygon = poly;
-      setIsSavingGeofence(true);
-      try {
-        await onSaveGeofence(activeSchool.id, poly);
-        showToast(`✅ "${activeSchool.name}" uchun ${circle.radius}m radiusli doiraviy geozona saqlandi!`, 'success');
-        adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
-        adapterRef.current?.fitBounds(poly);
-      } catch (e: any) {
-        showToast("Xatolik: " + e.message, 'error');
-      } finally {
-        setIsSavingGeofence(false);
-        setSearchPin(null);
+      setPendingPolygon(poly);
+      const defaultName = searchPin?.title || (schools.length > 0 ? `${schools.length + 1}-maktab` : '30-maktab');
+      setGeofenceNameInput(defaultName);
+      setSaveAsNewSchool(Boolean(searchPin || !selectedSchoolId));
+      setSaveModalOpen(true);
+    }
+  };
+
+  const handleConfirmSaveGeofence = async () => {
+    if (!pendingPolygon || pendingPolygon.length < 3) return;
+    const finalName = geofenceNameInput.trim() || searchPin?.title || '30-maktab';
+    setIsSavingGeofence(true);
+    try {
+      if (saveAsNewSchool) {
+        await onSaveGeofence('NEW', pendingPolygon, finalName, true);
+        showToast(`✅ "${finalName}" muvaffaqiyatli yangi maktab va geozona sifatida saqlandi!`, 'success');
+      } else {
+        await onSaveGeofence(activeSchool.id, pendingPolygon, finalName, false);
+        activeSchool.name = finalName;
+        activeSchool.polygon = pendingPolygon;
+        showToast(`✅ "${finalName}" geozonasi muvaffaqiyatli saqlandi!`, 'success');
       }
+      setSaveModalOpen(false);
+      setPendingPolygon(null);
+      setSearchPin(null);
+      if (onRefreshData) {
+        await onRefreshData();
+      }
+      adapterRef.current?.renderSchoolGeofences(schools, activeSchool.id);
+      adapterRef.current?.fitBounds(pendingPolygon);
+    } catch (e: any) {
+      showToast("Xatolik: " + e.message, 'error');
+    } finally {
+      setIsSavingGeofence(false);
     }
   };
 
@@ -1251,6 +1267,120 @@ export const MapView: React.FC<MapViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* 6. SAVE GEOFENCE / SCHOOL NAME CONFIRMATION DIALOG */}
+      {saveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
+          <div className="bg-[#1b1b33] border border-[#3a3a63] rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#3a3a63]/50 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#2ee59d]/15 text-[#2ee59d] border border-[#2ee59d]/30 flex items-center justify-center font-bold text-base">
+                  🏫
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#e8e8f5]">Geozonani Saqlash</h3>
+                  <p className="text-[11px] text-[#9a9ac0]">Belgilangan joy uchun nom bering</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSaveModalOpen(false)}
+                className="p-1.5 rounded-xl text-[#9a9ac0] hover:text-[#e8e8f5] hover:bg-[#2a2a4a] transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-[#9a9ac0] mb-1.5">
+                  Maktab / Joy Nomi:
+                </label>
+                <input
+                  type="text"
+                  value={geofenceNameInput}
+                  onChange={(e) => setGeofenceNameInput(e.target.value)}
+                  placeholder="Masalan: 30-maktab"
+                  className="w-full h-11 px-3.5 bg-[#2a2a4a] border border-[#3a3a63] rounded-xl text-sm text-[#e8e8f5] focus:outline-none focus:border-[#2ee59d] focus:ring-1 focus:ring-[#2ee59d] transition font-bold"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleConfirmSaveGeofence();
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Save mode selector */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#9a9ac0]">
+                  Saqlash varianti:
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSaveAsNewSchool(true)}
+                    className={`p-3 rounded-2xl border text-xs font-semibold text-left transition flex flex-col gap-0.5 ${
+                      saveAsNewSchool
+                        ? 'bg-[#2ee59d]/15 border-[#2ee59d] text-[#2ee59d] ring-1 ring-[#2ee59d]/40'
+                        : 'bg-[#2a2a4a]/80 border-[#3a3a63] text-[#9a9ac0] hover:text-[#e8e8f5]'
+                    }`}
+                  >
+                    <span className="font-bold flex items-center gap-1">
+                      <span>➕</span> Yangi maktab
+                    </span>
+                    <span className="text-[10px] opacity-75">Mustaqil maktab sifatida</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSaveAsNewSchool(false)}
+                    className={`p-3 rounded-2xl border text-xs font-semibold text-left transition flex flex-col gap-0.5 ${
+                      !saveAsNewSchool
+                        ? 'bg-[#2ee59d]/15 border-[#2ee59d] text-[#2ee59d] ring-1 ring-[#2ee59d]/40'
+                        : 'bg-[#2a2a4a]/80 border-[#3a3a63] text-[#9a9ac0] hover:text-[#e8e8f5]'
+                    }`}
+                  >
+                    <span className="font-bold flex items-center gap-1">
+                      <span>✏️</span> Mavjud maktab
+                    </span>
+                    <span className="text-[10px] opacity-75 truncate">{activeSchool.name}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Preview Badge on Map */}
+              <div className="p-3 bg-[#2a2a4a]/60 rounded-2xl border border-[#3a3a63]/50 flex items-center justify-between text-xs">
+                <span className="text-[#9a9ac0]">Xaritadagi ko'rinishi:</span>
+                <span className="px-3 py-1.5 rounded-xl bg-[#2a2a4a] border border-[#2ee59d] text-[#2ee59d] font-bold flex items-center gap-1.5 shadow-md">
+                  <span>🏫</span>
+                  <span>{geofenceNameInput.trim() || '30-maktab'}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#3a3a63]/50">
+              <button
+                type="button"
+                onClick={() => setSaveModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#9a9ac0] hover:text-[#e8e8f5] hover:bg-[#2a2a4a] transition"
+              >
+                Bekor qilish
+              </button>
+              <button
+                type="button"
+                disabled={isSavingGeofence || !geofenceNameInput.trim()}
+                onClick={handleConfirmSaveGeofence}
+                className="px-5 py-2.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] font-bold text-xs hover:bg-[#25c485] transition shadow-lg shadow-[#2ee59d]/25 flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <Check className="w-4 h-4" />
+                <span>{isSavingGeofence ? 'Saqlanmoqda...' : 'Saqlash'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

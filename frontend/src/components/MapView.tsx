@@ -856,15 +856,35 @@ export const MapView: React.FC<MapViewProps> = ({
           {/* Engine indicator pill */}
           <div
             className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
-              provider === 'google'
+              provider === 'yandex'
+                ? 'bg-[#fc3f1d]/15 text-[#ff5733] border-[#fc3f1d]/35'
+                : provider === 'google'
                 ? 'bg-[#2ee59d]/15 text-[#2ee59d] border-[#2ee59d]/30'
                 : 'bg-[#ffb020]/15 text-[#ffb020] border-[#ffb020]/30'
             }`}
-            title={provider === 'google' ? 'Google Maps JavaScript API faol' : 'OpenStreetMap Fallback faol'}
+            title={
+              provider === 'yandex'
+                ? 'Yandex Xaritalar platformasi faol'
+                : provider === 'google'
+                ? 'Google Maps JavaScript API faol'
+                : 'OpenStreetMap Fallback faol'
+            }
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${provider === 'google' ? 'bg-[#2ee59d]' : 'bg-[#ffb020]'}`} />
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                provider === 'yandex'
+                  ? 'bg-[#fc3f1d]'
+                  : provider === 'google'
+                  ? 'bg-[#2ee59d]'
+                  : 'bg-[#ffb020]'
+              }`}
+            />
             <span className="hidden sm:inline">
-              {provider === 'google' ? 'Google Maps' : 'OSM Zaxira'}
+              {provider === 'yandex'
+                ? 'Yandex Xaritalar'
+                : provider === 'google'
+                ? 'Google Maps'
+                : 'OSM Zaxira'}
             </span>
           </div>
         </div>

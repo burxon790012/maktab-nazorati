@@ -670,6 +670,7 @@ app.get('/api/v1/config', (req, res) => {
     mapApiKey: process.env.MAP_API_KEY || process.env.CARTO_API_KEY || '',
     mapboxToken: process.env.MAPBOX_ACCESS_TOKEN || '',
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+    yandexMapsApiKey: process.env.YANDEX_MAPS_API_KEY || 'cb994b90-4f91-4056-bcab-31951269103d',
     env: process.env.NODE_ENV || 'production'
   });
 });

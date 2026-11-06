@@ -1,7 +1,7 @@
 // Map Adapter Interface for Multi-Engine Architecture (Google Maps Primary, OSM Fallback)
 import { School, Student } from '@/types';
 
-export type MapProviderType = 'google' | 'leaflet-osm';
+export type MapProviderType = 'google' | 'leaflet-osm' | 'yandex';
 export type MapLayerType = 'roadmap' | 'satellite' | 'hybrid' | 'terrain';
 
 export interface MarkerClickPayload {

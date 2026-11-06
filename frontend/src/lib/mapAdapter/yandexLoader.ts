@@ -56,3 +56,4 @@ export function loadYandexMapsScript(apiKey: string): Promise<boolean> {
 
   return window.__yandexMapsLoadedPromise;
 }
+

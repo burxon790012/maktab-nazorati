@@ -49,13 +49,13 @@ export async function createMapAdapter(preferredApiKey?: string): Promise<MapAda
     }
   }
 
-  // 2. Automatic Fallback to OpenStreetMap Leaflet Adapter
-  console.info('ℹ️ Google Maps kaliti mavjud emas yoki yuklanmadi. OpenStreetMap (OSM) zaxira rejimiga o\'tildi.');
+  // 2. Automatic Fallback to Esri World Map Leaflet Adapter
+  console.info('ℹ️ Google Maps kaliti mavjud emas yoki yuklanmadi. Esri World Map zaxira rejimiga o\'tildi.');
   return {
     adapter: new LeafletOsmAdapter(),
     provider: 'leaflet-osm',
     isFallback: true,
-    message: 'OpenStreetMap zaxira rejimi faol (Kalit talab etilmaydi)',
+    message: 'Esri World Map zaxira rejimi faol (Kalit talab etilmaydi)',
   };
 }
 

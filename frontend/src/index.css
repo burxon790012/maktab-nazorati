@@ -104,23 +104,13 @@
   font-family: inherit;
 }
 
-/* Dark Mode CSS Filter for Leaflet Tiles - Applied directly to individual tile images to prevent GPU stacking context bug on .leaflet-tile-pane */
-.dark-tile-layer .leaflet-tile,
-.dark-tiles .leaflet-tile-pane .leaflet-tile {
-  filter: invert(1) hue-rotate(190deg) brightness(0.9) contrast(0.95) saturate(0.8) !important;
-  -webkit-filter: invert(1) hue-rotate(190deg) brightness(0.9) contrast(0.95) saturate(0.8) !important;
-  will-change: auto;
-}
-
-/* Prevent filter on tile pane container to avoid hardware compositing dropouts when vector overlays are drawn */
-.dark-tiles .leaflet-tile-pane {
+/* Crisp, natural tile rendering - No invert filters that cause blank/black screens */
+.leaflet-tile {
   filter: none !important;
   -webkit-filter: none !important;
 }
 
-/* Natural colors for Satellite Imagery */
-.satellite-mode .leaflet-tile-pane,
-.satellite-tile-layer .leaflet-tile {
+.leaflet-tile-pane {
   filter: none !important;
   -webkit-filter: none !important;
 }

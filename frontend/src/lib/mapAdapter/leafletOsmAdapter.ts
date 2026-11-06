@@ -10,9 +10,9 @@ import {
 import { haversineDistance } from '@/lib/geoUtils';
 
 // High-availability Keyless Tile URLs (Tested with zero 403/x-blocked on cloud servers)
-const OSM_GERMAN_URL = 'https://tile.openstreetmap.de/{z}/{x}/{y}.png';
 const ESRI_STREET_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 const ESRI_SATELLITE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const ESRI_TOPO_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}';
 
 export class LeafletOsmAdapter implements MapAdapter {
   private map: L.Map | null = null;
@@ -103,34 +103,30 @@ export class LeafletOsmAdapter implements MapAdapter {
       });
     } else {
       this.container?.classList.remove('satellite-mode');
-      if (this.options?.isDark) {
-        this.container?.classList.add('dark-tiles');
-      } else {
-        this.container?.classList.remove('dark-tiles');
-      }
+      this.container?.classList.remove('dark-tiles');
 
-      // Primary: High-reliability OpenStreetMap German cluster (never blocks Render or cloud IPs)
-      this.tileLayer = L.tileLayer(OSM_GERMAN_URL, {
+      // Primary: High-reliability Esri World Street Map (Full street names, zero watermark, zero key, global coverage)
+      this.tileLayer = L.tileLayer(ESRI_STREET_URL, {
         maxZoom: 19,
         keepBuffer: 4,
         updateWhenIdle: false,
-        className: this.options?.isDark ? 'dark-tile-layer' : '',
-        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+        className: 'street-tile-layer',
+        attribution: 'Tiles © Esri',
       });
 
-      // Safe guarded fallback: runs at most once per session, never during drawing, requires 6 consecutive tile errors
+      // Safe guarded fallback to Esri Topo Map
       let consecutiveErrors = 0;
       this.tileLayer.on('tileerror', () => {
         if (this.hasSwitchedToFallback || this.isDrawing || !this.map) return;
         consecutiveErrors++;
         if (consecutiveErrors >= 6) {
           this.hasSwitchedToFallback = true;
-          console.warn('⚠️ OSM plitkasi xatosi (6+ xato), Esri World Street Map ga avtomatik o\'tkazilmoqda...');
-          const fallbackLayer = L.tileLayer(ESRI_STREET_URL, {
+          console.warn('⚠️ Esri Street plitkasi xatosi (6+ xato), Esri Topo Map ga avtomatik o\'tkazilmoqda...');
+          const fallbackLayer = L.tileLayer(ESRI_TOPO_URL, {
             maxZoom: 19,
             keepBuffer: 4,
             updateWhenIdle: false,
-            className: this.options?.isDark ? 'dark-tile-layer' : '',
+            className: 'street-tile-layer',
             attribution: 'Tiles © Esri',
           });
 

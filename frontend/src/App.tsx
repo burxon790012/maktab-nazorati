@@ -4,7 +4,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { School, Student, User, AuditLog, NotificationItem, Role } from '@/types';
 import { Sidebar, NavTab } from '@/components/Sidebar';
 import { Topbar, ViewMode } from '@/components/Topbar';
-import { KpiCards, KpiFilter } from '@/components/KpiCards';
+import { RightStatsColumn } from '@/components/RightStatsColumn';
+import { MobileBottomSheet } from '@/components/MobileBottomSheet';
 import { MapView } from '@/components/MapView';
 import { DevicesTab, DeviceInfo } from '@/components/DevicesTab';
 import { StudentsTab } from '@/components/StudentsTab';
@@ -22,6 +23,8 @@ import {
   NotificationDrawer,
 } from '@/components/Modals';
 
+export type KpiFilter = 'ALL' | 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'SOS' | 'ONLINE' | 'OFFLINE';
+
 export const App: React.FC = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -37,11 +40,43 @@ export const App: React.FC = () => {
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>('ALL');
   const [currentRole, setCurrentRole] = useState<Role>('SUPER_ADMIN');
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('ALL');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [token, setToken] = useState<string>(() => localStorage.getItem('maktab_auth_token') || '');
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-  // Layout UI State
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Theme state (persisted in localStorage inside try/catch)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      return (localStorage.getItem('maktab_theme') as any) || 'dark';
+    } catch (_) {
+      return 'dark';
+    }
+  });
+
+  const [token, setToken] = useState<string>(() => {
+    try {
+      return localStorage.getItem('maktab_auth_token') || '';
+    } catch (_) {
+      return '';
+    }
+  });
+
+  // Layout UI State (persisted in localStorage inside try/catch)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('maktab_sidebar_collapsed') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const [statsCollapsed, setStatsCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('maktab_stats_collapsed') === 'true';
+    } catch (_) {
+      return false;
+    }
+  });
+
+  const [statsDrawerOpen, setStatsDrawerOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
 
@@ -55,9 +90,32 @@ export const App: React.FC = () => {
   const [studentToCorrect, setStudentToCorrect] = useState<Student | null>(null);
   const [openNotifDrawer, setOpenNotifDrawer] = useState(false);
 
+  // Apply Theme to DOM
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    try {
+      localStorage.setItem('maktab_theme', next);
+    } catch (_) {}
+  };
+
   // Authenticated fetch wrapper
   const authFetch = async (url: string, options: RequestInit = {}) => {
-    const activeToken = token || localStorage.getItem('maktab_auth_token');
+    let activeToken = token;
+    try {
+      activeToken = token || localStorage.getItem('maktab_auth_token') || '';
+    } catch (_) {}
+
     const headers = new Headers(options.headers || {});
     if (activeToken) {
       headers.set('Authorization', `Bearer ${activeToken}`);
@@ -75,10 +133,12 @@ export const App: React.FC = () => {
       const data = await res.json();
       if (data.success && data.token) {
         setToken(data.token);
-        localStorage.setItem('maktab_auth_token', data.token);
-        if (data.refreshToken) {
-          localStorage.setItem('maktab_refresh_token', data.refreshToken);
-        }
+        try {
+          localStorage.setItem('maktab_auth_token', data.token);
+          if (data.refreshToken) {
+            localStorage.setItem('maktab_refresh_token', data.refreshToken);
+          }
+        } catch (_) {}
         return data.token;
       }
     } catch (err) {
@@ -102,7 +162,7 @@ export const App: React.FC = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await authFetch(`/api/v1/students?schoolId=${selectedSchoolId}`);
+      const res = await authFetch('/api/v1/students');
       const data = await res.json();
       if (data.success) {
         setStudents(data.students);
@@ -126,10 +186,10 @@ export const App: React.FC = () => {
 
   const fetchAuditLogs = async () => {
     try {
-      const res = await authFetch('/api/v1/audit-logs');
+      const res = await authFetch('/api/v1/reports/audit');
       const data = await res.json();
       if (data.success) {
-        setAuditLogs(data.auditLogs);
+        setAuditLogs(data.logs);
       }
     } catch (err) {
       console.error('Error fetching audit logs:', err);
@@ -138,21 +198,21 @@ export const App: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await authFetch('/api/alerts');
+      const res = await authFetch('/api/v1/notifications');
       const data = await res.json();
-      if (data.success && data.alerts) {
-        setNotifications(data.alerts);
+      if (data.success) {
+        setNotifications(data.notifications);
       }
     } catch (err) {
-      console.error('Error fetching alerts:', err);
+      console.error('Error fetching notifications:', err);
     }
   };
 
   const fetchDevices = async () => {
     try {
-      const res = await authFetch('/api/devices');
+      const res = await authFetch('/api/v1/devices');
       const data = await res.json();
-      if (data.success && data.devices) {
+      if (data.success) {
         setDevicesList(data.devices);
       }
     } catch (err) {
@@ -160,207 +220,146 @@ export const App: React.FC = () => {
     }
   };
 
-  const fetchConfig = async () => {
+  const fetchGoogleMapsApiKey = async () => {
     try {
-      const res = await fetch('/api/v1/config');
+      const res = await fetch('/api/v1/config/maps-key');
       const data = await res.json();
-      if (data && data.googleMapsApiKey) {
+      if (data.success && data.googleMapsApiKey) {
         setGoogleMapsApiKey(data.googleMapsApiKey);
       }
-    } catch (_) {}
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-    loginWithRole(currentRole).then(() => {
-      if (!isMounted) return;
-      fetchSchools();
-      fetchUsers();
-      fetchAuditLogs();
-      fetchNotifications();
-      fetchStudents();
-      fetchDevices();
-      fetchConfig();
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [currentRole]);
-
-  useEffect(() => {
-    fetchStudents();
-  }, [selectedSchoolId]);
-
-  // Invalidate Map size on Tab or ViewMode switch (Xarita / Kartalar / Ro'yxat)
-  useEffect(() => {
-    if (currentTab === 'map') {
-      const t1 = setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
-      const t2 = setTimeout(() => window.dispatchEvent(new Event('resize')), 250);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    }
-  }, [currentTab, viewMode]);
-
-  // Real-Time SSE Stream Setup
-  useEffect(() => {
-    let sse: EventSource | null = null;
-    let active = true;
-
-    const initSse = async () => {
-      let streamUrl = '/api/v1/stream';
-      try {
-        const activeToken = token || localStorage.getItem('maktab_auth_token');
-        if (activeToken) {
-          const ticketRes = await fetch('/api/v1/stream/ticket', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${activeToken}` },
-          });
-          const ticketData = await ticketRes.json();
-          if (ticketData.success && ticketData.ticket) {
-            streamUrl = `/api/v1/stream?ticket=${ticketData.ticket}`;
-          }
-        }
-      } catch (_) {}
-
-      if (!active) return;
-      sse = new EventSource(streamUrl);
-      sse.onmessage = (e) => {
-        try {
-          const d = JSON.parse(e.data);
-          if (
-            d.event === 'telemetry' ||
-            d.event === 'location_update' ||
-            d.event === 'attendance_updated' ||
-            d.event === 'geofence_updated' ||
-            d.event === 'geofence_alert' ||
-            d.event === 'student_added' ||
-            d.event === 'device_status_update'
-          ) {
-            fetchStudents();
-            fetchDevices();
-          } else if (
-            d.event === 'school_added' ||
-            d.event === 'school_updated' ||
-            d.event === 'school_deleted'
-          ) {
-            fetchSchools();
-            fetchStudents();
-            fetchAuditLogs();
-          } else if (d.event === 'notification') {
-            fetchNotifications();
-          }
-        } catch (_) {}
-      };
-    };
-
-    initSse();
-
-    return () => {
-      active = false;
-      if (sse) sse.close();
-    };
-  }, [token]);
-
-  // Theme switcher
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    if (next === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
+    } catch (err) {
+      console.warn('Google Maps API kalitini olishda xatolik:', err);
     }
   };
 
-  // KPI Statistics Calculations
-  const stats = useMemo(() => {
-    let inside = 0;
-    let outside = 0;
-    let verifying = 0;
-    let sos = 0;
-    let totalBattery = 0;
-    let batteryCount = 0;
-
-    students.forEach((s) => {
-      const t = s.telemetry;
-      if (!t) return;
-      if (t.geofenceStatus === 'INSIDE') inside++;
-      else if (t.geofenceStatus === 'VERIFYING') verifying++;
-      else outside++;
-
-      if (t.isSos) sos++;
-      if (t.batteryLevel !== undefined && t.batteryLevel !== null) {
-        totalBattery += t.batteryLevel;
-        batteryCount++;
+  // Initial Data Load
+  useEffect(() => {
+    const initApp = async () => {
+      let activeTok = token;
+      if (!activeTok) {
+        activeTok = await loginWithRole('SUPER_ADMIN') || '';
       }
-    });
-
-    const onlineWatches = devicesList.filter((d) => d.status === 'ONLINE').length;
-    const offlineWatches = devicesList.filter((d) => d.status === 'OFFLINE' || d.status === 'DELAYED').length;
-    const avgBattery = batteryCount > 0 ? Math.round(totalBattery / batteryCount) : 86;
-
-    return {
-      inside,
-      outside,
-      verifying,
-      sos,
-      onlineWatches,
-      offlineWatches,
-      totalStudents: students.length,
-      avgBattery,
+      await Promise.all([
+        fetchSchools(),
+        fetchStudents(),
+        fetchUsers(),
+        fetchAuditLogs(),
+        fetchNotifications(),
+        fetchDevices(),
+        fetchGoogleMapsApiKey(),
+      ]);
     };
-  }, [students, devicesList]);
+    initApp();
+  }, []);
 
-  // Actions
-  const handleRegisterDevice = async (deviceData: any) => {
-    const res = await authFetch('/api/devices/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(deviceData),
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchDevices();
+  // Polling for live telemetry in Demo/Production mode (every 4 seconds)
+  useEffect(() => {
+    const interval = setInterval(() => {
       fetchStudents();
-      return d;
-    } else {
-      throw new Error(d.message || "Xatolik yuz berdi");
+      fetchNotifications();
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // WebSocket Live Updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: any = null;
+
+    const connectWs = () => {
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('⚡ [FLEET WS] Jonli telemetriya ulandi');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.event === 'telemetry_update' && msg.data) {
+            setStudents((prev) =>
+              prev.map((s) => (s.id === msg.data.id ? { ...s, ...msg.data } : s))
+            );
+          } else if (msg.event === 'sos_alert') {
+            fetchNotifications();
+            fetchStudents();
+          } else if (msg.event === 'school_added' || msg.event === 'school_updated') {
+            fetchSchools();
+          }
+        } catch (e) {
+          console.error('WS parse error:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        reconnectTimeout = setTimeout(connectWs, 3000);
+      };
+    };
+
+    connectWs();
+    return () => {
+      if (ws) ws.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+  }, []);
+
+  // Handlers
+  const handleMarkAllAlertsRead = async () => {
+    try {
+      await authFetch('/api/v1/notifications/read-all', { method: 'POST' });
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error('Error marking alerts read:', err);
+    }
+  };
+
+  const handleRegisterDevice = async (data: { deviceId: string; studentId: string; model: string }) => {
+    try {
+      const res = await authFetch('/api/v1/devices/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const d = await res.json();
+      if (d.success) {
+        fetchDevices();
+        fetchStudents();
+      }
+    } catch (err) {
+      console.error('Device register error:', err);
     }
   };
 
   const handleRegenerateToken = async (deviceId: string) => {
-    const res = await authFetch(`/api/devices/${deviceId}/regenerate-token`, {
-      method: 'POST',
-    });
-    const d = await res.json();
-    if (d.success) {
-      fetchDevices();
-      return d;
-    } else {
-      throw new Error(d.message || "Xatolik yuz berdi");
+    try {
+      const res = await authFetch(`/api/v1/devices/${deviceId}/token`, { method: 'POST' });
+      const d = await res.json();
+      if (d.success) {
+        fetchDevices();
+      }
+    } catch (err) {
+      console.error('Token regeneration error:', err);
     }
-  };
-
-  const handleMarkAllAlertsRead = async () => {
-    await authFetch('/api/alerts/mark-all-read', { method: 'POST' });
-    fetchNotifications();
   };
 
   const handleSaveGeofence = async (
     schoolId: string,
     polygon: [number, number][],
     name?: string,
-    isNewSchool?: boolean,
+    isNewSchool = false,
     lat?: number,
     lng?: number
   ) => {
-    const avgLat = (lat && isFinite(lat)) ? lat : polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
-    const avgLng = (lng && isFinite(lng)) ? lng : polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
-    if (isNewSchool) {
+    const avgLat = lat !== undefined && isFinite(lat)
+      ? lat
+      : polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
+    const avgLng = lng !== undefined && isFinite(lng)
+      ? lng
+      : polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
+
+    if (isNewSchool || schoolId === 'NEW') {
       const res = await authFetch('/api/v1/schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -399,22 +398,46 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleTriggerSos = async () => {
-    await authFetch('/api/v1/sos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: 'watch-5pro-01', latitude: 41.31112, longitude: 69.24061 }),
-    });
-    fetchStudents();
-    fetchNotifications();
-    alert("🚨 SOS SIGNAL YUBORILDI!");
+  const handleSendEmergencySos = async (student?: Student | null) => {
+    try {
+      const devId = student?.deviceId || 'watch-5pro-01';
+      const lat = student?.telemetry?.latitude || 41.31112;
+      const lng = student?.telemetry?.longitude || 69.24061;
+      await authFetch('/api/v1/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: devId, latitude: lat, longitude: lng }),
+      });
+      await fetchStudents();
+      await fetchNotifications();
+    } catch (err) {
+      console.error('SOS sending error:', err);
+    }
+  };
+
+  const handleSimulateWalk = async (stage: 'ENTER_SCHOOL' | 'LEAVE_SCHOOL' | 'APPROACHING_GATE' | 'OUTSIDE_STREET') => {
+    try {
+      const studentId = selectedStudent?.id || students[0]?.id || 'STU001';
+      await authFetch('/api/v1/telemetry/simulate-walk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, stage }),
+      });
+      await fetchStudents();
+    } catch (err) {
+      console.error('Simulate walk error:', err);
+    }
   };
 
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#1b1b33] text-[#e8e8f5]">
-      {/* 1. Left Sidebar Navigation */}
+    <div
+      className={`flex h-screen w-screen overflow-hidden bg-[#0b1220] text-[#eaf2ff] select-none ${
+        theme === 'dark' ? 'dark' : 'light'
+      }`}
+    >
+      {/* 1. Left Sidebar Navigation (72px collapsed, 240px expanded) */}
       <Sidebar
         currentTab={currentTab}
         onSelectTab={(tab) => {
@@ -423,7 +446,13 @@ export const App: React.FC = () => {
           else if (tab === 'students') setViewMode('cards');
         }}
         collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggleCollapse={() => {
+          const next = !sidebarCollapsed;
+          setSidebarCollapsed(next);
+          try {
+            localStorage.setItem('maktab_sidebar_collapsed', String(next));
+          } catch (_) {}
+        }}
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
         unreadAlertsCount={unreadAlertsCount}
@@ -431,7 +460,7 @@ export const App: React.FC = () => {
 
       {/* 2. Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Topbar */}
+        {/* Topbar (~56px) */}
         <Topbar
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
           viewMode={viewMode}
@@ -452,32 +481,37 @@ export const App: React.FC = () => {
           currentRole={currentRole}
           onChangeRole={(r) => setCurrentRole(r as Role)}
           onLogout={() => {
-            localStorage.removeItem('maktab_auth_token');
+            try {
+              localStorage.removeItem('maktab_auth_token');
+            } catch (_) {}
             setToken('');
             loginWithRole('PARENT');
           }}
           isDemoMode={isDemoMode}
           onToggleDemoMode={() => setIsDemoMode(!isDemoMode)}
+          activeSosStudent={
+            students.find((s) => s.telemetry?.isSos) || null
+          }
+          onSelectSosStudent={(s) => {
+            setSelectedStudent(s);
+            if (currentTab !== 'map') setCurrentTab('map');
+          }}
+          onToggleStats={() => setStatsDrawerOpen(!statsDrawerOpen)}
+          isStatsOpen={statsDrawerOpen}
         />
 
-        {/* Dashboard Workspace */}
-        <div className="flex-1 flex flex-col min-h-0 p-3 sm:p-4 gap-3 overflow-hidden">
-          {/* KPI Summary Cards Row */}
-          <KpiCards
-            stats={stats}
-            activeFilter={kpiFilter}
-            onSelectFilter={(f) => {
-              setKpiFilter(f);
-              if (currentTab !== 'map' && currentTab !== 'students') {
-                setCurrentTab('map');
-              }
-            }}
-          />
-
-          {/* Active View / Main Tab Display */}
-          <div className="flex-1 flex flex-col min-h-0 bg-[#2a2a4a]/40 border border-[#3a3a63]/40 rounded-2xl overflow-hidden shadow-xl">
-            {/* Map Container View (Kept mounted for map, geozones, and routes so Leaflet tiles and sizing are never destroyed) */}
-            <div className={`flex-1 flex flex-col min-h-0 w-full h-full ${currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes' ? 'flex' : 'hidden'}`}>
+        {/* 3. Fleet Dashboard Workspace: Central Map + Right Stats Column (340px) */}
+        <div className="flex-1 flex min-h-0 w-full h-full p-2 sm:p-2.5 gap-2 sm:gap-2.5 overflow-hidden relative">
+          {/* Main View Area */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 h-full overflow-hidden">
+            {/* Map Container View (Kept mounted for map, geozones, and routes) */}
+            <div
+              className={`flex-1 flex flex-col min-h-0 w-full h-full ${
+                currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes'
+                  ? 'flex'
+                  : 'hidden'
+              }`}
+            >
               <MapView
                 schools={schools}
                 students={students}
@@ -488,11 +522,15 @@ export const App: React.FC = () => {
                 onSelectFilter={(f) => setKpiFilter(f as KpiFilter)}
                 googleMapsApiKey={googleMapsApiKey}
                 activeNavTab={currentTab}
+                selectedStudent={selectedStudent}
+                onSelectStudent={setSelectedStudent}
+                isDemoMode={isDemoMode}
+                onSimulateWalk={handleSimulateWalk}
               />
             </div>
 
             {currentTab === 'students' && (
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <StudentsTab
                   students={students}
                   onOpenAddSingle={() => setOpenAddStudent(true)}
@@ -521,13 +559,13 @@ export const App: React.FC = () => {
             )}
 
             {currentTab === 'alerts' && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#3a3a63]/40">
-                  <h2 className="text-lg font-bold text-[#e8e8f5]">Barcha Ogohlantirishlar va SOS Hodisalari</h2>
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
+                  <h2 className="text-lg font-bold text-[#eaf2ff]">Barcha Ogohlantirishlar va SOS Hodisalari</h2>
                   {unreadAlertsCount > 0 && (
                     <button
                       onClick={handleMarkAllAlertsRead}
-                      className="px-3 py-1.5 rounded-xl bg-[#2ee59d] text-[#1b1b33] text-xs font-bold"
+                      className="px-3 py-1.5 rounded-xl bg-[#2ee59d] text-[#0b1220] text-xs font-bold"
                     >
                       Barchasini o'qilgan deb belgilash
                     </button>
@@ -539,15 +577,15 @@ export const App: React.FC = () => {
                       key={n.id}
                       className={`p-4 rounded-xl border transition ${
                         n.isRead
-                          ? 'bg-[#2a2a4a]/40 border-[#3a3a63]/30 text-[#9a9ac0]'
-                          : 'bg-[#2a2a4a] border-[#ff4d5e]/50 text-[#e8e8f5] shadow-lg shadow-[#ff4d5e]/10'
+                          ? 'bg-white/[0.02] border-white/[0.05] text-[#8ea3c4]'
+                          : 'bg-[#ff4d5e]/10 border-[#ff4d5e]/40 text-[#eaf2ff] shadow-lg shadow-[#ff4d5e]/10'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-sm text-[#e8e8f5]">{n.title}</span>
-                        <span className="text-xs text-[#9a9ac0]">{n.time}</span>
+                        <span className="font-bold text-sm text-[#eaf2ff]">{n.title}</span>
+                        <span className="text-xs text-[#8ea3c4]">{n.time}</span>
                       </div>
-                      <p className="text-xs text-[#9a9ac0] mt-1.5">{n.message}</p>
+                      <p className="text-xs text-[#8ea3c4] mt-1.5">{n.message}</p>
                     </div>
                   ))}
                 </div>
@@ -555,25 +593,25 @@ export const App: React.FC = () => {
             )}
 
             {currentTab === 'health' && (
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <HealthTab students={students} />
               </div>
             )}
 
             {currentTab === 'parents' && (
-              <div className="flex-1 overflow-y-auto p-4">
-                <ParentTab students={students} onTriggerSos={handleTriggerSos} />
+              <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
+                <ParentTab students={students} onTriggerSos={() => handleSendEmergencySos(selectedStudent)} />
               </div>
             )}
 
             {currentTab === 'reports' && (
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <ReportsTab auditLogs={auditLogs} />
               </div>
             )}
 
             {currentTab === 'superadmin' && (
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <SuperAdminTab
                   schools={schools}
                   students={students}
@@ -589,6 +627,46 @@ export const App: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Right Stats Column: 340px (Rendered when viewing map/geozones/routes or via drawer) */}
+          {(currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes') && (
+            <RightStatsColumn
+              students={students}
+              activeFilter={kpiFilter}
+              onSelectFilter={(f) => setKpiFilter(f as any)}
+              alerts={notifications}
+              onOpenAlerts={() => setCurrentTab('alerts')}
+              selectedStudent={selectedStudent}
+              onCloseSelectedStudent={() => setSelectedStudent(null)}
+              onFocusStudent={(s) => setSelectedStudent(s)}
+              onTriggerSos={handleSendEmergencySos}
+              collapsed={statsCollapsed}
+              onToggleCollapse={() => {
+                const next = !statsCollapsed;
+                setStatsCollapsed(next);
+                try {
+                  localStorage.setItem('maktab_stats_collapsed', String(next));
+                } catch (_) {}
+              }}
+              mobileOpen={statsDrawerOpen}
+              onCloseMobile={() => setStatsDrawerOpen(false)}
+            />
+          )}
+
+          {/* Mobile Bottom Sheet (< 768px, test 390px) */}
+          {(currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes') && (
+            <MobileBottomSheet
+              students={students}
+              activeFilter={kpiFilter}
+              onSelectFilter={(f) => setKpiFilter(f as any)}
+              alerts={notifications}
+              onOpenAlerts={() => setCurrentTab('alerts')}
+              selectedStudent={selectedStudent}
+              onSelectStudent={setSelectedStudent}
+              onFocusStudent={(s) => setSelectedStudent(s)}
+              onTriggerSos={handleSendEmergencySos}
+            />
+          )}
         </div>
       </div>
 

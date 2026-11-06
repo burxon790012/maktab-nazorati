@@ -95,11 +95,13 @@ export class YandexMapAdapter implements MapAdapter {
       return;
     }
     const targetZoom = typeof zoom === 'number' && isFinite(zoom) ? Math.min(Math.round(zoom), 18) : 16;
-    this.map.panTo([lat, lng], { flying: true, duration: 600 }).then(() => {
-      if (this.map && typeof targetZoom === 'number') {
-        this.map.setZoom(targetZoom, { duration: 300 });
-      }
-    });
+    try {
+      this.map.setCenter([lat, lng], targetZoom, { duration: 600, checkZoomRange: true });
+    } catch (_) {
+      try {
+        this.map.panTo([lat, lng], { flying: true });
+      } catch (_) {}
+    }
   }
 
   fitBounds(bounds: [number, number][]): void {
@@ -338,17 +340,28 @@ export class YandexMapAdapter implements MapAdapter {
     const ymaps = (window as any).ymaps;
     if (!ymaps) return;
 
+    const safeTitle = (title || 'Qidirilgan manzil').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const layout = ymaps.templateLayoutFactory.createClass(
-      `<div style="position: relative; transform: translate(-50%, -100%);">
-        <div style="background: #2ee59d; color: #1b1b33; font-weight: bold; font-size: 11px; padding: 4px 8px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); white-space: nowrap;">
-          📍 ${title || 'Qidirilgan manzil'}
+      `<div style="position: relative; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; cursor: pointer; pointer-events: auto;">
+        <div style="background: #ff2d78; color: #ffffff; font-weight: 800; font-size: 11px; padding: 5px 12px; border-radius: 9999px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); white-space: nowrap; border: 2px solid #ffffff; display: flex; align-items: center; gap: 4px;">
+          <span>📍</span>
+          <span>${safeTitle}</span>
         </div>
+        <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #ff2d78;"></div>
       </div>`
     );
 
     this.searchMarker = new ymaps.Placemark(
       [lat, lng],
-      { hintContent: title },
+      {
+        hintContent: safeTitle,
+        balloonContent: `
+          <div style="padding: 6px; font-family: sans-serif;">
+            <div style="font-weight: bold; font-size: 13px; color: #1b1b33;">${safeTitle}</div>
+            <div style="font-size: 11px; color: #666; margin-top: 2px;">Koordinatalar: ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+          </div>
+        `,
+      },
       { iconLayout: layout, zIndex: 1200 }
     );
 

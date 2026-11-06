@@ -8,8 +8,6 @@ import {
   X,
   Crosshair,
   AlertCircle,
-  Navigation,
-  Check
 } from 'lucide-react';
 import { School, Student } from '@/types';
 
@@ -20,7 +18,7 @@ export interface SearchResultItem {
   lat: number;
   lng: number;
   category: 'local_school' | 'local_student' | 'external_school' | 'external_address';
-  source: 'db' | 'google' | 'osm';
+  source: 'db' | 'google' | 'osm' | 'yandex';
   originalItem?: any;
 }
 
@@ -38,7 +36,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
   schools,
   students,
   currentSchool,
-  googleMapsApiKey,
+  googleMapsApiKey: _unusedKey,
   onSelectResult,
   onStartMapPickMode,
   isMapPickMode,
@@ -69,6 +67,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
   // 1. Smart Local DB Search (0ms response)
   const searchLocalDb = (rawText: string): SearchResultItem[] => {
     const text = rawText.trim().toLowerCase();
+    if (!text) return [];
     const localItems: SearchResultItem[] = [];
 
     // Extract numbers if user typed "30-maktab", "maktab 30", "30", "школа 30"
@@ -87,7 +86,6 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
         addrLower.includes(text);
 
       if (!matched && targetNum) {
-        // Match numbers in school name
         if (nameLower.includes(targetNum)) {
           matched = true;
         }
@@ -97,7 +95,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
         localItems.push({
           id: `local_sch_${sch.id}`,
           title: sch.name,
-          subtitle: `${sch.address} • (Mavjud Maktab)`,
+          subtitle: `${sch.address || "O'zbekiston"} • (Mavjud Maktab)`,
           lat: sch.lat,
           lng: sch.lng,
           category: 'local_school',
@@ -107,13 +105,34 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
       }
     });
 
+    // B) Search Local Students with active GPS
+    students.forEach((st) => {
+      const nameLower = st.name.toLowerCase();
+      const idLower = (st.studentId || st.id || '').toLowerCase();
+      const classLower = (st.className || (st as any).classId || '').toLowerCase();
+
+      if (nameLower.includes(text) || idLower.includes(text) || classLower.includes(text)) {
+        if (st.telemetry?.latitude && st.telemetry?.longitude) {
+          localItems.push({
+            id: `local_st_${st.id}`,
+            title: st.name,
+            subtitle: `${st.className || 'Sinf'} • GPS (${st.telemetry.geofenceStatus === 'INSIDE' ? 'Maktabda' : 'Tashqarida'})`,
+            lat: st.telemetry.latitude,
+            lng: st.telemetry.longitude,
+            category: 'local_student',
+            source: 'db',
+            originalItem: st,
+          });
+        }
+      }
+    });
+
     return localItems;
   };
 
-  // 2. Debounced Search Execution (400ms)
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed.length < 3) {
+  // Perform search (both debounced and immediate on Enter)
+  const executeSearch = async (trimmed: string, autoSelectFirst = false) => {
+    if (trimmed.length < 2) {
       setResults([]);
       setIsOpen(false);
       setIsLoading(false);
@@ -126,11 +145,9 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
     setSelectedIndex(-1);
     setErrorMessage(null);
 
-    // Immediate Local DB matching
     const localMatches = searchLocalDb(trimmed);
     setResults(localMatches);
 
-    // Cancel in-flight external request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -139,127 +156,182 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
 
     setIsLoading(true);
 
-    const timer = setTimeout(async () => {
-      let combined: SearchResultItem[] = [...localMatches];
+    let combined: SearchResultItem[] = [...localMatches];
 
-      // A) Try Google Places if SDK is loaded on window
-      let googleSuccess = false;
-      if (window.google && window.google.maps && window.google.maps.places) {
-        try {
-          const service = new window.google.maps.places.AutocompleteService();
-          const gResults = await new Promise<any[]>((resolve) => {
-            service.getPlacePredictions(
-              {
-                input: trimmed,
-                componentRestrictions: { country: 'uz' },
-                locationBias: currentSchool?.lat
-                  ? new window.google.maps.LatLng(currentSchool.lat, currentSchool.lng)
-                  : undefined,
-              },
-              (predictions: any[], status: string) => {
-                if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-                  resolve(predictions);
-                } else {
-                  resolve([]);
-                }
-              }
-            );
-          });
+    // 1. Primary Engine: Yandex Maps Geocoding (Highest resolution for Uzbekistan)
+    let yandexSuccess = false;
+    const ymaps = (window as any).ymaps;
+    if (ymaps && typeof ymaps.geocode === 'function') {
+      try {
+        const geoRes = await ymaps.geocode(trimmed, {
+          results: 6,
+          boundedBy: [
+            [37.0, 56.0],
+            [45.6, 73.2],
+          ],
+        });
 
-          if (gResults && gResults.length > 0) {
-            googleSuccess = true;
-            // Note: Places predictions have description & place_id
-            // Geocode first prediction for immediate coordinate
-            const geocoder = new window.google.maps.Geocoder();
-            for (const p of gResults.slice(0, 3)) {
-              try {
-                const geoRes = await new Promise<any>((resolve) => {
-                  geocoder.geocode({ placeId: p.place_id }, (r: any[], st: string) => {
-                    resolve(st === 'OK' && r && r[0] ? r[0] : null);
-                  });
-                });
-                if (geoRes && geoRes.geometry?.location) {
-                  const lat = geoRes.geometry.location.lat();
-                  const lng = geoRes.geometry.location.lng();
-                  combined.push({
-                    id: `g_${p.place_id}`,
-                    title: p.structured_formatting?.main_text || p.description,
-                    subtitle: p.structured_formatting?.secondary_text || 'Google Maps',
-                    lat,
-                    lng,
-                    category: p.types?.includes('school') ? 'external_school' : 'external_address',
-                    source: 'google',
-                  });
-                }
-              } catch (_) {}
-            }
-          }
-        } catch (_) {}
-      }
+        if (geoRes && geoRes.geoObjects) {
+          const count = geoRes.geoObjects.getLength();
+          if (count > 0) {
+            yandexSuccess = true;
+            geoRes.geoObjects.each((obj: any) => {
+              const coords = obj.geometry.getCoordinates(); // [lat, lng]
+              if (coords && isFinite(coords[0]) && isFinite(coords[1])) {
+                const name = obj.properties.get('name') || '';
+                const description = obj.properties.get('description') || '';
+                const meta = obj.properties.get('metaDataProperty.GeocoderMetaData');
+                const kind = meta?.kind;
+                const isSchool =
+                  kind === 'school' ||
+                  /maktab|школа|school|litsey|kollej/i.test(name) ||
+                  /maktab|школа|school/i.test(description);
 
-      // B) Server-side Nominatim Proxy Search (always runs or fallbacks)
-      if (!googleSuccess || combined.length < 2) {
-        try {
-          const lat = currentSchool?.lat || 41.311081;
-          const lng = currentSchool?.lng || 69.240562;
-
-          const res = await fetch(
-            `/api/geocode/search?q=${encodeURIComponent(trimmed)}&lat=${lat}&lng=${lng}`,
-            { signal: controller.signal }
-          );
-
-          if (!res.ok) {
-            if (res.status === 503) {
-              setErrorMessage("Qidiruv xizmati vaqtincha ishlamayapti, qayta urinib ko'ring");
-            } else {
-              setErrorMessage("Qidiruv serverida xatolik yuz berdi");
-            }
-          } else {
-            const data = await res.json();
-            if (data.success && data.results) {
-              data.results.forEach((item: any) => {
-                // Avoid duplicating local schools
                 const isDup = combined.some(
-                  (c) => Math.abs(c.lat - item.lat) < 0.001 && Math.abs(c.lng - item.lng) < 0.001
+                  (c) => Math.abs(c.lat - coords[0]) < 0.0005 && Math.abs(c.lng - coords[1]) < 0.0005
                 );
+
                 if (!isDup) {
                   combined.push({
-                    id: item.id,
-                    title: item.title,
-                    subtitle: item.displayName,
-                    lat: item.lat,
-                    lng: item.lng,
-                    category: item.category === 'school' ? 'external_school' : 'external_address',
-                    source: 'osm',
+                    id: `yandex_${coords[0]}_${coords[1]}_${Math.random()}`,
+                    title: name || trimmed,
+                    subtitle: description ? `${description} • Yandex Xarita` : 'Yandex Xaritalar',
+                    lat: coords[0],
+                    lng: coords[1],
+                    category: isSchool ? 'external_school' : 'external_address',
+                    source: 'yandex',
                   });
                 }
-              });
-            } else if (data.error === 'NETWORK_ERROR') {
-              setErrorMessage("Qidiruv xizmati vaqtincha ishlamayapti, qayta urinib ko'ring");
-            }
-          }
-        } catch (err: any) {
-          if (err.name !== 'AbortError') {
-            console.warn('Qidiruvda tarmoq xatosi:', err.message);
-            setErrorMessage("Qidiruv xizmati vaqtincha ishlamayapti, qayta urinib ko'ring");
+              }
+            });
           }
         }
+      } catch (yErr) {
+        console.warn('Yandex Geocode xatosi:', yErr);
       }
+    }
 
-      setResults(combined);
+    // 2. Secondary Engine: Google Places (if Google SDK is present)
+    let googleSuccess = false;
+    if (!yandexSuccess && window.google && window.google.maps && window.google.maps.places) {
+      try {
+        const service = new window.google.maps.places.AutocompleteService();
+        const gResults = await new Promise<any[]>((resolve) => {
+          service.getPlacePredictions(
+            {
+              input: trimmed,
+              componentRestrictions: { country: 'uz' },
+              locationBias: currentSchool?.lat
+                ? new window.google.maps.LatLng(currentSchool.lat, currentSchool.lng)
+                : undefined,
+            },
+            (predictions: any[], status: string) => {
+              if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+                resolve(predictions);
+              } else {
+                resolve([]);
+              }
+            }
+          );
+        });
+
+        if (gResults && gResults.length > 0) {
+          googleSuccess = true;
+          const geocoder = new window.google.maps.Geocoder();
+          for (const p of gResults.slice(0, 3)) {
+            try {
+              const geoRes = await new Promise<any>((resolve) => {
+                geocoder.geocode({ placeId: p.place_id }, (r: any[], st: string) => {
+                  resolve(st === 'OK' && r && r[0] ? r[0] : null);
+                });
+              });
+              if (geoRes && geoRes.geometry?.location) {
+                const lat = geoRes.geometry.location.lat();
+                const lng = geoRes.geometry.location.lng();
+                combined.push({
+                  id: `g_${p.place_id}`,
+                  title: p.structured_formatting?.main_text || p.description,
+                  subtitle: p.structured_formatting?.secondary_text || 'Google Maps',
+                  lat,
+                  lng,
+                  category: p.types?.includes('school') ? 'external_school' : 'external_address',
+                  source: 'google',
+                });
+              }
+            } catch (_) {}
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. Fallback: Server Nominatim Proxy
+    if (!yandexSuccess && (!googleSuccess || combined.length < 2)) {
+      try {
+        const lat = currentSchool?.lat || 41.311081;
+        const lng = currentSchool?.lng || 69.240562;
+
+        const res = await fetch(
+          `/api/geocode/search?q=${encodeURIComponent(trimmed)}&lat=${lat}&lng=${lng}`,
+          { signal: controller.signal }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.results) {
+            data.results.forEach((item: any) => {
+              const isDup = combined.some(
+                (c) => Math.abs(c.lat - item.lat) < 0.001 && Math.abs(c.lng - item.lng) < 0.001
+              );
+              if (!isDup) {
+                combined.push({
+                  id: item.id,
+                  title: item.title,
+                  subtitle: item.displayName,
+                  lat: item.lat,
+                  lng: item.lng,
+                  category: item.category === 'school' ? 'external_school' : 'external_address',
+                  source: 'osm',
+                });
+              }
+            });
+          }
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.warn('Qidiruvda tarmoq xatosi:', err.message);
+        }
+      }
+    }
+
+    setResults(combined);
+    setIsLoading(false);
+    setHasSearched(true);
+
+    if (autoSelectFirst && combined.length > 0) {
+      handleSelectItem(combined[0]);
+    }
+  };
+
+  // Debounced search on typing
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setResults([]);
+      setIsOpen(false);
       setIsLoading(false);
-      setHasSearched(true);
-    }, 400);
+      setHasSearched(false);
+      return;
+    }
 
-    return () => {
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(() => {
+      executeSearch(trimmed, false);
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [query, schools, students, currentSchool]);
 
-  // Keyboard navigation (ArrowDown, ArrowUp, Enter, Escape)
+  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || results.length === 0) return;
-
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
@@ -272,6 +344,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
         handleSelectItem(results[selectedIndex]);
       } else if (results.length > 0) {
         handleSelectItem(results[0]);
+      } else if (query.trim().length >= 2) {
+        executeSearch(query.trim(), true);
       }
     } else if (e.key === 'Escape') {
       setIsOpen(false);
@@ -309,10 +383,10 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
-            if (query.trim().length >= 3) setIsOpen(true);
+            if (query.trim().length >= 2) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Maktab yoki manzil qidirish (masalan: Urganch 30-maktab)..."
+          placeholder="Joy, maktab yoki shahar qidiring (masalan: Urganch)..."
           className={`w-full h-9 pl-9 pr-16 text-xs rounded-xl bg-[#1b1b33] border transition-all duration-200 text-[#e8e8f5] placeholder-[#9a9ac0] focus:outline-none ${
             isMapPickMode
               ? 'border-[#ff2d78] ring-2 ring-[#ff2d78]/30'
@@ -377,6 +451,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
                 const isSelected = selectedIndex === idx;
                 const isLocal = item.source === 'db';
                 const isSchool = item.category === 'local_school' || item.category === 'external_school';
+                const isYandex = item.source === 'yandex';
 
                 return (
                   <div
@@ -395,6 +470,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
                       className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                         isSchool
                           ? 'bg-[#2ee59d]/20 text-[#2ee59d]'
+                          : isYandex
+                          ? 'bg-[#fc3f1d]/20 text-[#ff5733]'
                           : isLocal
                           ? 'bg-[#4db5ff]/20 text-[#4db5ff]'
                           : 'bg-[#9a9ac0]/20 text-[#9a9ac0]'
@@ -417,6 +494,11 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
                             Lokal
                           </span>
                         )}
+                        {isYandex && (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#fc3f1d]/20 text-[#ff5733]">
+                            Yandex
+                          </span>
+                        )}
                       </div>
                       {item.subtitle && (
                         <div className="text-[10px] text-[#9a9ac0] truncate mt-0.5">
@@ -430,7 +512,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
             </div>
           )}
 
-          {/* Empty State (NO browser alert) */}
+          {/* Empty State */}
           {!isLoading && results.length === 0 && hasSearched && !errorMessage && (
             <div className="p-4 text-center space-y-2.5">
               <div className="w-10 h-10 rounded-2xl bg-[#ffb020]/15 text-[#ffb020] flex items-center justify-center mx-auto">
@@ -439,7 +521,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
               <div>
                 <p className="font-bold text-xs text-[#e8e8f5]">Hech narsa topilmadi</p>
                 <p className="text-[11px] text-[#9a9ac0] mt-1 max-w-[280px] mx-auto">
-                  Boshqacha yozib ko'ring (masalan: <b>"30-sonli maktab"</b> yoki <b>"Urganch"</b>) yoki xaritada bosib joyni qo'lda belgilang.
+                  Shahar, manzil yoki maktab nomini yozing (masalan: <b>"Urganch"</b> yoki <b>"1-maktab"</b>).
                 </p>
               </div>
 

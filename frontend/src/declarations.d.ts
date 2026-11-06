@@ -182,6 +182,9 @@ declare module 'lucide-react' {
   export const Pause: any;
   export const Copy: any;
   export const ChevronRight: any;
+  export const ChevronUp: any;
+  export const Minus: any;
+  export const PieChart: any;
   export const Info: any;
   export const ExternalLink: any;
 }

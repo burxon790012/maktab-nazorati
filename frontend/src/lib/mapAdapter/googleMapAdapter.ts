@@ -106,7 +106,7 @@ export class GoogleMapAdapter implements MapAdapter {
       zoom: options.zoom,
       mapTypeId: mapTypeId,
       disableDefaultUI: true,
-      zoomControl: true,
+      zoomControl: false,
       scrollwheel: true,
       styles: options.isDark ? GOOGLE_DARK_STYLES : [],
       // Use mapId if cloud styles available or default
@@ -654,6 +654,22 @@ export class GoogleMapAdapter implements MapAdapter {
       this.measureEndMarker.setMap(null);
       this.measureEndMarker = null;
     }
+  }
+
+  zoomIn(): void {
+    if (!this.map) return;
+    try {
+      const z = this.map.getZoom();
+      if (typeof z === 'number') this.map.setZoom(Math.min(z + 1, 20));
+    } catch (_) {}
+  }
+
+  zoomOut(): void {
+    if (!this.map) return;
+    try {
+      const z = this.map.getZoom();
+      if (typeof z === 'number') this.map.setZoom(Math.max(z - 1, 3));
+    } catch (_) {}
   }
 
   resize(): void {

@@ -53,7 +53,7 @@ export class LeafletOsmAdapter implements MapAdapter {
     this.map = L.map(container, {
       center: options.center,
       zoom: options.zoom,
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: false,
     });
 
@@ -683,6 +683,20 @@ export class LeafletOsmAdapter implements MapAdapter {
         : [41.311081, 69.240562];
       this.map.setView(defCenter, 16);
     }
+  }
+
+  zoomIn(): void {
+    if (!this.map) return;
+    try {
+      this.map.zoomIn();
+    } catch (_) {}
+  }
+
+  zoomOut(): void {
+    if (!this.map) return;
+    try {
+      this.map.zoomOut();
+    } catch (_) {}
   }
 
   resize(): void {

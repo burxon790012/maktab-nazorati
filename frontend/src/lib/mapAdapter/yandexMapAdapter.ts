@@ -53,7 +53,7 @@ export class YandexMapAdapter implements MapAdapter {
         center: [options.center[0], options.center[1]],
         zoom: options.zoom || 16,
         type: typeName,
-        controls: ['zoomControl', 'typeSelector', 'fullscreenControl'],
+        controls: [],
       },
       {
         suppressMapOpenBlock: true,
@@ -661,6 +661,22 @@ export class YandexMapAdapter implements MapAdapter {
       this.measureMarkers = [];
     }
     this.measurePoints = [];
+  }
+
+  zoomIn(): void {
+    if (!this.map) return;
+    try {
+      const cur = this.map.getZoom();
+      this.map.setZoom(Math.min(cur + 1, 19), { duration: 200 });
+    } catch (_) {}
+  }
+
+  zoomOut(): void {
+    if (!this.map) return;
+    try {
+      const cur = this.map.getZoom();
+      this.map.setZoom(Math.max(cur - 1, 3), { duration: 200 });
+    } catch (_) {}
   }
 
   resize(): void {

@@ -52,6 +52,8 @@ export interface MapAdapter {
   cancelDrawing(): void;
   startMeasure(onUpdate?: (distMeters: number) => void): void;
   stopMeasure(): void;
+  zoomIn?(): void;
+  zoomOut?(): void;
   resize(): void;
   destroy(): void;
 }

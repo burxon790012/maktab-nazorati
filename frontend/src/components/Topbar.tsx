@@ -97,7 +97,8 @@ export const Topbar: React.FC<TopbarProps> = ({
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-sm sm:text-base font-bold text-[#eaf2ff] tracking-tight truncate flex items-center gap-1.5">
-              <span>SMART CHILD</span>
+              <span className="hidden sm:inline">SMART CHILD</span>
+              <span className="sm:hidden text-xs text-[#22d3ee] font-black">SC</span>
             </h1>
 
             {/* DEMO badge: only shown in demo mode */}
@@ -106,7 +107,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                 onClick={onToggleDemoMode}
                 title="Demo rejimi (Soat simulyatsiyasi)"
                 aria-label="Demo rejimini almashtirish"
-                className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#ffb020]/15 text-[#ffb020] border border-[#ffb020]/30 tracking-wider hover:bg-[#ffb020]/25 transition"
+                className="px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-[#ffb020]/15 text-[#ffb020] border border-[#ffb020]/30 tracking-wider hover:bg-[#ffb020]/25 transition"
               >
                 DEMO
               </button>
@@ -116,7 +117,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             {activeSosStudent && (
               <button
                 onClick={() => onSelectSosStudent?.(activeSosStudent)}
-                className="px-2 py-0.5 rounded-full bg-[#ff4d5e]/20 text-[#ff4d5e] border border-[#ff4d5e]/50 text-[11px] font-bold flex items-center gap-1.5 hover:bg-[#ff4d5e]/30 transition"
+                className="px-2 py-0.5 rounded-full bg-[#ff4d5e]/20 text-[#ff4d5e] border border-[#ff4d5e]/50 text-xs font-bold flex items-center gap-1.5 hover:bg-[#ff4d5e]/30 transition"
                 aria-live="assertive"
                 title={`${activeSosStudent.name} uchun favqulodda SOS signali faol`}
               >
@@ -126,7 +127,7 @@ export const Topbar: React.FC<TopbarProps> = ({
               </button>
             )}
           </div>
-          <span className="text-[11px] text-[#8ea3c4] truncate hidden md:inline leading-tight">
+          <span className="text-xs text-[#8ea3c4] truncate hidden md:inline leading-tight">
             Bolalar xavfsizligi va GPS monitoringi
           </span>
         </div>
@@ -183,7 +184,7 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowAlertsDropdown(false);
             }}
             aria-label="Maktabni tanlash"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-xs font-medium text-[#eaf2ff] transition max-w-[130px] sm:max-w-[190px]"
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-xs font-medium text-[#eaf2ff] transition max-w-[100px] sm:max-w-[190px]"
           >
             <SchoolIcon className="w-3.5 h-3.5 text-[#22d3ee] shrink-0" />
             <span className="truncate">{selectedSchool.name}</span>
@@ -192,7 +193,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           {showSchoolDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50">
-              <div className="px-2.5 py-1.5 text-[10px] font-bold text-[#8ea3c4] uppercase tracking-wider">
+              <div className="px-2.5 py-1.5 text-xs font-bold text-[#8ea3c4] uppercase tracking-wider">
                 Maktabni tanlang
               </div>
               <div className="max-h-60 overflow-y-auto space-y-0.5 scrollbar-thin">
@@ -233,7 +234,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           >
             <Bell className="w-4 h-4" />
             {unreadAlertsCount > 0 && (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 text-[9px] font-extrabold bg-[#ff4d5e] text-white rounded-full ring-2 ring-[#101a2e] animate-pulse">
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs font-extrabold bg-[#ff4d5e] text-white rounded-full ring-2 ring-[#101a2e] animate-pulse">
                 {unreadAlertsCount}
               </span>
             )}
@@ -251,7 +252,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                     onClick={() => {
                       onMarkAllAlertsRead();
                     }}
-                    className="text-[11px] text-[#22d3ee] hover:underline"
+                    className="text-xs text-[#22d3ee] hover:underline"
                   >
                     Barchasini o'qish
                   </button>
@@ -271,10 +272,10 @@ export const Topbar: React.FC<TopbarProps> = ({
                       }`}
                     >
                       <div className="font-semibold">{a.title || 'Ogohlantirish'}</div>
-                      <div className="text-[11px] text-[#8ea3c4] mt-0.5 line-clamp-2">
+                      <div className="text-xs text-[#8ea3c4] mt-0.5 line-clamp-2">
                         {a.message}
                       </div>
-                      <div className="text-[10px] text-[#8ea3c4]/70 mt-1">{a.time || 'hozir'}</div>
+                      <div className="text-xs text-[#8ea3c4]/70 mt-1">{a.time || 'hozir'}</div>
                     </div>
                   ))
                 )}
@@ -324,7 +325,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           {showRoleDropdown && (
             <div className="absolute right-0 mt-2 w-52 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50">
-              <div className="px-2.5 py-1.5 text-[10px] font-bold text-[#8ea3c4] uppercase tracking-wider">
+              <div className="px-2.5 py-1.5 text-xs font-bold text-[#8ea3c4] uppercase tracking-wider">
                 Rolni tanlang
               </div>
               {roles.map((r) => (
@@ -361,12 +362,12 @@ export const Topbar: React.FC<TopbarProps> = ({
           )}
         </div>
 
-        {/* Mobile / Tablet Toggle for Right Stats Drawer */}
+        {/* Tablet Toggle for Right Stats Drawer (1024-1279px) */}
         {onToggleStats && (
           <button
             onClick={onToggleStats}
             aria-label="Statistika panelini ko'rsatish"
-            className={`xl:hidden px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 ${
+            className={`hidden md:flex xl:hidden px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition items-center gap-1.5 ${
               isStatsOpen
                 ? 'bg-[#22d3ee] text-[#0b1220] border-[#22d3ee]'
                 : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff] border-white/[0.07]'

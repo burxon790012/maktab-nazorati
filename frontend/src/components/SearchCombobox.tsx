@@ -451,8 +451,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
             <div className="p-3 bg-[#ff4d5e]/15 border border-[#ff4d5e]/30 rounded-xl text-[#ff4d5e] flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="font-bold text-[11px]">{errorMessage}</div>
-                <div className="text-[10px] text-[#9a9ac0] mt-0.5">
+                <div className="font-bold text-xs">{errorMessage}</div>
+                <div className="text-xs text-[#9a9ac0] mt-0.5">
                   Lokal maktablardan foydalaning yoki xaritadan qo'lda tanlang.
                 </div>
               </div>
@@ -462,9 +462,9 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
           {/* Results List */}
           {results.length > 0 && (
             <div className="space-y-1">
-              <div className="px-2 py-1 text-[10px] font-bold text-[#9a9ac0] uppercase tracking-wider flex items-center justify-between">
+              <div className="px-2 py-1 text-xs font-bold text-[#9a9ac0] uppercase tracking-wider flex items-center justify-between">
                 <span>Topilgan natijalar ({results.length})</span>
-                <span className="text-[9px] text-[#4db5ff]">Enter orqali tanlash</span>
+                <span className="text-xs text-[#4db5ff]">Enter orqali tanlash</span>
               </div>
 
               {results.map((item, idx) => {
@@ -510,18 +510,18 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
                       <div className="font-bold truncate text-xs flex items-center gap-1.5">
                         <span className="truncate">{item.title}</span>
                         {isLocal && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#2ee59d]/20 text-[#2ee59d]">
+                          <span className="px-1.5 py-0.5 rounded text-xs font-extrabold bg-[#2ee59d]/20 text-[#2ee59d]">
                             Lokal
                           </span>
                         )}
                         {isYandex && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#fc3f1d]/20 text-[#ff5733]">
+                          <span className="px-1.5 py-0.5 rounded text-xs font-extrabold bg-[#fc3f1d]/20 text-[#ff5733]">
                             Yandex
                           </span>
                         )}
                       </div>
                       {item.subtitle && (
-                        <div className="text-[10px] text-[#9a9ac0] truncate mt-0.5">
+                        <div className="text-xs text-[#9a9ac0] truncate mt-0.5">
                           {item.subtitle}
                         </div>
                       )}
@@ -540,7 +540,7 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
               </div>
               <div>
                 <p className="font-bold text-xs text-[#e8e8f5]">Hech narsa topilmadi</p>
-                <p className="text-[11px] text-[#9a9ac0] mt-1 max-w-[280px] mx-auto">
+                <p className="text-xs text-[#9a9ac0] mt-1 max-w-[280px] mx-auto">
                   Shahar, manzil yoki maktab nomini yozing (masalan: <b>"Urganch"</b> yoki <b>"1-maktab"</b>).
                 </p>
               </div>

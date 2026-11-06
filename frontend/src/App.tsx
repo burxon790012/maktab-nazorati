@@ -39,7 +39,7 @@ export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>('ALL');
   const [currentRole, setCurrentRole] = useState<Role>('SUPER_ADMIN');
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('ALL');
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('SCH001');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Theme state (persisted in localStorage inside try/catch)

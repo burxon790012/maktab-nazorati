@@ -111,21 +111,21 @@ const defaultState = {
     {
       id: "SCH001",
       geofenceId: "GEO001",
-      name: "1-Sonli Namunaviy Maktab",
-      name_ru: "Образцовая школа №1",
-      name_en: "Model School #1",
+      name: "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      name_ru: "Общеобразовательная школа №30",
+      name_en: "School #30",
       code: "SCH001",
-      address: "Toshkent sh., Chilonzor tumani, 1-mavze",
-      lat: 41.311081,
-      lng: 69.240562,
+      address: "Xorazm viloyati, Urganch shahar, 30-maktab",
+      lat: 41.550500,
+      lng: 60.631500,
       startTime: "08:30",
       endTime: "13:30",
       color: "#10b981", // Green polygon
       polygon: [
-        [41.312400, 69.238800], // 1. Shimoli-G'arb
-        [41.312400, 69.242300], // 2. Shimoli-Sharq
-        [41.309700, 69.242300], // 3. Janubi-Sharq
-        [41.309700, 69.238800]  // 4. Janubi-G'arb
+        [41.552200, 60.629200], // 1. Shimoli-G'arb
+        [41.552200, 60.633800], // 2. Shimoli-Sharq
+        [41.548800, 60.633800], // 3. Janubi-Sharq
+        [41.548800, 60.629200]  // 4. Janubi-G'arb
       ],
       adminEmail: "admin.sch1@smartchild.uz",
       totalStudents: 3
@@ -333,19 +333,19 @@ const defaultState = {
     "watch-5pro-01": {
       deviceId: "watch-5pro-01",
       studentId: "10001",
-      latitude: 41.311120,
-      longitude: 69.240610,
+      latitude: 41.550800,
+      longitude: 60.631200,
       accuracy: 3.2,
       speed: 0.0,
       heading: 45,
-      altitude: 432.5,
+      altitude: 105.0,
       heartRate: 78,
       bodyTemperature: 36.6,
       stepCount: 3410,
       batteryLevel: 89,
       isCharging: false,
       isSos: false,
-      geofenceStatus: "INSIDE", // Inside assigned school SCH001
+      geofenceStatus: "INSIDE", // Inside assigned school SCH001 (Urganch 30-maktab)
       assignedSchoolId: "SCH001",
       statusColor: "GREEN",
       statusDisplay: "PRESENT – INSIDE SCHOOL",
@@ -354,43 +354,43 @@ const defaultState = {
     "watch-5pro-02": {
       deviceId: "watch-5pro-02",
       studentId: "10002",
-      latitude: 41.311350,
-      longitude: 69.240800,
+      latitude: 41.554200,
+      longitude: 60.635800,
       accuracy: 4.1,
       speed: 1.2,
       heading: 120,
-      altitude: 431.0,
+      altitude: 105.0,
       heartRate: 84,
       bodyTemperature: 36.7,
       stepCount: 2890,
       batteryLevel: 74,
       isCharging: false,
       isSos: false,
-      geofenceStatus: "INSIDE",
+      geofenceStatus: "OUTSIDE",
       assignedSchoolId: "SCH001",
-      statusColor: "GREEN",
-      statusDisplay: "PRESENT – INSIDE SCHOOL",
+      statusColor: "RED",
+      statusDisplay: "LEFT SCHOOL – OUTSIDE SCHOOL",
       lastSeen: Date.now()
     },
     "watch-5pro-03": {
       deviceId: "watch-5pro-03",
       studentId: "10003",
-      latitude: 41.302100,
-      longitude: 69.231500,
+      latitude: 41.552000,
+      longitude: 60.629500,
       accuracy: 6.5,
       speed: 0.0,
       heading: 270,
-      altitude: 435.0,
+      altitude: 105.0,
       heartRate: 72,
       bodyTemperature: 36.5,
       stepCount: 1120,
       batteryLevel: 95,
       isCharging: false,
       isSos: false,
-      geofenceStatus: "OUTSIDE",
+      geofenceStatus: "VERIFYING",
       assignedSchoolId: "SCH001",
-      statusColor: "RED",
-      statusDisplay: "LEFT SCHOOL – OUTSIDE SCHOOL",
+      statusColor: "YELLOW",
+      statusDisplay: "APPROACHING GATE – VERIFYING",
       lastSeen: Date.now()
     }
   },
@@ -432,9 +432,9 @@ const defaultState = {
 
   // 8. SAFE ZONES (Section 6 & 9)
   safeZones: [
-    { id: "sz-1", studentId: "10001", name: "1-Sonli Namunaviy Maktab Hududi", type: "SCHOOL", radius: 250, lat: 41.311081, lng: 69.240562, isSafe: true },
-    { id: "sz-2", studentId: "10001", name: "Uy (Chilonzor mavzesi)", type: "HOME", radius: 150, lat: 41.305000, lng: 69.235000, isSafe: true },
-    { id: "sz-3", studentId: "10001", name: "Sport Majmuasi / Dzyudo", type: "ACTIVITY", radius: 180, lat: 41.298500, lng: 69.220100, isSafe: true }
+    { id: "sz-1", studentId: "10001", name: "30-Maktab Hududi", type: "SCHOOL", radius: 250, lat: 41.550500, lng: 60.631500, isSafe: true },
+    { id: "sz-2", studentId: "10001", name: "Uy (Urganch markazi)", type: "HOME", radius: 150, lat: 41.545000, lng: 60.625000, isSafe: true },
+    { id: "sz-3", studentId: "10001", name: "Urganch Yoshlar Markazi", type: "ACTIVITY", radius: 180, lat: 41.542000, lng: 60.620000, isSafe: true }
   ],
 
   // 9. CLASSES & TEACHERS (Section 10 & 13)
@@ -2832,8 +2832,8 @@ app.post('/api/v1/telemetry/simulate-walk', (req, res) => {
 
   // Define trajectory relative to school center
   let lat, lng, accuracy, desc;
-  const cLat = school.lat || 41.311081;
-  const cLng = school.lng || 69.240562;
+  const cLat = school.lat || 41.550500;
+  const cLng = school.lng || 60.631500;
 
   switch (stage) {
     case 'OUTSIDE_STREET':
@@ -3079,6 +3079,54 @@ async function startServer() {
             routeHistory: loaded.routeHistory || defaultState.routeHistory,
             safeZones: loaded.safeZones || defaultState.safeZones
           };
+          // Migrate SCH001 and demo telemetry to Urganch 30-maktab if any Tashkent coords detected
+          const sch1 = db.schools.find(s => s.id === 'SCH001');
+          const t1 = db.telemetryState["watch-5pro-01"];
+          if (sch1 && (sch1.lat === 41.311081 || sch1.name.includes('1-Sonli') || (t1 && t1.longitude > 65))) {
+            sch1.name = "30-Sonli Umumiy O'rta Ta'lim Maktabi";
+            sch1.name_ru = "Общеобразовательная школа №30";
+            sch1.name_en = "School #30";
+            sch1.address = "Xorazm viloyati, Urganch shahar, 30-maktab";
+            sch1.lat = 41.550500;
+            sch1.lng = 60.631500;
+            sch1.polygon = [
+              [41.552200, 60.629200],
+              [41.552200, 60.633800],
+              [41.548800, 60.633800],
+              [41.548800, 60.629200]
+            ];
+            db.telemetryState["watch-5pro-01"] = {
+              ...(db.telemetryState["watch-5pro-01"] || {}),
+              deviceId: "watch-5pro-01",
+              studentId: "10001",
+              latitude: 41.5508,
+              longitude: 60.6312,
+              geofenceStatus: "INSIDE",
+              schoolId: "SCH001",
+              address: "Urganch sh., 30-maktab hududi"
+            };
+            db.telemetryState["watch-5pro-02"] = {
+              ...(db.telemetryState["watch-5pro-02"] || {}),
+              deviceId: "watch-5pro-02",
+              studentId: "10002",
+              latitude: 41.5542,
+              longitude: 60.6358,
+              geofenceStatus: "OUTSIDE",
+              schoolId: "SCH001",
+              address: "Urganch sh., Al-Xorazmiy ko'chasi"
+            };
+            db.telemetryState["watch-5pro-03"] = {
+              ...(db.telemetryState["watch-5pro-03"] || {}),
+              deviceId: "watch-5pro-03",
+              studentId: "10003",
+              latitude: 41.5520,
+              longitude: 60.6295,
+              geofenceStatus: "VERIFYING",
+              schoolId: "SCH001",
+              address: "Urganch sh., 30-maktab darvozasi"
+            };
+            saveDb();
+          }
           console.log('✅ Doimiy ma\'lumotlar bazasidan (PostgreSQL/Knex) to\'liq tiklandi!');
         } else {
           await knexDb('app_state').insert({

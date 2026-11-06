@@ -28,7 +28,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-black text-emerald-400">100%</div>
-            <p className="text-[10px] text-muted-foreground mt-1">Barcha o'quvchilar vaqtida kelgan</p>
+            <p className="text-xs text-muted-foreground mt-1">Barcha o'quvchilar vaqtida kelgan</p>
           </CardContent>
         </Card>
 
@@ -38,7 +38,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-black text-emerald-400">100%</div>
-            <p className="text-[10px] text-amber-400 mt-1">1 nafar kechikkan</p>
+            <p className="text-xs text-amber-400 mt-1">1 nafar kechikkan</p>
           </CardContent>
         </Card>
 
@@ -48,7 +48,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-black text-emerald-400">100%</div>
-            <p className="text-[10px] text-muted-foreground mt-1">O'z vaqtida kelgan</p>
+            <p className="text-xs text-muted-foreground mt-1">O'z vaqtida kelgan</p>
           </CardContent>
         </Card>
 
@@ -58,7 +58,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-black text-primary">75%</div>
-            <p className="text-[10px] text-rose-400 mt-1">1 nafar kelmagan</p>
+            <p className="text-xs text-rose-400 mt-1">1 nafar kelmagan</p>
           </CardContent>
         </Card>
       </div>
@@ -70,7 +70,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             Tizim Harakatlari va Xavfsizlik Auditi (Audit Logs)
           </CardTitle>
-          <Badge variant="outline" className="text-emerald-400 border-emerald-500/40 text-[10px]">
+          <Badge variant="outline" className="text-emerald-400 border-emerald-500/40 text-xs">
             ✓ Doimiy Qayd Etiladi
           </Badge>
         </CardHeader>
@@ -89,17 +89,17 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({ auditLogs }) => {
           <TableBody>
             {auditLogs.map((log) => (
               <TableRow key={log.id}>
-                <TableCell className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </TableCell>
                 <TableCell className="font-bold text-xs">{log.user}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="text-[9px]">
+                  <Badge variant="secondary" className="text-xs">
                     {log.role}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <code className="text-primary font-mono text-[11px] bg-primary/10 px-1.5 py-0.5 rounded">
+                  <code className="text-primary font-mono text-xs bg-primary/10 px-1.5 py-0.5 rounded">
                     {log.action}
                   </code>
                 </TableCell>

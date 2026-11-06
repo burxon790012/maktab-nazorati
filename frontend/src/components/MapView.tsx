@@ -145,17 +145,17 @@ export const MapView: React.FC<MapViewProps> = ({
       id: 'SCH001',
       geofenceId: 'GEO001',
       code: 'SCH001',
-      name: '1-Sonli Namunaviy Maktab',
-      address: 'Toshkent sh., Chilonzor tumani',
-      lat: 41.311081,
-      lng: 69.240562,
+      name: "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      address: "Xorazm viloyati, Urganch shahar, 30-maktab",
+      lat: 41.550500,
+      lng: 60.631500,
       startTime: '08:00',
       endTime: '13:00',
       polygon: [
-        [41.3125, 69.2385],
-        [41.3125, 69.2425],
-        [41.3095, 69.2425],
-        [41.3095, 69.2385],
+        [41.5522, 60.6292],
+        [41.5522, 60.6338],
+        [41.5488, 60.6338],
+        [41.5488, 60.6292],
       ],
     };
   }, [schools, targetSchoolId]);
@@ -183,8 +183,8 @@ export const MapView: React.FC<MapViewProps> = ({
       setProvider(res.provider);
 
       const initCenter: [number, number] = [
-        activeSchool.lat || 41.311081,
-        activeSchool.lng || 69.240562,
+        activeSchool.lat || 41.550500,
+        activeSchool.lng || 60.631500,
       ];
 
       await res.adapter.init(container, {
@@ -225,9 +225,20 @@ export const MapView: React.FC<MapViewProps> = ({
       // Initial School Geofences
       res.adapter.renderSchoolGeofences(schools, targetSchoolId);
 
-      // Fit bounds to school if valid polygon
+      // Fit bounds to school and students if valid points exist
+      const allPoints: [number, number][] = [];
       if (activeSchool.polygon && Array.isArray(activeSchool.polygon) && activeSchool.polygon.length > 2) {
-        res.adapter.fitBounds(activeSchool.polygon);
+        allPoints.push(...activeSchool.polygon);
+      }
+      students
+        .filter((s) => s.schoolId === targetSchoolId && s.telemetry?.latitude && s.telemetry?.longitude)
+        .forEach((s) => {
+          allPoints.push([s.telemetry!.latitude, s.telemetry!.longitude]);
+        });
+      if (allPoints.length >= 2) {
+        res.adapter.fitBounds(allPoints);
+      } else if (activeSchool.lat && activeSchool.lng) {
+        res.adapter.flyTo(activeSchool.lat, activeSchool.lng, 17);
       }
 
       // Initial resize
@@ -252,10 +263,32 @@ export const MapView: React.FC<MapViewProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  // Sync geofences when schools or target school change
+  // Sync geofences and fit bounds when schools or target school change
+  const initialFitDoneRef = useRef(false);
   useEffect(() => {
-    adapterRef.current?.renderSchoolGeofences(schools, targetSchoolId);
-  }, [schools, targetSchoolId]);
+    if (!adapterRef.current) return;
+    adapterRef.current.renderSchoolGeofences(schools, targetSchoolId);
+    if (!initialFitDoneRef.current && schools.length > 0) {
+      initialFitDoneRef.current = true;
+      const targetSchool = schools.find((s) => s.id === targetSchoolId) || schools[0];
+      if (targetSchool) {
+        const allPoints: [number, number][] = [];
+        if (targetSchool.polygon && Array.isArray(targetSchool.polygon) && targetSchool.polygon.length > 2) {
+          allPoints.push(...targetSchool.polygon);
+        }
+        students
+          .filter((s) => s.schoolId === targetSchool.id && s.telemetry?.latitude && s.telemetry?.longitude)
+          .forEach((s) => {
+            allPoints.push([s.telemetry!.latitude, s.telemetry!.longitude]);
+          });
+        if (allPoints.length >= 2) {
+          adapterRef.current.fitBounds(allPoints);
+        } else if (targetSchool.lat && targetSchool.lng) {
+          adapterRef.current.flyTo(targetSchool.lat, targetSchool.lng, 17);
+        }
+      }
+    }
+  }, [schools, targetSchoolId, students]);
 
   // Handle ESC key to cancel active drawing or close modals
   useEffect(() => {
@@ -417,11 +450,19 @@ export const MapView: React.FC<MapViewProps> = ({
 
   // Recenter to School
   const handleRecenter = () => {
-    if (activeSchool.lat && activeSchool.lng) {
+    const allPoints: [number, number][] = [];
+    if (activeSchool.polygon && activeSchool.polygon.length > 2) {
+      allPoints.push(...activeSchool.polygon);
+    }
+    students
+      .filter((s) => s.schoolId === activeSchool.id && s.telemetry?.latitude && s.telemetry?.longitude)
+      .forEach((s) => {
+        allPoints.push([s.telemetry!.latitude, s.telemetry!.longitude]);
+      });
+    if (allPoints.length >= 2) {
+      adapterRef.current?.fitBounds(allPoints);
+    } else if (activeSchool.lat && activeSchool.lng) {
       adapterRef.current?.flyTo(activeSchool.lat, activeSchool.lng, 17);
-      if (activeSchool.polygon && activeSchool.polygon.length > 2) {
-        adapterRef.current?.fitBounds(activeSchool.polygon);
-      }
     }
   };
 
@@ -665,7 +706,7 @@ export const MapView: React.FC<MapViewProps> = ({
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-bold text-[#eaf2ff] truncate">{searchPin.title}</div>
-              <div className="text-[11px] text-[#2ee59d] font-mono font-bold truncate flex items-center gap-1.5">
+              <div className="text-xs text-[#2ee59d] font-mono font-bold truncate flex items-center gap-1.5">
                 <span>📍 GPS: {searchPin.lat.toFixed(6)}, {searchPin.lng.toFixed(6)}</span>
                 {searchPin.subtitle && (
                   <span className="text-[#8ea3c4] font-normal">• {searchPin.subtitle}</span>
@@ -711,11 +752,11 @@ export const MapView: React.FC<MapViewProps> = ({
             <div className="min-w-0 flex-1">
               <div className="font-black text-[#eaf2ff] flex items-center gap-2">
                 <span>✏️ Geozona chegarasini chizish</span>
-                <span className="px-2 py-0.5 rounded-full bg-[#22d3ee] text-[#0b1220] text-[10px] font-extrabold">
+                <span className="px-2 py-0.5 rounded-full bg-[#22d3ee] text-[#0b1220] text-xs font-extrabold">
                   {polygonPointCount} ta nuqta
                 </span>
               </div>
-              <div className="text-[11px] text-[#8ea3c4] mt-0.5">
+              <div className="text-xs text-[#8ea3c4] mt-0.5">
                 {polygonPointCount < 3
                   ? "Xaritada maktab hududi burchaklarini ketma-ket bosing (kamida 3 ta nuqta)"
                   : "Chegara tayyor! Nuqta qo'shishingiz yoki Saqlashni bosishingiz mumkin"}
@@ -871,9 +912,9 @@ export const MapView: React.FC<MapViewProps> = ({
         </button>
       </div>
 
-      {/* 4. TOP-LEFT GLASS PANEL: "JONLI KUZATUV" (Collapsible via "–", sized to content, no empty blurred area) */}
+      {/* 4. TOP-LEFT GLASS PANEL: "JONLI KUZATUV" (Hidden on mobile <768px in favor of bottom sheet, sized to content, no empty blurred area) */}
       <div
-        className={`absolute top-3 left-3 z-20 w-80 sm:w-[340px] max-h-[min(540px,calc(100%-4rem))] flex flex-col bg-[#101a2e]/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 pointer-events-auto`}
+        className={`hidden md:flex absolute top-3 left-3 z-20 w-80 sm:w-[340px] h-fit max-h-[calc(100%-2rem)] flex-col bg-[#101a2e]/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 pointer-events-auto`}
       >
         {/* Panel Header */}
         <div className="p-3.5 border-b border-white/[0.07] flex items-center justify-between shrink-0">
@@ -882,7 +923,7 @@ export const MapView: React.FC<MapViewProps> = ({
             <h3 className="font-bold text-xs text-[#eaf2ff] uppercase tracking-wider truncate">
               Jonli kuzatuv
             </h3>
-            <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-[#22d3ee] font-mono text-[11px] font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-[#22d3ee] font-mono text-xs font-bold">
               {filteredStudents.length} ta
             </span>
           </div>
@@ -902,7 +943,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {/* Panel Content (When Expanded) */}
         {!isStudentPanelCollapsed && (
-          <div className="flex flex-col min-h-0 flex-1">
+          <div className="flex flex-col min-h-0 h-fit">
             {/* Search Input: "Ism, ID yoki sinf..." */}
             <div className="p-2.5 border-b border-white/[0.07] bg-black/10 shrink-0">
               <div className="relative flex items-center">
@@ -933,7 +974,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('ALL');
                   onSelectFilter?.('ALL');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'ALL'
                     ? 'bg-[#22d3ee] text-[#0b1220] font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -946,7 +987,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('INSIDE');
                   onSelectFilter?.('INSIDE');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'INSIDE'
                     ? 'bg-[#2ee59d] text-[#0b1220] font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -959,7 +1000,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('OUTSIDE');
                   onSelectFilter?.('OUTSIDE');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'OUTSIDE'
                     ? 'bg-[#ff4d5e] text-white font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -972,7 +1013,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('VERIFYING');
                   onSelectFilter?.('VERIFYING');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'VERIFYING'
                     ? 'bg-[#ffb020] text-[#0b1220] font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -985,7 +1026,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('SOS');
                   onSelectFilter?.('SOS');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'SOS'
                     ? 'bg-[#ff4d5e] text-white font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -998,7 +1039,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   setStatusFilter('OFFLINE');
                   onSelectFilter?.('OFFLINE');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                   effectiveFilter === 'OFFLINE'
                     ? 'bg-white/20 text-[#eaf2ff] font-bold shadow-sm'
                     : 'bg-white/[0.04] text-[#8ea3c4] hover:text-[#eaf2ff]'
@@ -1054,7 +1095,7 @@ export const MapView: React.FC<MapViewProps> = ({
                             }`}
                           />
                           <span
-                            className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[#101a2e] flex items-center justify-center text-[7px] font-black text-white ${
+                            className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#101a2e] flex items-center justify-center text-xs font-bold text-white ${
                               isSos
                                 ? 'bg-[#ff4d5e] animate-ping'
                                 : isOffline
@@ -1073,7 +1114,7 @@ export const MapView: React.FC<MapViewProps> = ({
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-xs text-[#eaf2ff] truncate">{std.name}</span>
                             <span
-                              className={`px-1.5 py-0.2 rounded text-[9px] font-extrabold ${
+                              className={`px-1.5 py-0.5 rounded text-xs font-bold ${
                                 isSos
                                   ? 'bg-[#ff4d5e] text-white animate-pulse'
                                   : isOffline
@@ -1087,18 +1128,18 @@ export const MapView: React.FC<MapViewProps> = ({
                             </span>
                           </div>
 
-                          <div className="text-[11px] text-[#8ea3c4] flex items-center justify-between mt-0.5">
+                          <div className="text-xs text-[#8ea3c4] flex items-center justify-between mt-0.5">
                             <span className="truncate">
                               {std.className} • <span className="font-mono text-[#22d3ee]">{std.uniqueId}</span>
                             </span>
-                            <span className="flex items-center gap-1 font-mono text-[10px] text-[#ff4d5e] shrink-0 ml-1">
+                            <span className="flex items-center gap-1 font-mono text-xs text-[#ff4d5e] shrink-0 ml-1">
                               <Heart className="w-2.5 h-2.5 fill-[#ff4d5e]" />
                               {telem?.heartRate || 75}
                             </span>
                           </div>
 
                           {/* Real address without fallback */}
-                          <div className="flex items-center justify-between text-[10px] text-[#8ea3c4] mt-1 pt-1 border-t border-white/[0.04]">
+                          <div className="flex items-center justify-between text-xs text-[#8ea3c4] mt-1 pt-1 border-t border-white/[0.04]">
                             <span className="truncate max-w-[170px]">
                               📍 {telem?.address || 'Manzil aniqlanmoqda...'}
                             </span>
@@ -1170,13 +1211,13 @@ export const MapView: React.FC<MapViewProps> = ({
           <button
             type="button"
             onClick={() => {
-              const lat = currentCursorCoords?.lat || selectedCoords?.lat || activeSchool.lat || 41.311081;
-              const lng = currentCursorCoords?.lng || selectedCoords?.lng || activeSchool.lng || 69.240562;
+              const lat = currentCursorCoords?.lat || selectedCoords?.lat || activeSchool.lat || 41.550500;
+              const lng = currentCursorCoords?.lng || selectedCoords?.lng || activeSchool.lng || 60.631500;
               navigator.clipboard.writeText(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
               setCopiedCoords(true);
               setTimeout(() => setCopiedCoords(false), 2000);
             }}
-            className="px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.1] text-[10px] text-[#22d3ee] font-semibold transition flex items-center gap-1"
+            className="px-2 py-0.5 rounded-md bg-white/[0.06] hover:bg-white/[0.1] text-xs text-[#22d3ee] font-semibold transition flex items-center gap-1"
             title="GPS koordinatasini nusxalash"
           >
             {copiedCoords ? <Check className="w-3 h-3 text-[#2ee59d]" /> : <Copy className="w-3 h-3" />}
@@ -1188,7 +1229,7 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* 7. DEMO MODE ONLY: COLLAPSIBLE SIMULATION BAR */}
       {isDemoMode && onSimulateWalk && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto bg-[#101a2e]/95 backdrop-blur-xl border border-[#ffb020]/40 rounded-2xl shadow-2xl p-2 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#ffb020]/15 text-[#ffb020] text-[10px] font-mono font-bold tracking-wider">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#ffb020]/15 text-[#ffb020] text-xs font-mono font-bold tracking-wider">
             <Radio className="w-3 h-3 animate-pulse" />
             <span>DEMO SIMULYATOR</span>
           </div>
@@ -1248,7 +1289,7 @@ export const MapView: React.FC<MapViewProps> = ({
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-[#eaf2ff]">Geozonani Saqlash</h3>
-                  <p className="text-[11px] text-[#8ea3c4]">Belgilangan joy uchun nom va koordinatalar</p>
+                  <p className="text-xs text-[#8ea3c4]">Belgilangan joy uchun nom va koordinatalar</p>
                 </div>
               </div>
               <button
@@ -1284,17 +1325,17 @@ export const MapView: React.FC<MapViewProps> = ({
               {/* Exact GPS Coordinates Section */}
               <div className="p-3 bg-white/[0.02] border border-white/[0.07] rounded-2xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#eaf2ff] flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#eaf2ff] flex items-center gap-1.5">
                     <span>📍</span> Aniq GPS Koordinatalari (Markaz)
                   </span>
-                  <span className="text-[10px] text-[#22d3ee] font-mono font-semibold bg-[#22d3ee]/15 px-2 py-0.5 rounded-full border border-[#22d3ee]/30">
+                  <span className="text-xs text-[#22d3ee] font-mono font-semibold bg-[#22d3ee]/15 px-2 py-0.5 rounded-full border border-[#22d3ee]/30">
                     ±10 sm Aniqlik
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[10px] text-[#8ea3c4] mb-0.5 font-medium">
+                    <label className="block text-xs text-[#8ea3c4] mb-0.5 font-medium">
                       Kenglik (Latitude):
                     </label>
                     <input
@@ -1302,11 +1343,11 @@ export const MapView: React.FC<MapViewProps> = ({
                       value={geofenceLatInput}
                       onChange={(e) => setGeofenceLatInput(e.target.value)}
                       className="w-full h-8 px-2.5 bg-[#0b1220] border border-white/10 rounded-lg text-xs font-mono text-[#22d3ee] font-bold focus:outline-none focus:border-[#22d3ee]"
-                      placeholder="41.311081"
+                      placeholder="41.550500"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-[#8ea3c4] mb-0.5 font-medium">
+                    <label className="block text-xs text-[#8ea3c4] mb-0.5 font-medium">
                       Uzunlik (Longitude):
                     </label>
                     <input
@@ -1314,12 +1355,12 @@ export const MapView: React.FC<MapViewProps> = ({
                       value={geofenceLngInput}
                       onChange={(e) => setGeofenceLngInput(e.target.value)}
                       className="w-full h-8 px-2.5 bg-[#0b1220] border border-white/10 rounded-lg text-xs font-mono text-[#22d3ee] font-bold focus:outline-none focus:border-[#22d3ee]"
-                      placeholder="69.240562"
+                      placeholder="60.631500"
                     />
                   </div>
                 </div>
 
-                <div className="text-[10px] text-[#8ea3c4] flex items-center justify-between pt-1 border-t border-white/[0.06]">
+                <div className="text-xs text-[#8ea3c4] flex items-center justify-between pt-1 border-t border-white/[0.06]">
                   <span>Perimetr: <b>{pendingPolygon?.length || 0} ta GPS nuqta</b></span>
                   <button
                     type="button"
@@ -1328,7 +1369,7 @@ export const MapView: React.FC<MapViewProps> = ({
                       setCopiedCoords(true);
                       setTimeout(() => setCopiedCoords(false), 2000);
                     }}
-                    className="text-[#22d3ee] hover:underline flex items-center gap-1 font-mono text-[10px]"
+                    className="text-[#22d3ee] hover:underline flex items-center gap-1 font-mono text-xs"
                   >
                     {copiedCoords ? '✅ Nusxalandi' : '📋 Nusxa olish'}
                   </button>
@@ -1337,7 +1378,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
               {/* Save mode selector */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-[#8ea3c4]">
+                <label className="block text-xs font-semibold text-[#8ea3c4]">
                   Saqlash varianti:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -1353,7 +1394,7 @@ export const MapView: React.FC<MapViewProps> = ({
                     <span className="font-bold flex items-center gap-1">
                       <span>➕</span> Yangi maktab
                     </span>
-                    <span className="text-[10px] opacity-75">Mustaqil maktab sifatida</span>
+                    <span className="text-xs opacity-75">Mustaqil maktab sifatida</span>
                   </button>
 
                   <button
@@ -1368,7 +1409,7 @@ export const MapView: React.FC<MapViewProps> = ({
                     <span className="font-bold flex items-center gap-1">
                       <span>✏️</span> Mavjud maktab
                     </span>
-                    <span className="text-[10px] opacity-75 truncate">{activeSchool.name}</span>
+                    <span className="text-xs opacity-75 truncate">{activeSchool.name}</span>
                   </button>
                 </div>
               </div>

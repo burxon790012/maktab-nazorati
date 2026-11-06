@@ -516,9 +516,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ open, on
           <div key={n.id} className="p-3 rounded-xl border border-border bg-card/60 space-y-1">
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs">{n.title}</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{n.time}</span>
+              <span className="text-xs text-muted-foreground font-mono">{n.time}</span>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">{n.message}</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
           </div>
         ))}
       </div>

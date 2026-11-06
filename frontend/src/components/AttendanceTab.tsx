@@ -114,7 +114,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
                       />
                       <div>
                         <div className="font-bold text-xs">{std.name}</div>
-                        <div className="text-[10px] font-mono text-muted-foreground">ID: {std.uniqueId}</div>
+                        <div className="text-xs font-mono text-muted-foreground">ID: {std.uniqueId}</div>
                       </div>
                     </div>
                   </TableCell>
@@ -148,7 +148,7 @@ export const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-400">
+                    <Badge variant="outline" className="text-xs border-emerald-500/40 text-emerald-400">
                       ✓ GPS Geofence Tasdiqlandi
                     </Badge>
                   </TableCell>

@@ -58,7 +58,7 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black">{schools.length}</div>
-            <p className="text-[11px] text-emerald-400 mt-1 font-medium">Barchasi GPS Geofence bilan himoyalangan</p>
+            <p className="text-xs text-emerald-400 mt-1 font-medium">Barchasi GPS Geofence bilan himoyalangan</p>
           </CardContent>
         </Card>
 
@@ -71,7 +71,7 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black">{students.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Qat'iy maktab-poligon biriktiruvi</p>
+            <p className="text-xs text-muted-foreground mt-1">Qat'iy maktab-poligon biriktiruvi</p>
           </CardContent>
         </Card>
 
@@ -84,7 +84,7 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-emerald-400">100%</div>
-            <p className="text-[11px] text-emerald-400 mt-1 font-medium">O'z vaqtida kelish darajasi yuqori</p>
+            <p className="text-xs text-emerald-400 mt-1 font-medium">O'z vaqtida kelish darajasi yuqori</p>
           </CardContent>
         </Card>
 
@@ -97,7 +97,7 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-amber-400">{students.length}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">Telemetriya va puls monitoringi faol</p>
+            <p className="text-xs text-muted-foreground mt-1">Telemetriya va puls monitoringi faol</p>
           </CardContent>
         </Card>
       </div>
@@ -141,14 +141,14 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
                   </TableCell>
                   <TableCell>
                     <div className="font-bold">{sch.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{sch.address}</div>
+                    <div className="text-xs text-muted-foreground">{sch.address}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="success" className="font-mono">
                       {sch.geofenceId || 'GEO001'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-[11px] text-[#2ee59d]">
+                  <TableCell className="font-mono text-xs text-[#2ee59d]">
                     <div className="flex items-center gap-1.5 font-bold">
                       <span>[{sch.lat ? sch.lat.toFixed(6) : '41.311081'}, {sch.lng ? sch.lng.toFixed(6) : '69.240562'}]</span>
                       <button
@@ -158,7 +158,7 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
                           navigator.clipboard.writeText(text);
                           alert(`GPS koordinata nusxalandi: ${text}`);
                         }}
-                        className="text-[10px] text-[#9a9ac0] hover:text-[#2ee59d] transition"
+                        className="text-xs text-[#9a9ac0] hover:text-[#2ee59d] transition"
                         title="GPS koordinatani nusxalash"
                       >
                         📋
@@ -232,10 +232,10 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
                 <TableCell className="font-bold">{u.name}</TableCell>
                 <TableCell>
                   <div>{u.email}</div>
-                  <div className="text-[11px] font-mono text-muted-foreground">{u.phone}</div>
+                  <div className="text-xs font-mono text-muted-foreground">{u.phone}</div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={u.role === 'SUPER_ADMIN' ? 'default' : 'secondary'} className="text-[10px]">
+                  <Badge variant={u.role === 'SUPER_ADMIN' ? 'default' : 'secondary'} className="text-xs">
                     {u.role}
                   </Badge>
                 </TableCell>

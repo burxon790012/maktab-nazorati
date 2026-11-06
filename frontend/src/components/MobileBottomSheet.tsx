@@ -210,7 +210,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
               </div>
 
               {/* Status chips */}
-              <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none shrink-0 text-[10px]">
+              <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-none shrink-0 text-xs">
                 {['ALL', 'INSIDE', 'OUTSIDE', 'VERIFYING', 'SOS', 'OFFLINE'].map((st) => (
                   <button
                     key={st}
@@ -240,7 +240,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
               {selectedStudent && (
                 <div className="p-3 mb-2 rounded-xl bg-[#16233d] border border-[#22d3ee]/40 space-y-2 shrink-0">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[#22d3ee]">Tanlangan o'quvchi:</span>
+                    <span className="text-xs font-bold text-[#22d3ee]">Tanlangan o'quvchi:</span>
                     <button
                       onClick={() => onSelectStudent(null)}
                       className="p-0.5 text-[#8ea3c4] hover:text-[#eaf2ff]"
@@ -256,7 +256,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                     />
                     <div className="min-w-0 flex-1">
                       <div className="font-bold text-xs text-[#eaf2ff] truncate">{selectedStudent.name}</div>
-                      <div className="text-[11px] text-[#8ea3c4]">{selectedStudent.className}</div>
+                      <div className="text-xs text-[#8ea3c4]">{selectedStudent.className}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 pt-1">
@@ -308,7 +308,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-xs text-[#eaf2ff] truncate">{std.name}</span>
                             <span
-                              className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                              className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                                 isSos
                                   ? 'bg-[#ff4d5e] text-white'
                                   : isInside
@@ -321,7 +321,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                               {isSos ? 'SOS' : isInside ? 'Maktabda' : isOffline ? 'Oflayn' : 'Tashqarida'}
                             </span>
                           </div>
-                          <div className="text-[10px] text-[#8ea3c4] flex items-center justify-between mt-0.5">
+                          <div className="text-xs text-[#8ea3c4] flex items-center justify-between mt-0.5">
                             <span>{std.className}</span>
                             <span>🔋 {std.telemetry?.batteryLevel || 85}%</span>
                           </div>
@@ -340,7 +340,7 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
               {/* Donut stat summary */}
               <div className="p-3.5 rounded-2xl bg-[#16233d]/70 border border-white/[0.06] flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-[#8ea3c4] uppercase font-bold tracking-wider block">
+                  <span className="text-xs text-[#8ea3c4] uppercase font-bold tracking-wider block">
                     Maktabda Davomat
                   </span>
                   <span className="font-mono text-2xl font-bold text-[#eaf2ff] block mt-0.5">
@@ -365,13 +365,13 @@ export const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
               {/* Online/Offline Watches */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                  <span className="text-[10px] text-[#8ea3c4] uppercase">ONLINE SOATLAR</span>
+                  <span className="text-xs text-[#8ea3c4] uppercase">ONLINE SOATLAR</span>
                   <span className="font-mono text-xl font-bold text-[#22d3ee] block mt-0.5">
                     {stats.online}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                  <span className="text-[10px] text-[#8ea3c4] uppercase">O'RTACHA BATAREYA</span>
+                  <span className="text-xs text-[#8ea3c4] uppercase">O'RTACHA BATAREYA</span>
                   <span className="font-mono text-xl font-bold text-[#2ee59d] block mt-0.5">
                     {stats.avgBattery}%
                   </span>

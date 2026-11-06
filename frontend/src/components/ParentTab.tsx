@@ -104,7 +104,7 @@ export const ParentTab: React.FC<ParentTabProps> = ({ students, onTriggerSos }) 
                     </div>
                     <div>
                       <b className="text-xs">1-Sonli Namunaviy Maktab Hududi</b>
-                      <p className="text-[10px] text-muted-foreground">Radius: 250m • Geofence ID: GEO001</p>
+                      <p className="text-xs text-muted-foreground">Radius: 250m • Geofence ID: GEO001</p>
                     </div>
                   </div>
                   <Badge variant="success">FAOL (Hozir shu yerda)</Badge>
@@ -117,7 +117,7 @@ export const ParentTab: React.FC<ParentTabProps> = ({ students, onTriggerSos }) 
                     </div>
                     <div>
                       <b className="text-xs">Uy (Chilonzor mavzesi)</b>
-                      <p className="text-[10px] text-muted-foreground">Radius: 150m</p>
+                      <p className="text-xs text-muted-foreground">Radius: 150m</p>
                     </div>
                   </div>
                   <Badge variant="outline">Xavfsiz</Badge>
@@ -130,7 +130,7 @@ export const ParentTab: React.FC<ParentTabProps> = ({ students, onTriggerSos }) 
                     </div>
                     <div>
                       <b className="text-xs">Sport Majmuasi / Dzyudo</b>
-                      <p className="text-[10px] text-muted-foreground">Radius: 180m</p>
+                      <p className="text-xs text-muted-foreground">Radius: 180m</p>
                     </div>
                   </div>
                   <Badge variant="outline">Xavfsiz</Badge>

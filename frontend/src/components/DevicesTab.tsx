@@ -239,7 +239,7 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
                           </div>
                           <div>
                             <div className="font-bold">{d.studentName || "Biriktirilmagan"}</div>
-                            <div className="text-[11px] text-[#9a9ac0]">
+                            <div className="text-xs text-[#9a9ac0]">
                               {d.studentClass || '—'} • {d.schoolName || '—'}
                             </div>
                           </div>
@@ -251,13 +251,13 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
                         <div className="font-mono font-semibold text-xs text-[#4db5ff]">
                           {d.deviceId}
                         </div>
-                        <div className="text-[11px] text-[#9a9ac0]">{d.model}</div>
+                        <div className="text-xs text-[#9a9ac0]">{d.model}</div>
                       </td>
 
                       {/* Status */}
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                             isOnline
                               ? 'bg-[#2ee59d]/15 text-[#2ee59d] border border-[#2ee59d]/30'
                               : isDelayed
@@ -308,12 +308,12 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
                       {/* Is Worn */}
                       <td className="py-3.5 px-4">
                         {d.isWorn ? (
-                          <span className="text-[#2ee59d] text-[11px] font-semibold flex items-center gap-1">
+                          <span className="text-[#2ee59d] text-xs font-semibold flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             Qo'lda taqilgan
                           </span>
                         ) : (
-                          <span className="text-[#ff4d5e] text-[11px] font-semibold flex items-center gap-1">
+                          <span className="text-[#ff4d5e] text-xs font-semibold flex items-center gap-1">
                             <AlertCircle className="w-3.5 h-3.5" />
                             Yechilgan!
                           </span>
@@ -322,14 +322,14 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
 
                       {/* Last Address */}
                       <td className="py-3.5 px-4 text-[#e8e8f5] max-w-[220px]">
-                        <div className="flex items-start gap-1 text-[11px] text-[#9a9ac0]">
+                        <div className="flex items-start gap-1 text-xs text-[#9a9ac0]">
                           <MapPin className="w-3.5 h-3.5 text-[#ff2d78] flex-shrink-0 mt-0.5" />
                           <span className="truncate">{d.lastAddress || "Toshkent shahri"}</span>
                         </div>
                       </td>
 
                       {/* Last Seen */}
-                      <td className="py-3.5 px-4 text-[#9a9ac0] text-[11px]">
+                      <td className="py-3.5 px-4 text-[#9a9ac0] text-xs">
                         {d.lastSeenAt ? new Date(d.lastSeenAt).toLocaleTimeString() : 'Noma\'lum'}
                       </td>
 
@@ -474,7 +474,7 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
 
             {/* Token display */}
             <div className="mt-4 p-3 bg-[#1b1b33] rounded-xl border border-[#3a3a63]/40 text-left">
-              <div className="flex items-center justify-between text-[11px] text-[#9a9ac0] mb-1">
+              <div className="flex items-center justify-between text-xs text-[#9a9ac0] mb-1">
                 <span>256-bit Qurilma Tokeni:</span>
                 <button
                   onClick={() => copyToClipboard(qrModalData.token)}

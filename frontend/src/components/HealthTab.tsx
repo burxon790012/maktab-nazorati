@@ -52,10 +52,10 @@ export const HealthTab: React.FC<HealthTabProps> = ({ students }) => {
                     />
                     <div>
                       <h4 className="font-bold text-sm leading-tight">{std.name}</h4>
-                      <span className="text-[10px] text-muted-foreground">{std.className} • ID: {std.uniqueId}</span>
+                      <span className="text-xs text-muted-foreground">{std.className} • ID: {std.uniqueId}</span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] gap-1 font-mono">
+                  <Badge variant="outline" className="text-xs gap-1 font-mono">
                     <Watch className="w-3 h-3 text-muted-foreground" />
                     Watch5 Pro
                   </Badge>
@@ -66,49 +66,49 @@ export const HealthTab: React.FC<HealthTabProps> = ({ students }) => {
                 {/* BPM */}
                 <div className="p-2.5 rounded-lg bg-card/60 border border-border">
                   <div className="flex items-center justify-between text-muted-foreground mb-1">
-                    <span className="text-[11px] font-medium">Yurak Urishi</span>
+                    <span className="text-xs font-medium">Yurak Urishi</span>
                     <Heart className={`w-3.5 h-3.5 ${isBpmHigh ? 'text-rose-500 fill-rose-500 animate-ping' : 'text-rose-400 fill-rose-400'}`} />
                   </div>
                   <div className={`text-lg font-black font-mono ${isBpmHigh ? 'text-rose-400' : 'text-foreground'}`}>
-                    {bpm} <span className="text-[10px] font-normal text-muted-foreground">BPM</span>
+                    {bpm} <span className="text-xs font-normal text-muted-foreground">BPM</span>
                   </div>
-                  <span className="text-[10px] text-emerald-400">Normal (60-100)</span>
+                  <span className="text-xs text-emerald-400">Normal (60-100)</span>
                 </div>
 
                 {/* Temperature */}
                 <div className="p-2.5 rounded-lg bg-card/60 border border-border">
                   <div className="flex items-center justify-between text-muted-foreground mb-1">
-                    <span className="text-[11px] font-medium">Tana Harorati</span>
+                    <span className="text-xs font-medium">Tana Harorati</span>
                     <Thermometer className={`w-3.5 h-3.5 ${isTempHigh ? 'text-rose-400' : 'text-teal-400'}`} />
                   </div>
                   <div className={`text-lg font-black font-mono ${isTempHigh ? 'text-rose-400' : 'text-foreground'}`}>
-                    {temp.toFixed(1)} <span className="text-[10px] font-normal text-muted-foreground">°C</span>
+                    {temp.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">°C</span>
                   </div>
-                  <span className="text-[10px] text-emerald-400">Normal (36.1-37.2)</span>
+                  <span className="text-xs text-emerald-400">Normal (36.1-37.2)</span>
                 </div>
 
                 {/* Battery */}
                 <div className="p-2.5 rounded-lg bg-card/60 border border-border">
                   <div className="flex items-center justify-between text-muted-foreground mb-1">
-                    <span className="text-[11px] font-medium">Batareya</span>
+                    <span className="text-xs font-medium">Batareya</span>
                     <BatteryCharging className="w-3.5 h-3.5 text-amber-400" />
                   </div>
                   <div className="text-lg font-black font-mono text-amber-400">
                     {battery}%
                   </div>
-                  <span className="text-[10px] text-muted-foreground">Quvvat yetarli</span>
+                  <span className="text-xs text-muted-foreground">Quvvat yetarli</span>
                 </div>
 
                 {/* Steps */}
                 <div className="p-2.5 rounded-lg bg-card/60 border border-border">
                   <div className="flex items-center justify-between text-muted-foreground mb-1">
-                    <span className="text-[11px] font-medium">Qadamlar</span>
+                    <span className="text-xs font-medium">Qadamlar</span>
                     <Footprints className="w-3.5 h-3.5 text-blue-400" />
                   </div>
                   <div className="text-lg font-black font-mono text-foreground">
                     {steps.toLocaleString()}
                   </div>
-                  <span className="text-[10px] text-blue-400">Kunlik faollik</span>
+                  <span className="text-xs text-blue-400">Kunlik faollik</span>
                 </div>
               </CardContent>
             </Card>

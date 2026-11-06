@@ -111,7 +111,7 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
                     {std.className}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-mono text-[11px]">
+                <TableCell className="font-mono text-xs">
                   {std.deviceId}
                 </TableCell>
                 <TableCell className="text-xs">{std.parentName || "Ota-ona"}</TableCell>

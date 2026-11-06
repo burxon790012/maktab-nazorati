@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="font-bold tracking-tight text-sm leading-none text-[#eaf2ff] flex items-center gap-1.5">
                   SMART CHILD
                 </span>
-                <span className="text-[10px] text-[#8ea3c4] font-medium tracking-wider uppercase mt-1">
+                <span className="text-xs text-[#8ea3c4] font-medium tracking-wider uppercase mt-1">
                   Fleet Dashboard
                 </span>
               </div>
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div className="flex-1 flex items-center justify-between min-w-0 text-left">
                     <span className="truncate">{item.label}</span>
                     {item.badge !== null && item.badge !== undefined && (
-                      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#ff4d5e] text-white shadow-sm shadow-[#ff4d5e]/40">
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-[#ff4d5e] text-white shadow-sm shadow-[#ff4d5e]/40">
                         {item.badge}
                       </span>
                     )}
@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   >
                     <span>{item.label}</span>
                     {item.badge !== null && item.badge !== undefined && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-[#ff4d5e] text-white text-[9px] font-bold">
+                      <span className="px-1.5 py-0.5 rounded-full bg-[#ff4d5e] text-white text-xs font-bold">
                         {item.badge}
                       </span>
                     )}
@@ -181,9 +181,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Collapse / Expand Toggle Button for Desktop */}
         <div className="p-2.5 border-t border-white/[0.07] hidden lg:flex items-center justify-between shrink-0">
           {!collapsed && (
-            <div className="flex flex-col text-[11px] text-[#8ea3c4] pl-1">
+            <div className="flex flex-col text-xs text-[#8ea3c4] pl-1">
               <span className="font-semibold text-[#eaf2ff]">Samsung Watch5 Pro</span>
-              <span className="text-[10px] text-[#2ee59d] flex items-center gap-1">
+              <span className="text-xs text-[#2ee59d] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#2ee59d] animate-pulse" />
                 Jonli telemetriya
               </span>

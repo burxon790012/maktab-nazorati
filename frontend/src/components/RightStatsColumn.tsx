@@ -253,7 +253,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                   {selectedStudent && (
                     <div className="rounded-2xl p-5 bg-[#16233d]/90 border-2 border-[#22d3ee]/60 shadow-xl space-y-3.5 animate-in fade-in slide-in-from-top-2 relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#22d3ee] uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-[#22d3ee] uppercase tracking-wider flex items-center gap-1.5">
                           <span>👤</span> Tanlangan O'quvchi
                         </span>
                         <button
@@ -287,7 +287,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                             </span>
                           </p>
                           <span
-                            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                               selectedStudent.telemetry?.geofenceStatus === 'INSIDE'
                                 ? 'bg-[#2ee59d]/15 text-[#2ee59d] border border-[#2ee59d]/30'
                                 : selectedStudent.telemetry?.geofenceStatus === 'OUTSIDE'
@@ -319,21 +319,21 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                           <div className="font-mono font-bold text-xs text-[#eaf2ff]">
                             {selectedStudent.telemetry?.heartRate || 76}
                           </div>
-                          <div className="text-[9px] text-[#8ea3c4]">Yurak urishi</div>
+                          <div className="text-xs text-[#8ea3c4]">Yurak urishi</div>
                         </div>
                         <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                           <Thermometer className="w-3.5 h-3.5 text-[#ffb020] mx-auto mb-1" />
                           <div className="font-mono font-bold text-xs text-[#eaf2ff]">
                             {selectedStudent.telemetry?.bodyTemperature || 36.6}°C
                           </div>
-                          <div className="text-[9px] text-[#8ea3c4]">Harorat</div>
+                          <div className="text-xs text-[#8ea3c4]">Harorat</div>
                         </div>
                         <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                           <BatteryCharging className="w-3.5 h-3.5 text-[#2ee59d] mx-auto mb-1" />
                           <div className="font-mono font-bold text-xs text-[#2ee59d]">
                             {selectedStudent.telemetry?.batteryLevel || 85}%
                           </div>
-                          <div className="text-[9px] text-[#8ea3c4]">Batareya</div>
+                          <div className="text-xs text-[#8ea3c4]">Batareya</div>
                         </div>
                       </div>
 
@@ -378,7 +378,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                       {activeFilter !== 'ALL' && (
                         <button
                           onClick={() => onSelectFilter('ALL')}
-                          className="text-[11px] text-[#22d3ee] hover:underline font-semibold"
+                          className="text-xs text-[#22d3ee] hover:underline font-semibold"
                         >
                           Filtrni tozalash
                         </button>
@@ -453,7 +453,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                           <span className="font-mono font-bold text-2xl text-[#eaf2ff] leading-none">
                             {insidePct}%
                           </span>
-                          <span className="text-[10px] text-[#8ea3c4] font-medium mt-0.5">
+                          <span className="text-xs text-[#8ea3c4] font-medium mt-0.5">
                             Maktabda
                           </span>
                         </div>
@@ -522,20 +522,20 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                           Soatlar
                         </h3>
                       </div>
-                      <span className="text-[11px] font-mono text-[#8ea3c4]">
+                      <span className="text-xs font-mono text-[#8ea3c4]">
                         Jami: {stats.total}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                        <span className="text-[11px] text-[#8ea3c4] block">ONLINE</span>
+                        <span className="text-xs text-[#8ea3c4] block">ONLINE</span>
                         <span className="text-2xl font-mono font-bold text-[#22d3ee] block mt-1">
                           {animatedOnline}
                         </span>
                       </div>
                       <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                        <span className="text-[11px] text-[#8ea3c4] block">OFFLINE</span>
+                        <span className="text-xs text-[#8ea3c4] block">OFFLINE</span>
                         <span className="text-2xl font-mono font-bold text-[#8ea3c4] block mt-1">
                           {animatedOffline}
                         </span>
@@ -552,7 +552,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                           }}
                         />
                       </div>
-                      <div className="flex items-center justify-between text-[10px] text-[#8ea3c4] mt-1.5 font-mono">
+                      <div className="flex items-center justify-between text-xs text-[#8ea3c4] mt-1.5 font-mono">
                         <span>Faollik: {stats.total > 0 ? Math.round((stats.online / stats.total) * 100) : 0}%</span>
                         <span>{stats.online}/{stats.total} ulangan</span>
                       </div>
@@ -589,7 +589,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
 
                     {/* Low Battery Warning (< 20%) */}
                     <div className="flex items-center justify-between text-xs pt-1">
-                      <span className="text-[#8ea3c4] text-[11px]">20% dan past soatlar:</span>
+                      <span className="text-[#8ea3c4] text-xs">20% dan past soatlar:</span>
                       <span
                         className={`font-mono font-bold px-2 py-0.5 rounded-full text-xs ${
                           stats.lowBatteryCount > 0
@@ -616,11 +616,11 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                         </h3>
                       </div>
                       {stats.sos > 0 ? (
-                        <span className="px-2 py-0.5 rounded-full bg-[#ff4d5e] text-white text-[11px] font-mono font-extrabold shadow-sm shadow-[#ff4d5e]/40 animate-pulse">
+                        <span className="px-2 py-0.5 rounded-full bg-[#ff4d5e] text-white text-xs font-mono font-extrabold shadow-sm shadow-[#ff4d5e]/40 animate-pulse">
                           {stats.sos} ta SOS
                         </span>
                       ) : (
-                        <span className="text-[11px] font-mono text-[#2ee59d]">Hammasi xavfsiz</span>
+                        <span className="text-xs font-mono text-[#2ee59d]">Hammasi xavfsiz</span>
                       )}
                     </div>
 
@@ -644,11 +644,11 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                               <span className="truncate text-[#eaf2ff]">
                                 {a.studentName || a.title || 'Ogohlantirish'}
                               </span>
-                              <span className="text-[10px] text-[#8ea3c4] font-mono shrink-0 ml-2">
+                              <span className="text-xs text-[#8ea3c4] font-mono shrink-0 ml-2">
                                 {a.time || 'hozir'}
                               </span>
                             </div>
-                            <div className="text-[11px] text-[#8ea3c4] truncate">
+                            <div className="text-xs text-[#8ea3c4] truncate">
                               {a.message || a.title}
                             </div>
                           </div>

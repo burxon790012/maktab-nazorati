@@ -50,7 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-base tracking-tight">SMART CHILD</span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-bold border-primary/40 text-primary">
+            <Badge variant="outline" className="text-xs px-1.5 py-0 font-bold border-primary/40 text-primary">
               v2.5 PRO
             </Badge>
           </div>
@@ -75,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <option value="TEACHER" className="bg-card">👩‍🏫 O'qituvchi</option>
             <option value="PARENT" className="bg-card">📱 Ota-ona</option>
           </select>
-          <Badge variant={getRoleBadgeVariant(currentRole)} className="text-[10px] py-0">
+          <Badge variant={getRoleBadgeVariant(currentRole)} className="text-xs py-0">
             {currentRole}
           </Badge>
         </div>
@@ -101,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               size="sm"
               variant="outline"
               onClick={onOpenAddSchool}
-              className="h-6 px-2 text-[11px] gap-1 border-primary/40 text-primary hover:bg-primary/10"
+              className="h-6 px-2 text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10"
               title="Yangi maktab ro'yxatdan o'tkazish"
             >
               <Plus className="w-3 h-3" />
@@ -146,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
               {unreadCount}
             </span>
           )}

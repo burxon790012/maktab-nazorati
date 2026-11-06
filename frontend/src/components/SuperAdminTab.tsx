@@ -148,8 +148,22 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
                       {sch.geofenceId || 'GEO001'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-[11px]">
-                    [{sch.lat.toFixed(4)}, {sch.lng.toFixed(4)}]
+                  <TableCell className="font-mono text-[11px] text-[#2ee59d]">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <span>[{sch.lat ? sch.lat.toFixed(6) : '41.311081'}, {sch.lng ? sch.lng.toFixed(6) : '69.240562'}]</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = `${sch.lat ? sch.lat.toFixed(6) : '41.311081'}, ${sch.lng ? sch.lng.toFixed(6) : '69.240562'}`;
+                          navigator.clipboard.writeText(text);
+                          alert(`GPS koordinata nusxalandi: ${text}`);
+                        }}
+                        className="text-[10px] text-[#9a9ac0] hover:text-[#2ee59d] transition"
+                        title="GPS koordinatani nusxalash"
+                      >
+                        📋
+                      </button>
+                    </div>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {sch.startTime} - {sch.endTime}

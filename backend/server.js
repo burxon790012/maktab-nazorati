@@ -824,7 +824,7 @@ app.post('/api/v1/schools', (req, res) => {
 // 3.1 Super Admin: Update / Edit School Name & Details
 app.put('/api/v1/schools/:id', (req, res) => {
   const schoolId = req.params.id;
-  const { name, address, startTime, endTime } = req.body;
+  const { name, address, startTime, endTime, lat, lng } = req.body;
 
   const school = db.schools.find(s => s.id === schoolId || s.code === schoolId);
   if (!school) return res.status(404).json({ success: false, message: "Maktab topilmadi" });
@@ -843,6 +843,15 @@ app.put('/api/v1/schools/:id', (req, res) => {
   if (startTime) school.startTime = startTime;
   if (endTime) school.endTime = endTime;
 
+  if (lat !== undefined) {
+    const pLat = parseFloat(lat);
+    if (isFinite(pLat)) school.lat = pLat;
+  }
+  if (lng !== undefined) {
+    const pLng = parseFloat(lng);
+    if (isFinite(pLng)) school.lng = pLng;
+  }
+
   if (!db.auditLogs) db.auditLogs = [];
   db.auditLogs.unshift({
     id: `log-${Date.now()}`,
@@ -851,12 +860,12 @@ app.put('/api/v1/schools/:id', (req, res) => {
     role: "SUPER_ADMIN",
     action: "SCHOOL_UPDATED",
     target: school.id,
-    details: `Maktab ma'lumotlari tahrirlandi: "${oldName}" -> "${school.name}" (${school.id})`
+    details: `Maktab ma'lumotlari tahrirlandi: "${oldName}" -> "${school.name}" (${school.id}), GPS: [${school.lat.toFixed(6)}, ${school.lng.toFixed(6)}]`
   });
 
   saveDb();
   broadcast('school_updated', school);
-  console.log(`🏫 [SCHOOL UPDATED] ${school.id}: "${oldName}" -> "${school.name}"`);
+  console.log(`🏫 [SCHOOL UPDATED] ${school.id}: "${oldName}" -> "${school.name}", GPS: [${school.lat}, ${school.lng}]`);
   res.json({ success: true, message: "Maktab nomi va ma'lumotlari muvaffaqiyatli yangilandi", school });
 });
 
@@ -886,14 +895,16 @@ app.delete('/api/v1/schools/:id', (req, res) => {
 // 4. Interactive School GPS Boundary Drawing System: Save Drawn Polygon
 app.post('/api/v1/schools/:id/geofence', (req, res) => {
   const schoolId = req.params.id;
-  const { polygon, name, address } = req.body;
+  const { polygon, name, address, lat, lng } = req.body;
 
   if (!Array.isArray(polygon) || polygon.length < 3) {
     return res.status(400).json({ success: false, message: "Kamida 3 ta GPS nuqta kerak" });
   }
 
-  const avgLat = polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
-  const avgLng = polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
+  const customLat = lat ? parseFloat(lat) : null;
+  const customLng = lng ? parseFloat(lng) : null;
+  const avgLat = customLat && isFinite(customLat) ? customLat : (polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length);
+  const avgLng = customLng && isFinite(customLng) ? customLng : (polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length);
 
   let school = db.schools.find(s => s.id === schoolId || s.code === schoolId);
 

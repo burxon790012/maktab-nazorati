@@ -146,7 +146,29 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
     setErrorMessage(null);
 
     const localMatches = searchLocalDb(trimmed);
-    setResults(localMatches);
+
+    // Direct GPS coordinate matcher (e.g. "41.311081, 69.240562" or "41.311081 69.240562")
+    const coordPattern = /^([-+]?[0-9]{1,2}(?:\.[0-9]+)?)[,\s]+([-+]?[0-9]{1,3}(?:\.[0-9]+)?)$/;
+    const coordMatch = trimmed.match(coordPattern);
+    const coordMatches: SearchResultItem[] = [];
+    if (coordMatch) {
+      const parsedLat = parseFloat(coordMatch[1]);
+      const parsedLng = parseFloat(coordMatch[2]);
+      if (parsedLat >= -90 && parsedLat <= 90 && parsedLng >= -180 && parsedLng <= 180) {
+        coordMatches.push({
+          id: `coord_direct_${parsedLat}_${parsedLng}`,
+          title: `GPS: ${parsedLat.toFixed(6)}, ${parsedLng.toFixed(6)}`,
+          subtitle: `📍 Aniq koordinata orqali xaritada joyni ochish va belgilash`,
+          lat: parsedLat,
+          lng: parsedLng,
+          category: 'external_address',
+          source: 'yandex',
+        });
+      }
+    }
+
+    let combined: SearchResultItem[] = [...coordMatches, ...localMatches];
+    setResults(combined);
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -155,8 +177,6 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
     abortControllerRef.current = controller;
 
     setIsLoading(true);
-
-    let combined: SearchResultItem[] = [...localMatches];
 
     // 1. Primary Engine: Yandex Maps Geocoding (Highest resolution for Uzbekistan)
     let yandexSuccess = false;

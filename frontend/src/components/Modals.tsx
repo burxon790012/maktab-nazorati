@@ -17,20 +17,32 @@ import { Bell, Trash2, X } from 'lucide-react';
 interface AddSchoolModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSchool: (schoolData: { name: string; code: string; address: string; startTime: string; endTime: string }) => Promise<void>;
+  onAddSchool: (schoolData: { name: string; code: string; address: string; startTime: string; endTime: string; lat?: number; lng?: number }) => Promise<void>;
 }
 
 export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenChange, onAddSchool }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [address, setAddress] = useState('');
+  const [lat, setLat] = useState('41.311081');
+  const [lng, setLng] = useState('69.240562');
   const [startTime, setStartTime] = useState('08:30');
   const [endTime, setEndTime] = useState('13:30');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return alert("Iltimos, maktab nomini kiriting!");
-    await onAddSchool({ name, code, address, startTime, endTime });
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    await onAddSchool({
+      name,
+      code,
+      address,
+      startTime,
+      endTime,
+      lat: isFinite(parsedLat) ? parsedLat : undefined,
+      lng: isFinite(parsedLng) ? parsedLng : undefined,
+    });
     setName('');
     setCode('');
     setAddress('');
@@ -51,7 +63,7 @@ export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenCha
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Masalan: 45-Sonli Umumiy O'rta Ta'lim Maktabi"
-              className="mt-1"
+              className="mt-1 font-bold"
               required
             />
           </div>
@@ -74,6 +86,28 @@ export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenCha
               placeholder="Toshkent sh., Yunusobod tumani"
               className="mt-1"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="sch-lat">📍 GPS Kenglik (Latitude):</Label>
+              <Input
+                id="sch-lat"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder="41.311081"
+                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+              />
+            </div>
+            <div>
+              <Label htmlFor="sch-lng">📍 GPS Uzunlik (Longitude):</Label>
+              <Input
+                id="sch-lng"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder="69.240562"
+                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -114,7 +148,7 @@ interface EditSchoolModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   school: School | null;
-  onUpdateSchool: (id: string, updates: { name: string; address: string; startTime: string; endTime: string }) => Promise<void>;
+  onUpdateSchool: (id: string, updates: { name: string; address: string; startTime: string; endTime: string; lat?: number; lng?: number }) => Promise<void>;
   onDeleteSchool: (id: string) => Promise<void>;
 }
 
@@ -129,13 +163,24 @@ export const EditSchoolDialog: React.FC<EditSchoolModalProps> = ({
 
   const [name, setName] = useState(school.name);
   const [address, setAddress] = useState(school.address);
+  const [lat, setLat] = useState(String(school.lat || '41.311081'));
+  const [lng, setLng] = useState(String(school.lng || '69.240562'));
   const [startTime, setStartTime] = useState(school.startTime);
   const [endTime, setEndTime] = useState(school.endTime);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return alert("Iltimos, maktab nomini kiriting!");
-    await onUpdateSchool(school.id, { name, address, startTime, endTime });
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    await onUpdateSchool(school.id, {
+      name,
+      address,
+      startTime,
+      endTime,
+      lat: isFinite(parsedLat) ? parsedLat : undefined,
+      lng: isFinite(parsedLng) ? parsedLng : undefined,
+    });
     onOpenChange(false);
   };
 
@@ -168,6 +213,28 @@ export const EditSchoolDialog: React.FC<EditSchoolModalProps> = ({
               onChange={(e) => setAddress(e.target.value)}
               className="mt-1"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-lat">📍 GPS Kenglik (Latitude):</Label>
+              <Input
+                id="edit-lat"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder="41.311081"
+                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-lng">📍 GPS Uzunlik (Longitude):</Label>
+              <Input
+                id="edit-lng"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder="69.240562"
+                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

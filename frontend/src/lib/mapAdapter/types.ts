@@ -13,6 +13,7 @@ export interface MarkerClickPayload {
 export interface MapAdapterEvents {
   onMarkerClick?: (payload: MarkerClickPayload) => void;
   onMapClick?: (lat: number, lng: number) => void;
+  onMouseMove?: (lat: number, lng: number) => void;
   onSchoolClick?: (schoolId: string) => void;
   onDrawComplete?: (polygon: [number, number][]) => void;
   onCircleComplete?: (center: [number, number], radius: number) => void;

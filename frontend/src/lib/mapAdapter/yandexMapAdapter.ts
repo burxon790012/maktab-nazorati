@@ -70,6 +70,15 @@ export class YandexMapAdapter implements MapAdapter {
       });
     }
 
+    if (options.events?.onMouseMove) {
+      this.map.events.add('mousemove', (e: any) => {
+        const coords = e.get('coords');
+        if (coords && isFinite(coords[0]) && isFinite(coords[1])) {
+          options.events?.onMouseMove?.(coords[0], coords[1]);
+        }
+      });
+    }
+
     // Initial resize after container layout stabilizes
     setTimeout(() => {
       this.resize();
@@ -251,11 +260,33 @@ export class YandexMapAdapter implements MapAdapter {
         const isSelected = sch.id === selectedSchoolId;
         const color = sch.color || '#2ee59d';
 
+        // Calculate center coordinates
+        let sumLat = 0, sumLng = 0;
+        sch.polygon.forEach(([lat, lng]) => {
+          sumLat += lat;
+          sumLng += lng;
+        });
+        const centerLat = typeof sch.lat === 'number' && isFinite(sch.lat) ? sch.lat : (sumLat / sch.polygon.length);
+        const centerLng = typeof sch.lng === 'number' && isFinite(sch.lng) ? sch.lng : (sumLng / sch.polygon.length);
+        const center: [number, number] = [centerLat, centerLng];
+
         // Yandex expects coordinates as [ [lat, lng], [lat, lng], ... ]
         const poly = new ymaps.Polygon(
           [sch.polygon],
           {
-            hintContent: sch.name,
+            hintContent: `${sch.name} [GPS: ${centerLat.toFixed(5)}, ${centerLng.toFixed(5)}]`,
+            balloonContent: `
+              <div style="padding: 8px; font-family: sans-serif; color: #1b1b33;">
+                <div style="font-weight: bold; font-size: 14px;">🏫 ${sch.name}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">${sch.address || "O'zbekiston"}</div>
+                <div style="margin-top: 6px; padding: 4px 8px; background: #2ee59d20; border-radius: 6px; font-size: 11px; font-weight: bold; color: #1b1b33;">
+                  📍 Aniq GPS: <strong>${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}</strong>
+                </div>
+                <div style="font-size: 10px; color: #777; margin-top: 4px;">
+                  🛡️ Geozona: <strong>${sch.polygon.length} ta aniq burchak nuqtasi</strong>
+                </div>
+              </div>
+            `,
           },
           {
             fillColor: isSelected ? `${color}44` : `${color}26`,
@@ -272,18 +303,11 @@ export class YandexMapAdapter implements MapAdapter {
         this.map.geoObjects.add(poly);
         this.schoolPolygons.set(sch.id, poly);
 
-        // Center badge
-        let sumLat = 0, sumLng = 0;
-        sch.polygon.forEach(([lat, lng]) => {
-          sumLat += lat;
-          sumLng += lng;
-        });
-        const center = [sumLat / sch.polygon.length, sumLng / sch.polygon.length];
-
         const badgeLayout = ymaps.templateLayoutFactory.createClass(
-          `<div style="position: relative; transform: translate(-50%, -50%); background: rgba(42, 42, 74, 0.95); color: ${color}; padding: 4px 8px; border-radius: 8px; font-weight: bold; font-size: 11px; border: 1px solid ${color}; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 4px;">
+          `<div style="position: relative; transform: translate(-50%, -50%); background: rgba(27, 27, 51, 0.95); color: ${color}; padding: 4px 9px; border-radius: 8px; font-weight: bold; font-size: 11px; border: 1.5px solid ${color}; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 5px; cursor: pointer;">
             <span>🏫</span>
             <span>${sch.name}</span>
+            <span style="font-size: 9.5px; opacity: 0.85; font-family: monospace; background: rgba(255,255,255,0.08); padding: 1px 4px; border-radius: 4px;">📍 ${centerLat.toFixed(4)}, ${centerLng.toFixed(4)}</span>
           </div>`
         );
 

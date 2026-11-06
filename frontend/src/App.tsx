@@ -354,11 +354,13 @@ export const App: React.FC = () => {
     schoolId: string,
     polygon: [number, number][],
     name?: string,
-    isNewSchool?: boolean
+    isNewSchool?: boolean,
+    lat?: number,
+    lng?: number
   ) => {
+    const avgLat = (lat && isFinite(lat)) ? lat : polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
+    const avgLng = (lng && isFinite(lng)) ? lng : polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
     if (isNewSchool) {
-      const avgLat = polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
-      const avgLng = polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
       const res = await authFetch('/api/v1/schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -383,7 +385,7 @@ export const App: React.FC = () => {
       const res = await authFetch(`/api/v1/schools/${schoolId}/geofence`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ polygon, name }),
+        body: JSON.stringify({ polygon, name, lat: avgLat, lng: avgLng }),
       });
       const d = await res.json();
       if (d.success) {

@@ -52,7 +52,14 @@ import { SearchCombobox, SearchResultItem } from './SearchCombobox';
 interface MapViewProps {
   schools: School[];
   students: Student[];
-  onSaveGeofence: (schoolId: string, polygon: [number, number][], name?: string, isNewSchool?: boolean) => Promise<any>;
+  onSaveGeofence: (
+    schoolId: string,
+    polygon: [number, number][],
+    name?: string,
+    isNewSchool?: boolean,
+    lat?: number,
+    lng?: number
+  ) => Promise<any>;
   selectedSchoolId: string;
   onRefreshData?: () => Promise<void>;
   activeFilter?: string;
@@ -100,11 +107,18 @@ export const MapView: React.FC<MapViewProps> = ({
   const [measuredDistance, setMeasuredDistance] = useState<number | null>(null);
   const [isSavingGeofence, setIsSavingGeofence] = useState(false);
 
-  // Geofence Name Confirmation Dialog state
+  // Geofence Name & GPS Confirmation Dialog state
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [pendingPolygon, setPendingPolygon] = useState<[number, number][] | null>(null);
   const [geofenceNameInput, setGeofenceNameInput] = useState('');
+  const [geofenceLatInput, setGeofenceLatInput] = useState('');
+  const [geofenceLngInput, setGeofenceLngInput] = useState('');
   const [saveAsNewSchool, setSaveAsNewSchool] = useState(true);
+
+  // Live GPS Coordinates readout state
+  const [currentCursorCoords, setCurrentCursorCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number; label?: string } | null>(null);
+  const [copiedCoords, setCopiedCoords] = useState(false);
 
   // Search Pin & Map Pick Mode state
   const [searchPin, setSearchPin] = useState<{ lat: number; lng: number; title: string; subtitle?: string } | null>(null);
@@ -145,7 +159,6 @@ export const MapView: React.FC<MapViewProps> = ({
 
   // Movement Trails (last 30 minutes)
   const [trailsHistory, setTrailsHistory] = useState<Record<string, [number, number][]>>({});
-  const [copiedCoords, setCopiedCoords] = useState(false);
 
   // Active School
   const activeSchool = useMemo(() => {
@@ -189,20 +202,41 @@ export const MapView: React.FC<MapViewProps> = ({
         events: {
           onMarkerClick: (payload) => {
             setSelectedStudent(payload.student);
+            setSelectedCoords({
+              lat: payload.lat,
+              lng: payload.lng,
+              label: `${payload.student.name} (${payload.student.className || 'O\'quvchi'})`
+            });
           },
           onSchoolClick: (schId) => {
             setTargetSchoolId(schId);
+            const sch = schools.find((s) => s.id === schId);
+            if (sch && sch.lat && sch.lng) {
+              setSelectedCoords({
+                lat: sch.lat,
+                lng: sch.lng,
+                label: `🏫 ${sch.name}`
+              });
+            }
           },
           onMapClick: (lat, lng) => {
+            setSelectedCoords({
+              lat,
+              lng,
+              label: 'Xaritadan tanlangan joy'
+            });
             if (isMapPickModeRef.current) {
               setSearchPin({
                 lat,
                 lng,
                 title: 'Tanlangan manzil',
-                subtitle: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                subtitle: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
               });
               setIsMapPickMode(false);
             }
+          },
+          onMouseMove: (lat, lng) => {
+            setCurrentCursorCoords({ lat, lng });
           },
         },
       });
@@ -372,6 +406,13 @@ export const MapView: React.FC<MapViewProps> = ({
     setPolygonPointCount(0);
     if (points && points.length >= 3) {
       setPendingPolygon(points);
+      const sumLat = points.reduce((sum, p) => sum + p[0], 0);
+      const sumLng = points.reduce((sum, p) => sum + p[1], 0);
+      const centerLat = sumLat / points.length;
+      const centerLng = sumLng / points.length;
+      setGeofenceLatInput(centerLat.toFixed(6));
+      setGeofenceLngInput(centerLng.toFixed(6));
+      setSelectedCoords({ lat: centerLat, lng: centerLng, label: searchPin?.title || "Yangi Geozona" });
       const defaultName = searchPin?.title || (schools.length > 0 ? `${schools.length + 1}-maktab` : '30-maktab');
       setGeofenceNameInput(defaultName);
       setSaveAsNewSchool(Boolean(searchPin || !selectedSchoolId));
@@ -414,6 +455,9 @@ export const MapView: React.FC<MapViewProps> = ({
         poly.push([circle.center[0] + dLat, circle.center[1] + dLng]);
       }
       setPendingPolygon(poly);
+      setGeofenceLatInput(circle.center[0].toFixed(6));
+      setGeofenceLngInput(circle.center[1].toFixed(6));
+      setSelectedCoords({ lat: circle.center[0], lng: circle.center[1], label: searchPin?.title || "Yangi Geozona" });
       const defaultName = searchPin?.title || (schools.length > 0 ? `${schools.length + 1}-maktab` : '30-maktab');
       setGeofenceNameInput(defaultName);
       setSaveAsNewSchool(Boolean(searchPin || !selectedSchoolId));
@@ -424,15 +468,35 @@ export const MapView: React.FC<MapViewProps> = ({
   const handleConfirmSaveGeofence = async () => {
     if (!pendingPolygon || pendingPolygon.length < 3) return;
     const finalName = geofenceNameInput.trim() || searchPin?.title || '30-maktab';
+    const finalLat = parseFloat(geofenceLatInput);
+    const finalLng = parseFloat(geofenceLngInput);
     setIsSavingGeofence(true);
     try {
       if (saveAsNewSchool) {
-        await onSaveGeofence('NEW', pendingPolygon, finalName, true);
-        showToast(`✅ "${finalName}" muvaffaqiyatli yangi maktab va geozona sifatida saqlandi!`, 'success');
+        await onSaveGeofence(
+          'NEW',
+          pendingPolygon,
+          finalName,
+          true,
+          isFinite(finalLat) ? finalLat : undefined,
+          isFinite(finalLng) ? finalLng : undefined
+        );
+        showToast(`✅ "${finalName}" [${(finalLat || 0).toFixed(6)}, ${(finalLng || 0).toFixed(6)}] muvaffaqiyatli yangi maktab sifatida saqlandi!`, 'success');
       } else {
-        await onSaveGeofence(activeSchool.id, pendingPolygon, finalName, false);
+        await onSaveGeofence(
+          activeSchool.id,
+          pendingPolygon,
+          finalName,
+          false,
+          isFinite(finalLat) ? finalLat : undefined,
+          isFinite(finalLng) ? finalLng : undefined
+        );
         activeSchool.name = finalName;
         activeSchool.polygon = pendingPolygon;
+        if (isFinite(finalLat) && isFinite(finalLng)) {
+          activeSchool.lat = finalLat;
+          activeSchool.lng = finalLng;
+        }
         showToast(`✅ "${finalName}" geozonasi muvaffaqiyatli saqlandi!`, 'success');
       }
       setSaveModalOpen(false);
@@ -602,8 +666,11 @@ export const MapView: React.FC<MapViewProps> = ({
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-bold text-[#e8e8f5] truncate">{searchPin.title}</div>
-              <div className="text-[11px] text-[#9a9ac0] font-mono truncate">
-                {searchPin.subtitle || `${searchPin.lat.toFixed(5)}, ${searchPin.lng.toFixed(5)}`}
+              <div className="text-[11px] text-[#2ee59d] font-mono font-bold truncate flex items-center gap-1.5">
+                <span>📍 GPS: {searchPin.lat.toFixed(6)}, {searchPin.lng.toFixed(6)}</span>
+                {searchPin.subtitle && (
+                  <span className="text-[#9a9ac0] font-normal">• {searchPin.subtitle}</span>
+                )}
               </div>
             </div>
           </div>
@@ -1243,29 +1310,52 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
       )}
 
-      {/* 5. BOTTOM BAR: LEGEND & PROVIDER NOTICE */}
-      <div className="absolute bottom-2 left-3 right-3 z-10 flex items-center justify-between pointer-events-none text-xs text-[#9a9ac0]">
-        <div className="pointer-events-auto bg-[#1b1b33]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#3a3a63]/40 flex items-center gap-3">
+      {/* 5. BOTTOM BAR: LEGEND & LIVE COORDINATES HUD */}
+      <div className="absolute bottom-2 left-3 right-3 z-10 flex items-center justify-between pointer-events-none text-xs text-[#9a9ac0] flex-wrap gap-2">
+        <div className="pointer-events-auto bg-[#1b1b33]/92 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#3a3a63]/40 flex items-center gap-3 shadow-lg">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#2ee59d]" /> Maktabda (INSIDE)
+            <span className="w-2 h-2 rounded-full bg-[#2ee59d]" /> Maktabda
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#ff4d5e]" /> Tashqarida (OUTSIDE)
+            <span className="w-2 h-2 rounded-full bg-[#ff4d5e]" /> Tashqarida
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#ffb020]" /> Chegarada (VERIFYING)
+            <span className="w-2 h-2 rounded-full bg-[#ffb020]" /> Chegarada
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-[#9a9ac0]" /> Oflayn (Oxirgi joy)
+            <span className="w-2 h-2 rounded-full bg-[#9a9ac0]" /> Oflayn
           </span>
         </div>
 
-        {isFallbackNotice && (
-          <div className="pointer-events-auto bg-[#ffb020]/20 text-[#ffb020] border border-[#ffb020]/40 px-3 py-1 rounded-xl text-[11px] font-semibold hidden md:flex items-center gap-1.5 shadow-lg">
-            <Info className="w-3.5 h-3.5" />
-            <span>OpenStreetMap zaxira rejimi faol</span>
+        {/* Live GPS Coordinate Readout Box */}
+        <div className="pointer-events-auto bg-[#1b1b33]/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-[#2ee59d]/40 flex items-center gap-2.5 shadow-xl text-xs">
+          <div className="flex items-center gap-1.5 font-mono">
+            <span className="text-[#2ee59d] font-bold">📍 GPS:</span>
+            <span className="text-[#e8e8f5] font-bold">
+              {currentCursorCoords
+                ? `${currentCursorCoords.lat.toFixed(6)}, ${currentCursorCoords.lng.toFixed(6)}`
+                : selectedCoords
+                ? `${selectedCoords.lat.toFixed(6)}, ${selectedCoords.lng.toFixed(6)}`
+                : `${(activeSchool.lat || 41.311081).toFixed(6)}, ${(activeSchool.lng || 69.240562).toFixed(6)}`}
+            </span>
           </div>
-        )}
+
+          <button
+            type="button"
+            onClick={() => {
+              const lat = currentCursorCoords?.lat || selectedCoords?.lat || activeSchool.lat || 41.311081;
+              const lng = currentCursorCoords?.lng || selectedCoords?.lng || activeSchool.lng || 69.240562;
+              navigator.clipboard.writeText(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+              setCopiedCoords(true);
+              setTimeout(() => setCopiedCoords(false), 2000);
+            }}
+            className="px-2 py-0.5 rounded-md bg-[#2a2a4a] hover:bg-[#3a3a63] text-[10px] text-[#2ee59d] font-semibold transition flex items-center gap-1"
+            title="Ushbu GPS koordinatasini nusxalash"
+          >
+            {copiedCoords ? <Check className="w-3 h-3 text-[#2ee59d]" /> : <Copy className="w-3 h-3" />}
+            <span className="hidden sm:inline">{copiedCoords ? 'Nusxalandi' : 'Nusxa'}</span>
+          </button>
+        </div>
       </div>
 
       {/* 6. SAVE GEOFENCE / SCHOOL NAME CONFIRMATION DIALOG */}
@@ -1279,7 +1369,7 @@ export const MapView: React.FC<MapViewProps> = ({
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-[#e8e8f5]">Geozonani Saqlash</h3>
-                  <p className="text-[11px] text-[#9a9ac0]">Belgilangan joy uchun nom bering</p>
+                  <p className="text-[11px] text-[#9a9ac0]">Belgilangan joy uchun nom va koordinatalar</p>
                 </div>
               </div>
               <button
@@ -1310,6 +1400,60 @@ export const MapView: React.FC<MapViewProps> = ({
                     }
                   }}
                 />
+              </div>
+
+              {/* Exact GPS Coordinates Section (Crucial for Child Safety Telemetry) */}
+              <div className="p-3 bg-[#2a2a4a]/80 border border-[#3a3a63]/70 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#e8e8f5] flex items-center gap-1.5">
+                    <span>📍</span> Aniq GPS Koordinatalari (Markaz)
+                  </span>
+                  <span className="text-[10px] text-[#2ee59d] font-mono font-semibold bg-[#2ee59d]/15 px-2 py-0.5 rounded-full border border-[#2ee59d]/30">
+                    ±10 sm Aniqlik
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-[#9a9ac0] mb-0.5 font-medium">
+                      Kenglik (Latitude):
+                    </label>
+                    <input
+                      type="text"
+                      value={geofenceLatInput}
+                      onChange={(e) => setGeofenceLatInput(e.target.value)}
+                      className="w-full h-8 px-2.5 bg-[#1b1b33] border border-[#3a3a63] rounded-lg text-xs font-mono text-[#2ee59d] font-bold focus:outline-none focus:border-[#2ee59d]"
+                      placeholder="41.311081"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-[#9a9ac0] mb-0.5 font-medium">
+                      Uzunlik (Longitude):
+                    </label>
+                    <input
+                      type="text"
+                      value={geofenceLngInput}
+                      onChange={(e) => setGeofenceLngInput(e.target.value)}
+                      className="w-full h-8 px-2.5 bg-[#1b1b33] border border-[#3a3a63] rounded-lg text-xs font-mono text-[#2ee59d] font-bold focus:outline-none focus:border-[#2ee59d]"
+                      placeholder="69.240562"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-[#9a9ac0] flex items-center justify-between pt-1 border-t border-[#3a3a63]/40">
+                  <span>Perimetr nuqtalari: <b>{pendingPolygon?.length || 0} ta GPS nuqta</b></span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${geofenceLatInput}, ${geofenceLngInput}`);
+                      setCopiedCoords(true);
+                      setTimeout(() => setCopiedCoords(false), 2000);
+                    }}
+                    className="text-[#2ee59d] hover:underline flex items-center gap-1 font-mono text-[10px]"
+                  >
+                    {copiedCoords ? '✅ Nusxalandi' : '📋 Nusxa olish'}
+                  </button>
+                </div>
               </div>
 
               {/* Save mode selector */}
@@ -1353,9 +1497,10 @@ export const MapView: React.FC<MapViewProps> = ({
               {/* Live Preview Badge on Map */}
               <div className="p-3 bg-[#2a2a4a]/60 rounded-2xl border border-[#3a3a63]/50 flex items-center justify-between text-xs">
                 <span className="text-[#9a9ac0]">Xaritadagi ko'rinishi:</span>
-                <span className="px-3 py-1.5 rounded-xl bg-[#2a2a4a] border border-[#2ee59d] text-[#2ee59d] font-bold flex items-center gap-1.5 shadow-md">
+                <span className="px-3 py-1.5 rounded-xl bg-[#1b1b33] border border-[#2ee59d] text-[#2ee59d] font-bold flex items-center gap-2 shadow-md">
                   <span>🏫</span>
                   <span>{geofenceNameInput.trim() || '30-maktab'}</span>
+                  <span className="text-[10px] text-[#9a9ac0] font-mono">[{(parseFloat(geofenceLatInput) || 0).toFixed(4)}, {(parseFloat(geofenceLngInput) || 0).toFixed(4)}]</span>
                 </span>
               </div>
             </div>

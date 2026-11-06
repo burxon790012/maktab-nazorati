@@ -485,12 +485,36 @@ if (fs.existsSync(DB_FILE)) {
   }
 }
 
+async function saveToDbStorage() {
+  try {
+    const hasTable = await knexDb.schema.hasTable('app_state');
+    if (!hasTable) return;
+    const payload = JSON.stringify(db);
+    const existing = await knexDb('app_state').where({ key: 'multischool_db' }).first();
+    if (existing) {
+      await knexDb('app_state').where({ key: 'multischool_db' }).update({
+        data: payload,
+        updated_at: new Date()
+      });
+    } else {
+      await knexDb('app_state').insert({
+        key: 'multischool_db',
+        data: payload,
+        updated_at: new Date()
+      });
+    }
+  } catch (_) {
+    // Non-fatal background sync
+  }
+}
+
 function saveDb() {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
   } catch (e) {
     console.error("❌ Baza saqlashda xato:", e.message);
   }
+  saveToDbStorage().catch(() => {});
 }
 
 // SSE Clients
@@ -2996,6 +3020,40 @@ async function startServer() {
     console.log('⏳ Knex ma\'lumotlar bazasi migratsiyalari tekshirilmoqda...');
     await runMigrations();
     console.log('✅ Knex ma\'lumotlar bazasi migratsiyalari muvaffaqiyatli tekshirildi/bajarildi');
+
+    // Restore persistent multi-school state from database (PostgreSQL / SQLite)
+    try {
+      const hasAppState = await knexDb.schema.hasTable('app_state');
+      if (hasAppState) {
+        const row = await knexDb('app_state').where({ key: 'multischool_db' }).first();
+        if (row && row.data) {
+          const loaded = JSON.parse(row.data);
+          db = {
+            ...defaultState,
+            ...loaded,
+            schools: (loaded.schools && loaded.schools.length) ? loaded.schools : defaultState.schools,
+            students: (loaded.students && loaded.students.length) ? loaded.students : defaultState.students,
+            attendance: loaded.attendance || defaultState.attendance,
+            telemetryState: loaded.telemetryState || defaultState.telemetryState,
+            users: (loaded.users && loaded.users.length) ? loaded.users : defaultState.users,
+            classes: (loaded.classes && loaded.classes.length) ? loaded.classes : defaultState.classes,
+            auditLogs: loaded.auditLogs || defaultState.auditLogs,
+            notifications: loaded.notifications || defaultState.notifications,
+            routeHistory: loaded.routeHistory || defaultState.routeHistory,
+            safeZones: loaded.safeZones || defaultState.safeZones
+          };
+          console.log('✅ Doimiy ma\'lumotlar bazasidan (PostgreSQL/Knex) to\'liq tiklandi!');
+        } else {
+          await knexDb('app_state').insert({
+            key: 'multischool_db',
+            data: JSON.stringify(db),
+            updated_at: new Date()
+          });
+        }
+      }
+    } catch (restoreErr) {
+      console.warn('⚠️ Ma\'lumotlar bazasidan tiklashda xatolik:', restoreErr.message);
+    }
     
     // Initial cleanup & run periodic interval
     cleanupOldTelemetry();

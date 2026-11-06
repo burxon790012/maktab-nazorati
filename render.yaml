@@ -3,6 +3,7 @@ services:
     name: maktab-nazorati
     env: docker
     dockerfilePath: ./backend/Dockerfile
+    autoDeploy: true
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -19,3 +20,5 @@ services:
         value: "30"
       - key: MAP_API_KEY
         sync: false
+      - key: YANDEX_MAPS_API_KEY
+        value: "cb994b90-4f91-4056-bcab-31951269103d"

@@ -197,3 +197,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     </div>
   );
 };
+

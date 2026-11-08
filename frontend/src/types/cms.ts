@@ -180,3 +180,4 @@ export interface SystemStatusResponse {
   totalResponseTimeMs: number;
   services: SystemServiceStatus[];
 }
+

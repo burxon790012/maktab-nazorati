@@ -183,3 +183,4 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
     </section>
   );
 };
+

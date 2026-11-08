@@ -196,3 +196,4 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
     </header>
   );
 };
+

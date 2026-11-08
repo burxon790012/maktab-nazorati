@@ -229,3 +229,4 @@ export const ForSchoolsSection: React.FC<ForSchoolsSectionProps> = ({ forSchools
     </section>
   );
 };
+

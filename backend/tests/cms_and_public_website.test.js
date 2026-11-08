@@ -157,3 +157,4 @@ describe('SMART CHILD — Public Website & CMS Engine Test Suite', () => {
     expect(sitemap.text).toContain('/login');
   });
 });
+

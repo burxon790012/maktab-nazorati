@@ -177,3 +177,4 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
     </footer>
   );
 };
+

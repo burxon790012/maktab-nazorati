@@ -43,3 +43,4 @@ export const TopBanner: React.FC<TopBannerProps> = ({ banner }) => {
     </div>
   );
 };
+

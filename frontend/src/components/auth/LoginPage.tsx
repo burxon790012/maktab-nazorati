@@ -373,3 +373,4 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
     </div>
   );
 };
+

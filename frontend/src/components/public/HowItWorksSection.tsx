@@ -74,3 +74,4 @@ export const HowItWorksSection: React.FC<HowItWorksSectionProps> = ({ howItWorks
     </section>
   );
 };
+

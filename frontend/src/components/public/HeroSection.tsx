@@ -197,3 +197,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ hero, onExplore, onLog
     </section>
   );
 };
+

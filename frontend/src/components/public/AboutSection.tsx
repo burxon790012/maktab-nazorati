@@ -107,3 +107,4 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ about }) => {
     </section>
   );
 };
+

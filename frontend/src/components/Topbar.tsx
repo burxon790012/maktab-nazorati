@@ -178,23 +178,30 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* Right Controls: School Selector, Alerts, ONE Theme Toggle, Profile */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* School Selector Dropdown */}
+        {/* School Selector Dropdown (Only Super Admin can switch schools) */}
         <div className="relative">
-          <button
-            onClick={() => {
-              setShowSchoolDropdown(!showSchoolDropdown);
-              setShowRoleDropdown(false);
-              setShowAlertsDropdown(false);
-            }}
-            aria-label="Maktabni tanlash"
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-xs font-medium text-[#eaf2ff] transition max-w-[100px] sm:max-w-[190px]"
-          >
-            <SchoolIcon className="w-3.5 h-3.5 text-[#22d3ee] shrink-0" />
-            <span className="truncate">{selectedSchool.name}</span>
-            <ChevronDown className="w-3 h-3 text-[#8ea3c4] shrink-0" />
-          </button>
+          {currentRole === 'SUPER_ADMIN' ? (
+            <button
+              onClick={() => {
+                setShowSchoolDropdown(!showSchoolDropdown);
+                setShowRoleDropdown(false);
+                setShowAlertsDropdown(false);
+              }}
+              aria-label="Maktabni tanlash"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-xs font-medium text-[#eaf2ff] transition max-w-[100px] sm:max-w-[190px]"
+            >
+              <SchoolIcon className="w-3.5 h-3.5 text-[#22d3ee] shrink-0" />
+              <span className="truncate">{selectedSchool.name}</span>
+              <ChevronDown className="w-3 h-3 text-[#8ea3c4] shrink-0" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07] text-xs font-semibold text-[#eaf2ff] max-w-[140px] sm:max-w-[210px]">
+              <SchoolIcon className="w-3.5 h-3.5 text-[#22d3ee] shrink-0" />
+              <span className="truncate">{selectedSchool.name}</span>
+            </div>
+          )}
 
-          {showSchoolDropdown && (
+          {currentRole === 'SUPER_ADMIN' && showSchoolDropdown && (
             <div className="absolute right-0 mt-2 w-64 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50">
               <div className="px-2.5 py-1.5 text-xs font-bold text-[#8ea3c4] uppercase tracking-wider">
                 Maktabni tanlang
@@ -339,27 +346,39 @@ export const Topbar: React.FC<TopbarProps> = ({
           </button>
 
           {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-52 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50">
-              <div className="px-2.5 py-1.5 text-xs font-bold text-[#8ea3c4] uppercase tracking-wider">
-                Rolni tanlang
+            <div className="absolute right-0 mt-2 w-56 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-2 z-50">
+              <div className="px-2.5 py-1.5 border-b border-white/[0.07] mb-1">
+                <div className="text-[11px] text-[#8ea3c4] uppercase tracking-wider font-semibold">Profil holati</div>
+                <div className="text-xs font-bold text-[#eaf2ff] mt-0.5">
+                  {roles.find((r) => r.id === currentRole)?.label || currentRole}
+                </div>
               </div>
-              {roles.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => {
-                    onChangeRole(r.id);
-                    setShowRoleDropdown(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition ${
-                    r.id === currentRole
-                      ? 'bg-[#22d3ee]/15 text-[#22d3ee] font-bold'
-                      : 'text-[#eaf2ff] hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <span>{r.label}</span>
-                  {r.id === currentRole && <CheckCircle2 className="w-3.5 h-3.5 text-[#22d3ee]" />}
-                </button>
-              ))}
+
+              {/* Only Super Admin has view switching permission */}
+              {currentRole === 'SUPER_ADMIN' && (
+                <div className="space-y-0.5 py-1">
+                  <div className="px-2.5 py-1 text-[10px] font-bold text-[#8ea3c4] uppercase tracking-wider">
+                    Ko'rinishni almashtirish
+                  </div>
+                  {roles.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => {
+                        onChangeRole(r.id);
+                        setShowRoleDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium flex items-center justify-between transition ${
+                        r.id === currentRole
+                          ? 'bg-[#22d3ee]/15 text-[#22d3ee] font-bold'
+                          : 'text-[#eaf2ff] hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <span>{r.label}</span>
+                      {r.id === currentRole && <CheckCircle2 className="w-3.5 h-3.5 text-[#22d3ee]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {onLogout && (
                 <button
@@ -367,10 +386,10 @@ export const Topbar: React.FC<TopbarProps> = ({
                     setShowRoleDropdown(false);
                     onLogout();
                   }}
-                  className="w-full mt-1 pt-1 border-t border-white/[0.07] text-left px-3 py-2 rounded-xl text-xs font-medium text-[#ff4d5e] hover:bg-[#ff4d5e]/10 flex items-center gap-2 transition"
+                  className="w-full mt-1 pt-1.5 border-t border-white/[0.07] text-left px-3 py-2 rounded-xl text-xs font-semibold text-[#ff4d5e] hover:bg-[#ff4d5e]/10 flex items-center gap-2 transition"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span>Chiqish</span>
+                  <span>Tizimdan chiqish</span>
                 </button>
               )}
             </div>

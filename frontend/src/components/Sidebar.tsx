@@ -37,6 +37,7 @@ interface SidebarProps {
   mobileOpen: boolean;
   onCloseMobile: () => void;
   unreadAlertsCount: number;
+  currentRole?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -47,26 +48,82 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   onCloseMobile,
   unreadAlertsCount,
+  currentRole = 'SUPER_ADMIN',
 }) => {
-  const navItems = [
-    { id: 'map' as NavTab, label: 'Xarita', icon: Compass },
-    { id: 'students' as NavTab, label: "O'quvchilar", icon: Users },
-    { id: 'geozones' as NavTab, label: 'Geozonalar', icon: ShieldCheck },
-    { id: 'routes' as NavTab, label: 'Marshrutlar', icon: Navigation },
+  // All navigation items with role restrictions
+  const allNavItems = [
+    {
+      id: 'map' as NavTab,
+      label: currentRole === 'TEACHER' ? 'Mening Sinfim Xaritasi' : 'Xarita',
+      icon: Compass,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'],
+    },
+    {
+      id: 'students' as NavTab,
+      label: currentRole === 'TEACHER' ? "Mening O'quvchilarim" : "O'quvchilar",
+      icon: Users,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'],
+    },
+    {
+      id: 'geozones' as NavTab,
+      label: 'Geozonalar',
+      icon: ShieldCheck,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
+    },
+    {
+      id: 'routes' as NavTab,
+      label: 'Marshrutlar',
+      icon: Navigation,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
+    },
     {
       id: 'alerts' as NavTab,
       label: 'Ogohlantirishlar',
       icon: Bell,
       badge: unreadAlertsCount > 0 ? unreadAlertsCount : null,
       badgeColor: 'bg-[#ff4d5e]',
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'],
     },
-    { id: 'devices' as NavTab, label: 'Soatlar', icon: Watch },
-    { id: 'health' as NavTab, label: 'Salomatlik', icon: Activity },
-    { id: 'parents' as NavTab, label: 'Ota-ona ilovasi', icon: Smartphone },
-    { id: 'reports' as NavTab, label: 'Hisobotlar', icon: FileText },
-    { id: 'superadmin' as NavTab, label: 'Super Admin', icon: ShieldAlert },
-    { id: 'website' as NavTab, label: 'Veb-sayt (CMS)', icon: Globe },
+    {
+      id: 'devices' as NavTab,
+      label: 'Soatlar',
+      icon: Watch,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
+    },
+    {
+      id: 'health' as NavTab,
+      label: 'Salomatlik',
+      icon: Activity,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER'],
+    },
+    {
+      id: 'parents' as NavTab,
+      label: 'Ota-ona ilovasi',
+      icon: Smartphone,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
+    },
+    {
+      id: 'reports' as NavTab,
+      label: 'Hisobotlar',
+      icon: FileText,
+      allowedRoles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
+    },
+    {
+      id: 'superadmin' as NavTab,
+      label: 'Super Admin',
+      icon: ShieldAlert,
+      allowedRoles: ['SUPER_ADMIN'], // ONLY SUPER ADMIN!
+    },
+    {
+      id: 'website' as NavTab,
+      label: 'Veb-sayt (CMS)',
+      icon: Globe,
+      allowedRoles: ['SUPER_ADMIN'], // ONLY SUPER ADMIN!
+    },
   ];
+
+  // Strictly filter tabs for current user role
+  const navItems = allNavItems.filter((item) => item.allowedRoles.includes(currentRole));
 
   return (
     <>

@@ -986,11 +986,37 @@ app.post('/api/v1/schools/:id/geofence', (req, res) => {
   });
 });
 
-// 5. Students: List by School
-app.get('/api/v1/students', (req, res) => {
+// 5. Students: List by School (with Role-Based Isolation)
+app.get('/api/v1/students', optionalAuthMiddleware, (req, res) => {
   const schoolId = req.query.schoolId;
   let list = db.students;
-  if (schoolId && schoolId !== 'ALL') {
+
+  // Strict role-based isolation:
+  // - TEACHER: only sees students in their own assigned class
+  // - SCHOOL_ADMIN: only sees students in their school
+  // - PARENT: only sees their own linked children
+  // - SUPER_ADMIN: sees all or filtered by school
+  if (req.user && req.user.role === 'TEACHER') {
+    const userClassId = req.user.classId;
+    const userClassName = req.user.className;
+    const teacherUser = db.users.find(u => u.id === req.user.id || u.email === req.user.email);
+    const finalClassId = userClassId || teacherUser?.classId || 'cls-5b';
+    const finalClassName = userClassName || teacherUser?.className || '5-B';
+
+    list = list.filter(s =>
+      (s.classId && s.classId === finalClassId) ||
+      (s.className && s.className === finalClassName) ||
+      (s.teacherId && s.teacherId === req.user.id)
+    );
+  } else if (req.user && req.user.role === 'SCHOOL_ADMIN') {
+    const sId = req.user.schoolId || schoolId;
+    if (sId && sId !== 'ALL') {
+      list = list.filter(s => s.schoolId === sId);
+    }
+  } else if (req.user && req.user.role === 'PARENT') {
+    const cIds = req.user.childrenIds || [];
+    list = list.filter(s => cIds.map(String).includes(String(s.id)));
+  } else if (schoolId && schoolId !== 'ALL') {
     list = list.filter(s => s.schoolId === schoolId);
   }
 
@@ -2296,6 +2322,7 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
     schoolName: school.name,
     classId: classId || req.user.classId || "cls-5b",
     className: className || req.user.className || "5-B",
+    teacherId: req.user.id,
     parentId: parentUser.id,
     parentName: parentUser.name,
     parentPhone: parentUser.phone,

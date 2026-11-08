@@ -42,8 +42,39 @@ export const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<NavTab>('map');
   const [viewMode, setViewMode] = useState<ViewMode>('map');
   const [kpiFilter, setKpiFilter] = useState<KpiFilter>('ALL');
-  const [currentRole, setCurrentRole] = useState<Role>('SUPER_ADMIN');
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('SCH001');
+
+  // Authenticated User & Role state (restored from localStorage)
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('maktab_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (_) {
+      return null;
+    }
+  });
+
+  const [currentRole, setCurrentRole] = useState<Role>(() => {
+    try {
+      const storedUser = localStorage.getItem('maktab_auth_user');
+      if (storedUser) {
+        const u = JSON.parse(storedUser);
+        if (u.role) return u.role as Role;
+      }
+    } catch (_) {}
+    return 'SUPER_ADMIN';
+  });
+
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(() => {
+    try {
+      const storedUser = localStorage.getItem('maktab_auth_user');
+      if (storedUser) {
+        const u = JSON.parse(storedUser);
+        if (u.schoolId) return u.schoolId;
+      }
+    } catch (_) {}
+    return 'SCH001';
+  });
+
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Theme state (persisted in localStorage inside try/catch)
@@ -485,11 +516,16 @@ export const App: React.FC = () => {
       <LoginPage
         onLoginSuccess={(user, userToken) => {
           setToken(userToken);
+          setCurrentUser(user);
           try {
             localStorage.setItem('maktab_auth_token', userToken);
+            localStorage.setItem('maktab_auth_user', JSON.stringify(user));
           } catch (_) {}
           if (user.role) {
             setCurrentRole(user.role as Role);
+          }
+          if (user.schoolId) {
+            setSelectedSchoolId(user.schoolId);
           }
           navigateTo('/dashboard');
         }}
@@ -532,15 +568,56 @@ export const App: React.FC = () => {
         theme={theme}
         toggleTheme={toggleTheme}
         onLogout={() => {
+          setToken('');
+          setCurrentUser(null);
+          setCurrentRole('SUPER_ADMIN');
           try {
             localStorage.removeItem('maktab_auth_token');
+            localStorage.removeItem('maktab_auth_user');
           } catch (_) {}
-          setToken('');
           navigateTo('/');
         }}
       />
     );
   }
+
+  // Tab Guard: Teachers and School Admins can NEVER access Super Admin or CMS tabs
+  useEffect(() => {
+    if (currentRole === 'TEACHER') {
+      if (currentTab !== 'map' && currentTab !== 'students' && currentTab !== 'alerts' && currentTab !== 'health') {
+        setCurrentTab('map');
+      }
+    } else if (currentRole === 'SCHOOL_ADMIN') {
+      if (currentTab === 'superadmin' || currentTab === 'website') {
+        setCurrentTab('map');
+      }
+    }
+  }, [currentRole, currentTab]);
+
+  // Strict Student Isolation per Role:
+  // - TEACHER: strictly only students in their class / created by this teacher
+  // - SCHOOL_ADMIN: strictly only students in their school
+  // - SUPER_ADMIN: all students or filtered by selected school
+  const effectiveStudents = useMemo(() => {
+    if (currentRole === 'TEACHER') {
+      const activeUser = users.find((u) => u.id === currentUser?.id || u.email === currentUser?.email) || currentUser;
+      const tClassId = activeUser?.classId || 'cls-5b';
+      const tClassName = (activeUser as any)?.className || '5-B';
+      return students.filter((s) => {
+        const matchClass = (s.classId && s.classId === tClassId) || (s.className && s.className === tClassName);
+        const matchTeacher = (s as any).teacherId && (s as any).teacherId === activeUser?.id;
+        return matchClass || matchTeacher;
+      });
+    }
+    if (currentRole === 'SCHOOL_ADMIN') {
+      const activeUser = users.find((u) => u.id === currentUser?.id || u.email === currentUser?.email) || currentUser;
+      const sId = activeUser?.schoolId || selectedSchoolId;
+      if (sId && sId !== 'ALL') {
+        return students.filter((s) => s.schoolId === sId);
+      }
+    }
+    return students;
+  }, [students, currentRole, currentUser, users, selectedSchoolId]);
 
   return (
     <div
@@ -551,6 +628,7 @@ export const App: React.FC = () => {
       {/* 1. Left Sidebar Navigation (72px collapsed, 240px expanded) */}
       <Sidebar
         currentTab={currentTab}
+        currentRole={currentRole}
         onSelectTab={(tab) => {
           setCurrentTab(tab);
           if (tab === 'map') setViewMode('map');
@@ -590,19 +668,26 @@ export const App: React.FC = () => {
           darkMode={theme === 'dark'}
           onToggleDarkMode={toggleTheme}
           currentRole={currentRole}
-          onChangeRole={(r) => setCurrentRole(r as Role)}
+          onChangeRole={(r) => {
+            if (currentRole === 'SUPER_ADMIN') {
+              setCurrentRole(r as Role);
+            }
+          }}
           onLogout={() => {
+            setToken('');
+            setCurrentUser(null);
+            setCurrentRole('SUPER_ADMIN');
             try {
               localStorage.removeItem('maktab_auth_token');
+              localStorage.removeItem('maktab_auth_user');
             } catch (_) {}
-            setToken('');
             navigateTo('/');
           }}
           isDemoMode={isDemoMode}
           onToggleDemoMode={() => setIsDemoMode(!isDemoMode)}
           onOpenPublicWebsite={() => navigateTo('/')}
           activeSosStudent={
-            students.find((s) => s.telemetry?.isSos) || null
+            effectiveStudents.find((s) => s.telemetry?.isSos) || null
           }
           onSelectSosStudent={(s) => {
             setSelectedStudent(s);
@@ -626,7 +711,7 @@ export const App: React.FC = () => {
             >
               <MapView
                 schools={schools}
-                students={students}
+                students={effectiveStudents}
                 onSaveGeofence={handleSaveGeofence}
                 selectedSchoolId={selectedSchoolId}
                 onRefreshData={fetchStudents}
@@ -644,7 +729,7 @@ export const App: React.FC = () => {
             {currentTab === 'students' && (
               <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <StudentsTab
-                  students={students}
+                  students={effectiveStudents}
                   onOpenAddSingle={() => setOpenAddStudent(true)}
                   onOpenBulkImport={() => setOpenBulkImport(true)}
                   onOpenTransfer={() => {}}
@@ -706,13 +791,13 @@ export const App: React.FC = () => {
 
             {currentTab === 'health' && (
               <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
-                <HealthTab students={students} />
+                <HealthTab students={effectiveStudents} />
               </div>
             )}
 
             {currentTab === 'parents' && (
               <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
-                <ParentTab students={students} onTriggerSos={() => handleSendEmergencySos(selectedStudent)} />
+                <ParentTab students={effectiveStudents} onTriggerSos={() => handleSendEmergencySos(selectedStudent)} />
               </div>
             )}
 
@@ -722,7 +807,7 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {currentTab === 'superadmin' && (
+            {currentTab === 'superadmin' && currentRole === 'SUPER_ADMIN' && (
               <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <SuperAdminTab
                   schools={schools}
@@ -741,7 +826,7 @@ export const App: React.FC = () => {
               </div>
             )}
 
-            {currentTab === 'website' && (
+            {currentTab === 'website' && currentRole === 'SUPER_ADMIN' && (
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <WebsiteManager
                   token={token}
@@ -754,7 +839,7 @@ export const App: React.FC = () => {
           {/* Right Stats Column: 340px (Rendered when viewing map/geozones/routes or via drawer) */}
           {(currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes') && (
             <RightStatsColumn
-              students={students}
+              students={effectiveStudents}
               activeFilter={kpiFilter}
               onSelectFilter={(f) => setKpiFilter(f as any)}
               alerts={notifications}
@@ -779,7 +864,7 @@ export const App: React.FC = () => {
           {/* Mobile Bottom Sheet (< 768px, test 390px) */}
           {(currentTab === 'map' || currentTab === 'geozones' || currentTab === 'routes') && (
             <MobileBottomSheet
-              students={students}
+              students={effectiveStudents}
               activeFilter={kpiFilter}
               onSelectFilter={(f) => setKpiFilter(f as any)}
               alerts={notifications}

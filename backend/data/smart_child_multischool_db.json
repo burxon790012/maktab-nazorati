@@ -194,6 +194,37 @@
       ],
       "adminEmail": "direktor_40@smartchild.uz",
       "createdAt": "2026-11-08T13:50:15.167Z"
+    },
+    {
+      "id": "SCH040",
+      "geofenceId": "GEOSCH040",
+      "code": "SCH040",
+      "name": "Urganch 40-maktab",
+      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
+      "lat": 41.554,
+      "lng": 60.628,
+      "startTime": "08:00",
+      "endTime": "13:00",
+      "polygon": [
+        [
+          41.556000000000004,
+          60.625
+        ],
+        [
+          41.556000000000004,
+          60.631
+        ],
+        [
+          41.552,
+          60.631
+        ],
+        [
+          41.552,
+          60.625
+        ]
+      ],
+      "adminEmail": "direktor_40@smartchild.uz",
+      "createdAt": "2026-11-08T14:34:05.065Z"
     }
   ],
   "users": [
@@ -342,6 +373,32 @@
       "className": "5-A",
       "mustChangePassword": false,
       "createdAt": "2026-11-08T13:50:15.959Z"
+    },
+    {
+      "id": "usr-dir-1794148445065",
+      "name": "Qodir Rahimov",
+      "username": "direktor_40",
+      "email": "direktor_40@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$ymoGoiG.yNRx4XSgayhgJOPgLMTiugVAbW0x/KCA4J4845KYIivVm",
+      "role": "SCHOOL_ADMIN",
+      "schoolId": "SCH040",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T14:34:05.321Z"
+    },
+    {
+      "id": "usr-teach-1794148445604",
+      "name": "Nodira Salimova",
+      "username": "nodira_oqituvchi",
+      "email": "nodira_oqituvchi@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$SD.y4riOJ8NZmNoQLfp3b.1y1LVZ7pHXo2VbNt0SIa/5a8a85FwZy",
+      "role": "TEACHER",
+      "schoolId": "SCH040",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T14:34:05.861Z"
     }
   ],
   "students": [
@@ -573,6 +630,7 @@
       "schoolName": "Urganch 40-maktab",
       "classId": "cls-40-5a",
       "className": "5-A",
+      "teacherId": "usr-teach-1794145314213",
       "parentId": "usr-par-1794145314738",
       "parentName": "Qodir Karimov",
       "parentPhone": "+998909876543",
@@ -589,7 +647,7 @@
         "deviceStatus": "ONLINE",
         "heartRate": 78,
         "steps": 1250,
-        "lastSeen": 1794145816223
+        "lastSeen": 1794148446126
       }
     },
     {
@@ -851,7 +909,7 @@
       "deviceStatus": "ONLINE",
       "heartRate": 78,
       "steps": 1250,
-      "lastSeen": 1794145816223
+      "lastSeen": 1794148446126
     }
   },
   "notifications": [
@@ -1180,6 +1238,33 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1794148446126",
+      "timestamp": "2026-11-08T14:34:06.126Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794148445861",
+      "timestamp": "2026-11-08T14:34:05.861Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794148445604",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794148445321",
+      "timestamp": "2026-11-08T14:34:05.321Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
     {
       "id": "log-1794145816223",
       "timestamp": "2026-11-08T13:50:16.223Z",

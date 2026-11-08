@@ -85,6 +85,7 @@ export interface User {
   schoolId?: string | null;
   schoolName?: string | null;
   classId?: string | null;
+  className?: string | null;
 }
 
 export interface AuditLog {

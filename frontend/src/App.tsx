@@ -730,6 +730,8 @@ export const App: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-4 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
                 <StudentsTab
                   students={effectiveStudents}
+                  currentRole={currentRole}
+                  currentUser={currentUser}
                   onOpenAddSingle={() => setOpenAddStudent(true)}
                   onOpenBulkImport={() => setOpenBulkImport(true)}
                   onOpenTransfer={() => {}}
@@ -923,12 +925,20 @@ export const App: React.FC = () => {
         open={openAddStudent}
         onOpenChange={setOpenAddStudent}
         schools={schools}
+        currentRole={currentRole}
+        defaultSchoolId={currentUser?.schoolId || selectedSchoolId}
+        defaultClassName={currentUser?.className || '5-B'}
         onAddStudent={async (data: any) => {
           if (data.parentLogin || data.parentPhone || data.parentName) {
             await authFetch('/api/v1/teacher/students-with-parent', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data),
+              body: JSON.stringify({
+                ...data,
+                teacherId: currentUser?.id,
+                schoolId: currentUser?.schoolId || data.schoolId || selectedSchoolId,
+                className: currentUser?.className || data.className || '5-B',
+              }),
             });
           } else {
             await authFetch('/api/v1/students', {

@@ -371,13 +371,24 @@ interface AddStudentModalProps {
   onOpenChange: (open: boolean) => void;
   schools: School[];
   onAddStudent: (data: any) => Promise<void>;
+  currentRole?: string;
+  defaultSchoolId?: string;
+  defaultClassName?: string;
 }
 
-export const AddStudentDialog: React.FC<AddStudentModalProps> = ({ open, onOpenChange, schools, onAddStudent }) => {
+export const AddStudentDialog: React.FC<AddStudentModalProps> = ({
+  open,
+  onOpenChange,
+  schools,
+  onAddStudent,
+  currentRole,
+  defaultSchoolId,
+  defaultClassName,
+}) => {
   const [studentId, setStudentId] = useState('');
   const [name, setName] = useState('');
-  const [schoolId, setSchoolId] = useState(schools[0]?.id || 'SCH001');
-  const [className, setClassName] = useState('5-B');
+  const [schoolId, setSchoolId] = useState(defaultSchoolId || schools[0]?.id || 'SCH001');
+  const [className, setClassName] = useState(defaultClassName || '5-B');
   const [parentPhone, setParentPhone] = useState('+998901234567');
   const [deviceId, setDeviceId] = useState('');
 
@@ -386,19 +397,27 @@ export const AddStudentDialog: React.FC<AddStudentModalProps> = ({ open, onOpenC
   const [parentLogin, setParentLogin] = useState('');
   const [parentPassword, setParentPassword] = useState('Ota12345!');
 
+  // Sync defaults whenever modal opens
+  React.useEffect(() => {
+    if (open) {
+      if (defaultSchoolId) setSchoolId(defaultSchoolId);
+      if (defaultClassName) setClassName(defaultClassName);
+    }
+  }, [open, defaultSchoolId, defaultClassName]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return alert("O'quvchi ismini kiriting!");
     await onAddStudent({
       studentId: studentId.trim() || undefined,
       name: name.trim(),
-      schoolId,
-      className,
+      schoolId: currentRole === 'TEACHER' && defaultSchoolId ? defaultSchoolId : schoolId,
+      className: currentRole === 'TEACHER' && defaultClassName ? defaultClassName : className,
       parentPhone,
       parentName: parentName.trim() || undefined,
       parentLogin: parentLogin.trim() || undefined,
       parentPassword: parentPassword.trim() || undefined,
-      deviceId: deviceId.trim() || undefined
+      deviceId: deviceId.trim() || undefined,
     });
     setName('');
     setStudentId('');
@@ -453,14 +472,18 @@ export const AddStudentDialog: React.FC<AddStudentModalProps> = ({ open, onOpenC
           <div>
             <Label>Biriktiriladigan Maktab:</Label>
             <select
-              value={schoolId}
+              value={currentRole === 'TEACHER' && defaultSchoolId ? defaultSchoolId : schoolId}
               onChange={(e) => setSchoolId(e.target.value)}
-              className="w-full h-9 rounded-lg border border-input bg-background/50 px-2 text-xs font-semibold focus:outline-none mt-1"
+              disabled={currentRole === 'TEACHER'}
+              className="w-full h-9 rounded-lg border border-input bg-background/50 px-2 text-xs font-semibold focus:outline-none mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {schools.map((s) => (
                 <option key={s.id} value={s.id}>{s.id}: {s.name}</option>
               ))}
             </select>
+            {currentRole === 'TEACHER' && (
+              <p className="text-[10px] text-cyan-400 mt-1">Siz faqat o'zingiz biriktirilgan maktabga o'quvchi qo'sha olasiz</p>
+            )}
           </div>
 
           <div>

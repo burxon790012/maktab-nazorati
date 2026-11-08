@@ -14,6 +14,8 @@ interface StudentsTabProps {
   onOpenTransfer: () => void;
   onDeleteStudent: (id: string) => Promise<void>;
   onViewOnMap?: (student: Student) => void;
+  currentRole?: string;
+  currentUser?: any;
 }
 
 export const StudentsTab: React.FC<StudentsTabProps> = ({
@@ -23,6 +25,8 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
   onOpenTransfer,
   onDeleteStudent,
   onViewOnMap,
+  currentRole,
+  currentUser,
 }) => {
   const [search, setSearch] = useState('');
 
@@ -33,29 +37,41 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
       s.schoolName.toLowerCase().includes(search.toLowerCase())
   );
 
+  const isTeacher = currentRole === 'TEACHER';
+
   return (
     <div className="space-y-4">
       {/* Header & Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold tracking-tight">👥 O'quvchilar Boshqaruvi</h2>
+          <h2 className="text-xl font-extrabold tracking-tight">
+            {isTeacher
+              ? `👥 Mening O'quvchilarim ${currentUser?.className ? `(${currentUser.className}-sinf)` : ''}`
+              : "👥 O'quvchilar Boshqaruvi"}
+          </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Maktabga biriktirilgan barcha o'quvchilar ro'yxati, smartwatch ulanishlari va ota-onalar kontaktlari
+            {isTeacher
+              ? "Siz mas'ul bo'lgan sinf o'quvchilari, ularning GPS soatlari va ota-onalari"
+              : "Maktabga biriktirilgan barcha o'quvchilar ro'yxati, smartwatch ulanishlari va ota-onalar kontaktlari"}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={onOpenAddSingle} className="gap-1.5 shadow-md">
+          <Button onClick={onOpenAddSingle} className="gap-1.5 shadow-md bg-cyan-600 hover:bg-cyan-500 text-white">
             <UserPlus className="w-4 h-4" />
             O'quvchi Qo'shish
           </Button>
-          <Button variant="outline" onClick={onOpenBulkImport} className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10">
-            <FileSpreadsheet className="w-4 h-4" />
-            Ommaviy CSV Import
-          </Button>
-          <Button variant="outline" onClick={onOpenTransfer} className="gap-1.5 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-            <ArrowLeftRight className="w-4 h-4" />
-            Maktabni Ko'chirish
-          </Button>
+          {!isTeacher && (
+            <>
+              <Button variant="outline" onClick={onOpenBulkImport} className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10">
+                <FileSpreadsheet className="w-4 h-4" />
+                Ommaviy CSV Import
+              </Button>
+              <Button variant="outline" onClick={onOpenTransfer} className="gap-1.5 border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+                <ArrowLeftRight className="w-4 h-4" />
+                Maktabni Ko'chirish
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

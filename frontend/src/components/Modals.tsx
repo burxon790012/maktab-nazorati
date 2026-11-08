@@ -17,17 +17,35 @@ import { Bell, Trash2, X } from 'lucide-react';
 interface AddSchoolModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSchool: (schoolData: { name: string; code: string; address: string; startTime: string; endTime: string; lat?: number; lng?: number }) => Promise<void>;
+  onAddSchool: (schoolData: {
+    name: string;
+    code: string;
+    address: string;
+    startTime: string;
+    endTime: string;
+    lat?: number;
+    lng?: number;
+    directorName?: string;
+    directorPhone?: string;
+    directorLogin?: string;
+    directorPassword?: string;
+  }) => Promise<void>;
 }
 
 export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenChange, onAddSchool }) => {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [address, setAddress] = useState('');
-  const [lat, setLat] = useState('41.311081');
-  const [lng, setLng] = useState('69.240562');
+  const [lat, setLat] = useState('41.550500');
+  const [lng, setLng] = useState('60.631500');
   const [startTime, setStartTime] = useState('08:30');
   const [endTime, setEndTime] = useState('13:30');
+
+  // Director Account creation (Hierarchy Level 1 -> Level 2)
+  const [directorName, setDirectorName] = useState('');
+  const [directorPhone, setDirectorPhone] = useState('+998901234567');
+  const [directorLogin, setDirectorLogin] = useState('');
+  const [directorPassword, setDirectorPassword] = useState('Direktor123!');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,18 +60,24 @@ export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenCha
       endTime,
       lat: isFinite(parsedLat) ? parsedLat : undefined,
       lng: isFinite(parsedLng) ? parsedLng : undefined,
+      directorName: directorName.trim() || undefined,
+      directorPhone: directorPhone.trim() || undefined,
+      directorLogin: directorLogin.trim() || undefined,
+      directorPassword: directorPassword.trim() || undefined,
     });
     setName('');
     setCode('');
     setAddress('');
+    setDirectorName('');
+    setDirectorLogin('');
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>🏫 Yangi Maktab Ro'yxatdan O'tkazish</DialogTitle>
+          <DialogTitle>🏫 Yangi Maktab & Direktor Ro'yxatdan O'tkazish</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
@@ -61,54 +85,110 @@ export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenCha
             <Input
               id="sch-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Masalan: 45-Sonli Umumiy O'rta Ta'lim Maktabi"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (!directorLogin) {
+                  const cleaned = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  setDirectorLogin(cleaned ? `direktor_${cleaned}` : '');
+                }
+              }}
+              placeholder="Masalan: 30-Sonli Umumiy O'rta Ta'lim Maktabi"
               className="mt-1 font-bold"
               required
             />
           </div>
-          <div>
-            <Label htmlFor="sch-code">Unikal School ID (masalan: SCH004):</Label>
-            <Input
-              id="sch-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="SCH004"
-              className="mt-1 font-mono"
-            />
-          </div>
-          <div>
-            <Label htmlFor="sch-addr">Manzil:</Label>
-            <Input
-              id="sch-addr"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Toshkent sh., Yunusobod tumani"
-              className="mt-1"
-            />
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="sch-lat">📍 GPS Kenglik (Latitude):</Label>
+              <Label htmlFor="sch-code">School ID (Kodi):</Label>
               <Input
-                id="sch-lat"
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                placeholder="41.311081"
-                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+                id="sch-code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="SCH002"
+                className="mt-1 font-mono text-xs"
               />
             </div>
             <div>
-              <Label htmlFor="sch-lng">📍 GPS Uzunlik (Longitude):</Label>
+              <Label htmlFor="sch-addr">Manzil:</Label>
               <Input
-                id="sch-lng"
-                value={lng}
-                onChange={(e) => setLng(e.target.value)}
-                placeholder="69.240562"
-                className="mt-1 font-mono text-xs text-[#2ee59d] font-bold"
+                id="sch-addr"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Urganch shahar"
+                className="mt-1 text-xs"
               />
             </div>
           </div>
+
+          {/* Exact GPS Coordinates Section (Urganch default ±10sm accuracy) */}
+          <div className="p-3 bg-white/[0.03] border border-cyan-500/30 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-cyan-300">📍 Yandex Maps GPS Koordinatalari</span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                ±10 sm Aniqlik
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="sch-lat" className="text-[11px] text-slate-400">Kenglik (Latitude):</Label>
+                <Input
+                  id="sch-lat"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  placeholder="41.550500"
+                  className="mt-1 font-mono text-xs text-cyan-300 font-bold"
+                />
+              </div>
+              <div>
+                <Label htmlFor="sch-lng" className="text-[11px] text-slate-400">Uzunlik (Longitude):</Label>
+                <Input
+                  id="sch-lng"
+                  value={lng}
+                  onChange={(e) => setLng(e.target.value)}
+                  placeholder="60.631500"
+                  className="mt-1 font-mono text-xs text-cyan-300 font-bold"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Maktab Direktori Hisobini Yaratish (Level 2 Hierarchy) */}
+          <div className="p-3 bg-white/[0.03] border border-blue-500/30 rounded-xl space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-blue-300">👤 Maktab Direktori Hisobi (Avtomatik)</span>
+              <span className="text-[10px] text-slate-400">Rol: SCHOOL_ADMIN</span>
+            </div>
+            <div>
+              <Label className="text-[11px] text-slate-400">Direktor F.I.Sh:</Label>
+              <Input
+                value={directorName}
+                onChange={(e) => setDirectorName(e.target.value)}
+                placeholder="Akmal Rahimov"
+                className="mt-1 text-xs"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <Label className="text-[11px] text-slate-400">Direktor Logini:</Label>
+                <Input
+                  value={directorLogin}
+                  onChange={(e) => setDirectorLogin(e.target.value)}
+                  placeholder="direktor_30"
+                  className="mt-1 font-mono text-xs text-blue-300"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-slate-400">Direktor Paroli:</Label>
+                <Input
+                  value={directorPassword}
+                  onChange={(e) => setDirectorPassword(e.target.value)}
+                  placeholder="Direktor123!"
+                  className="mt-1 font-mono text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="sch-start">Dars Boshlanishi:</Label>
@@ -132,10 +212,8 @@ export const AddSchoolDialog: React.FC<AddSchoolModalProps> = ({ open, onOpenCha
             </div>
           </div>
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Bekor qilish
-            </Button>
-            <Button type="submit">Saqlash</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
+            <Button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-600 font-bold">Maktab & Direktorni Saqlash</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -303,57 +381,149 @@ export const AddStudentDialog: React.FC<AddStudentModalProps> = ({ open, onOpenC
   const [parentPhone, setParentPhone] = useState('+998901234567');
   const [deviceId, setDeviceId] = useState('');
 
+  // Parent Account Fields (Hierarchy Level 3 -> Level 4)
+  const [parentName, setParentName] = useState('');
+  const [parentLogin, setParentLogin] = useState('');
+  const [parentPassword, setParentPassword] = useState('Ota12345!');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return alert("O'quvchi ismini kiriting!");
-    await onAddStudent({ studentId, name, schoolId, className, parentPhone, deviceId });
+    await onAddStudent({
+      studentId: studentId.trim() || undefined,
+      name: name.trim(),
+      schoolId,
+      className,
+      parentPhone,
+      parentName: parentName.trim() || undefined,
+      parentLogin: parentLogin.trim() || undefined,
+      parentPassword: parentPassword.trim() || undefined,
+      deviceId: deviceId.trim() || undefined
+    });
+    setName('');
+    setStudentId('');
+    setParentName('');
+    setParentLogin('');
+    setDeviceId('');
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>➕ Yakka O'quvchini Ro'yxatga Olish</DialogTitle>
+          <DialogTitle>➕ O'quvchi & Ota-ona Hisobini Ro'yxatga Olish</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <Label>Student ID (masalan: 10005):</Label>
-            <Input value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="10005" className="mt-1 font-mono" />
-          </div>
-          <div>
-            <Label>O'quvchi F.I.O:</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Masalan: Behruz Aliyev" className="mt-1" required />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Maktab:</Label>
-              <select
-                value={schoolId}
-                onChange={(e) => setSchoolId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-input bg-background/50 px-2 text-xs font-semibold focus:outline-none mt-1"
-              >
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>{s.id}: {s.name}</option>
-                ))}
-              </select>
+              <Label>Student ID (STU-XXXX):</Label>
+              <Input
+                value={studentId}
+                onChange={(e) => {
+                  setStudentId(e.target.value);
+                  if (!parentLogin) {
+                    setParentLogin(`ota_${e.target.value.toLowerCase()}`);
+                  }
+                }}
+                placeholder="STU-10005"
+                className="mt-1 font-mono text-xs"
+              />
             </div>
             <div>
               <Label>Sinf:</Label>
-              <Input value={className} onChange={(e) => setClassName(e.target.value)} className="mt-1" />
+              <Input value={className} onChange={(e) => setClassName(e.target.value)} className="mt-1 text-xs" />
             </div>
           </div>
+
           <div>
-            <Label>Ota-onasi Telefon Raqami:</Label>
-            <Input value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} className="mt-1 font-mono" />
+            <Label>O'quvchi F.I.Sh:</Label>
+            <Input
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (!parentName) setParentName(`${e.target.value}ning Ota-onasi`);
+              }}
+              placeholder="Masalan: Behruz Aliyev"
+              className="mt-1 font-bold"
+              required
+            />
           </div>
+
           <div>
-            <Label>Smartwatch Device ID:</Label>
-            <Input value={deviceId} onChange={(e) => setDeviceId(e.target.value)} placeholder="watch-5pro-05" className="mt-1 font-mono" />
+            <Label>Biriktiriladigan Maktab:</Label>
+            <select
+              value={schoolId}
+              onChange={(e) => setSchoolId(e.target.value)}
+              className="w-full h-9 rounded-lg border border-input bg-background/50 px-2 text-xs font-semibold focus:outline-none mt-1"
+            >
+              {schools.map((s) => (
+                <option key={s.id} value={s.id}>{s.id}: {s.name}</option>
+              ))}
+            </select>
           </div>
+
+          <div>
+            <Label>Samsung Galaxy Watch 5 Pro Qurilma ID:</Label>
+            <Input
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
+              placeholder="watch-5pro-05"
+              className="mt-1 font-mono text-xs text-cyan-300 font-bold"
+            />
+          </div>
+
+          {/* Ota-ona Hisobi (Level 4 Hierarchy) */}
+          <div className="p-3 bg-white/[0.03] border border-amber-500/30 rounded-xl space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-300">👨‍👩‍👧 Ota-ona Login & Paroli</span>
+              <span className="text-[10px] text-slate-400">Rol: PARENT</span>
+            </div>
+
+            <div>
+              <Label className="text-[11px] text-slate-400">Ota-onaning F.I.Sh:</Label>
+              <Input
+                value={parentName}
+                onChange={(e) => setParentName(e.target.value)}
+                placeholder="Jasur Aliyev"
+                className="mt-1 text-xs"
+              />
+            </div>
+
+            <div>
+              <Label className="text-[11px] text-slate-400">Ota-onaning Telefoni:</Label>
+              <Input
+                value={parentPhone}
+                onChange={(e) => setParentPhone(e.target.value)}
+                className="mt-1 font-mono text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <Label className="text-[11px] text-slate-400">Ota-ona Logini:</Label>
+                <Input
+                  value={parentLogin}
+                  onChange={(e) => setParentLogin(e.target.value)}
+                  placeholder="ota_10005"
+                  className="mt-1 font-mono text-xs text-amber-300 font-bold"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-slate-400">Ota-ona Paroli:</Label>
+                <Input
+                  value={parentPassword}
+                  onChange={(e) => setParentPassword(e.target.value)}
+                  placeholder="Ota12345!"
+                  className="mt-1 font-mono text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
-            <Button type="submit">Ro'yxatga Olish</Button>
+            <Button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-600 font-bold">O'quvchi & Ota-onani Saqlash</Button>
           </DialogFooter>
         </form>
       </DialogContent>

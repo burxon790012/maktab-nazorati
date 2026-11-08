@@ -1962,12 +1962,18 @@ app.get('/api/v1/audit-logs', (req, res) => {
 
 // 18. Authentication & Role Switcher with JWT & Refresh Token
 app.post('/api/v1/auth/login', authLimiter, (req, res) => {
-  const { email, password, role } = req.body;
-  let user;
-  if (role) {
+  const { email, login, username, password, role } = req.body;
+  const loginStr = (login || email || username || '').trim().toLowerCase();
+
+  let user = null;
+  if (loginStr) {
+    user = db.users.find(u =>
+      (u.email && u.email.toLowerCase() === loginStr) ||
+      (u.username && u.username.toLowerCase() === loginStr) ||
+      (u.phone && u.phone.replace(/\D/g, '') === loginStr.replace(/\D/g, ''))
+    );
+  } else if (role) {
     user = db.users.find(u => u.role === role);
-  } else if (email) {
-    user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
   if (!user && role === 'SUPER_ADMIN') {
@@ -1984,12 +1990,14 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     return res.status(401).json({ success: false, message: 'Foydalanuvchi topilmadi' });
   }
 
-  // Password verification with bcrypt if provided
+  // Password verification
   if (password) {
     const isValid = verifyPassword(password, user.password);
     if (!isValid) {
       return res.status(401).json({ success: false, message: 'Noto\'g\'ri parol' });
     }
+  } else if (!role) {
+    return res.status(400).json({ success: false, message: 'Parol kiritilishi shart' });
   }
 
   const school = user.schoolId ? db.schools.find(s => s.id === user.schoolId) : null;
@@ -2005,6 +2013,7 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     user: {
       id: user.id,
       name: user.name,
+      username: user.username || null,
       email: user.email,
       phone: user.phone,
       role: user.role,
@@ -2017,6 +2026,413 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     },
     token,
     refreshToken
+  });
+});
+
+// =========================================================================
+// 18.1 HIERARCHICAL ACCESS & USER CREATION ENDPOINTS
+// 1. Super Admin: creates School + Maktab Direktori account
+// 2. Maktab Direktori: creates Classes + O'qituvchi accounts
+// 3. O'qituvchi: creates Student + Ota-ona account (linked to student)
+// 4. Ota-ona: views ONLY their linked children on Yandex Maps
+// =========================================================================
+
+// Super Admin: Create School + Director
+app.post('/api/v1/super-admin/schools-with-director', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: "Faqat Super Admin maktab va direktor yarata oladi" });
+  }
+
+  const {
+    name,
+    code,
+    address,
+    startTime,
+    endTime,
+    lat,
+    lng,
+    polygon,
+    directorName,
+    directorPhone,
+    directorEmail,
+    directorLogin,
+    directorPassword
+  } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ success: false, message: "Maktab nomi kiritilishi shart" });
+  }
+
+  const schoolId = code ? code.trim() : `SCH${(db.schools.length + 1).toString().padStart(3, '0')}`;
+  
+  const parsedLat = parseFloat(lat);
+  const parsedLng = parseFloat(lng);
+  const finalLat = isFinite(parsedLat) ? parsedLat : 41.550500;
+  const finalLng = isFinite(parsedLng) ? parsedLng : 60.631500;
+
+  let finalPolygon = polygon;
+  if (!finalPolygon || !Array.isArray(finalPolygon) || finalPolygon.length < 3) {
+    const dLat = 0.002;
+    const dLng = 0.003;
+    finalPolygon = [
+      [finalLat + dLat, finalLng - dLng],
+      [finalLat + dLat, finalLng + dLng],
+      [finalLat - dLat, finalLng + dLng],
+      [finalLat - dLat, finalLng - dLng]
+    ];
+  }
+
+  const newSchool = {
+    id: schoolId,
+    geofenceId: `GEO${schoolId}`,
+    code: schoolId,
+    name: name.trim(),
+    address: address || "O'zbekiston",
+    lat: finalLat,
+    lng: finalLng,
+    startTime: startTime || '08:00',
+    endTime: endTime || '13:00',
+    polygon: finalPolygon,
+    adminEmail: directorEmail || `${(directorLogin || 'director').toLowerCase()}@smartchild.uz`,
+    createdAt: new Date().toISOString()
+  };
+
+  db.schools.push(newSchool);
+
+  // Create Director Account if details provided
+  let newDirector = null;
+  if (directorName || directorLogin || directorEmail) {
+    const dirUsername = (directorLogin || `direktor_${schoolId.toLowerCase()}`).trim().toLowerCase();
+    const plainPass = directorPassword || 'Direktor123!';
+    newDirector = {
+      id: `usr-dir-${Date.now()}`,
+      name: directorName || `${name} Direktori`,
+      username: dirUsername,
+      email: directorEmail || `${dirUsername}@smartchild.uz`,
+      phone: directorPhone || "+998901234567",
+      password: hashPassword(plainPass),
+      role: "SCHOOL_ADMIN",
+      schoolId: schoolId,
+      mustChangePassword: false,
+      createdAt: new Date().toISOString()
+    };
+    db.users.push(newDirector);
+  }
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: req.user.email || req.user.name || "Super Admin",
+    role: "SUPER_ADMIN",
+    action: "SCHOOL_AND_DIRECTOR_CREATED",
+    target: schoolId,
+    details: `Maktab (${newSchool.name}) va Direktor (${newDirector?.username || 'N/A'}) yaratildi`
+  });
+
+  saveDb();
+  broadcast('school_added', newSchool);
+  if (newDirector) broadcast('user_added', newDirector);
+
+  res.json({
+    success: true,
+    message: "Maktab va Direktor hisobi muvaffaqiyatli yaratildi",
+    school: newSchool,
+    director: newDirector ? {
+      id: newDirector.id,
+      name: newDirector.name,
+      username: newDirector.username,
+      email: newDirector.email,
+      phone: newDirector.phone,
+      role: newDirector.role,
+      schoolId: newDirector.schoolId
+    } : null
+  });
+});
+
+// Director: Create Teacher Account for their school
+app.post('/api/v1/director/teachers', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SCHOOL_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: "Faqat maktab ma'muri o'qituvchi hisobini yarata oladi" });
+  }
+
+  const schoolId = req.user.role === 'SUPER_ADMIN' ? (req.body.schoolId || db.schools[0]?.id) : req.user.schoolId;
+  const { name, phone, email, username, password, classId, className } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ success: false, message: "O'qituvchi ismi kiritilishi shart" });
+  }
+
+  const teacherUsername = (username || `oqituvchi_${Date.now().toString().slice(-4)}`).trim().toLowerCase();
+  const plainPass = password || 'Oqituvchi123!';
+
+  const newTeacher = {
+    id: `usr-teach-${Date.now()}`,
+    name: name.trim(),
+    username: teacherUsername,
+    email: email || `${teacherUsername}@smartchild.uz`,
+    phone: phone || "+998901234567",
+    password: hashPassword(plainPass),
+    role: "TEACHER",
+    schoolId: schoolId,
+    classId: classId || "cls-5b",
+    className: className || "5-B",
+    mustChangePassword: false,
+    createdAt: new Date().toISOString()
+  };
+
+  db.users.push(newTeacher);
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: req.user.email || req.user.name || "Direktor",
+    role: req.user.role,
+    action: "TEACHER_CREATED",
+    target: newTeacher.id,
+    details: `Yangi o'qituvchi yaratildi: ${newTeacher.name} (${newTeacher.username})`
+  });
+
+  saveDb();
+  broadcast('user_added', newTeacher);
+
+  res.json({
+    success: true,
+    message: "O'qituvchi hisobi muvaffaqiyatli yaratildi",
+    teacher: {
+      id: newTeacher.id,
+      name: newTeacher.name,
+      username: newTeacher.username,
+      email: newTeacher.email,
+      phone: newTeacher.phone,
+      role: newTeacher.role,
+      schoolId: newTeacher.schoolId,
+      classId: newTeacher.classId,
+      plainPassword: plainPass
+    }
+  });
+});
+
+// Director: Get Teachers for their school
+app.get('/api/v1/director/teachers', authMiddleware, (req, res) => {
+  const schoolId = req.user.role === 'SUPER_ADMIN' ? (req.query.schoolId || db.schools[0]?.id) : req.user.schoolId;
+  const teachers = db.users
+    .filter(u => u.role === 'TEACHER' && (!schoolId || u.schoolId === schoolId))
+    .map(u => ({
+      id: u.id,
+      name: u.name,
+      username: u.username,
+      email: u.email,
+      phone: u.phone,
+      role: u.role,
+      schoolId: u.schoolId,
+      classId: u.classId
+    }));
+
+  res.json({ success: true, teachers });
+});
+
+// Teacher: Create Student + Parent Account
+app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
+  if (req.user.role !== 'TEACHER' && req.user.role !== 'SCHOOL_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: "Faqat o'qituvchi yoki maktab ma'muri o'quvchi va ota-ona hisobini yarata oladi" });
+  }
+
+  const {
+    name,
+    studentId,
+    className,
+    classId,
+    deviceId,
+    parentName,
+    parentPhone,
+    parentLogin,
+    parentPassword
+  } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ success: false, message: "O'quvchi ismi kiritilishi shart" });
+  }
+
+  const schoolId = req.user.schoolId || 'SCH001';
+  const school = db.schools.find(s => s.id === schoolId) || db.schools[0];
+  const uniqueId = (studentId && studentId.trim()) ? studentId.trim() : `STU-${(db.students.length + 101).toString()}`;
+
+  // 1. Create or find Parent user
+  const pUsername = (parentLogin || `ota_${uniqueId.toLowerCase()}`).trim().toLowerCase();
+  const pPass = parentPassword || 'Ota12345!';
+  let parentUser = db.users.find(u => u.username === pUsername || (u.phone && parentPhone && u.phone === parentPhone));
+
+  if (!parentUser) {
+    parentUser = {
+      id: `usr-par-${Date.now()}`,
+      name: parentName || `${name}ning Ota-onasi`,
+      username: pUsername,
+      email: `${pUsername}@smartchild.uz`,
+      phone: parentPhone || "+998901112233",
+      password: hashPassword(pPass),
+      role: "PARENT",
+      childrenIds: [uniqueId],
+      mustChangePassword: false,
+      createdAt: new Date().toISOString()
+    };
+    db.users.push(parentUser);
+  } else {
+    if (!Array.isArray(parentUser.childrenIds)) parentUser.childrenIds = [];
+    if (!parentUser.childrenIds.includes(uniqueId)) {
+      parentUser.childrenIds.push(uniqueId);
+    }
+  }
+
+  // 2. Create or Update Student
+  const finalDeviceId = deviceId || `watch-5pro-${uniqueId.toLowerCase()}`;
+  const newStudent = {
+    id: uniqueId,
+    studentId: uniqueId,
+    uniqueId,
+    name: name.trim(),
+    schoolId: school.id,
+    schoolName: school.name,
+    classId: classId || req.user.classId || "cls-5b",
+    className: className || req.user.className || "5-B",
+    parentId: parentUser.id,
+    parentName: parentUser.name,
+    parentPhone: parentUser.phone,
+    deviceId: finalDeviceId,
+    deviceModel: "Samsung Galaxy Watch5 Pro",
+    photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+    status: "ACTIVE",
+    telemetry: {
+      latitude: school.lat || 41.550500,
+      longitude: school.lng || 60.631500,
+      batteryLevel: 95,
+      isWorn: true,
+      geofenceStatus: "INSIDE",
+      deviceStatus: "ONLINE",
+      heartRate: 78,
+      steps: 1250,
+      lastSeen: Date.now()
+    }
+  };
+
+  const existingIdx = db.students.findIndex(s => s.id === uniqueId || s.uniqueId === uniqueId);
+  if (existingIdx !== -1) {
+    db.students[existingIdx] = newStudent;
+  } else {
+    db.students.push(newStudent);
+  }
+
+  // Update telemetry state
+  db.telemetryState[finalDeviceId] = {
+    deviceId: finalDeviceId,
+    studentId: uniqueId,
+    latitude: school.lat || 41.550500,
+    longitude: school.lng || 60.631500,
+    batteryLevel: 95,
+    isWorn: true,
+    geofenceStatus: "INSIDE",
+    deviceStatus: "ONLINE",
+    heartRate: 78,
+    steps: 1250,
+    lastSeen: Date.now()
+  };
+
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    user: req.user.name || "O'qituvchi",
+    role: req.user.role,
+    action: "STUDENT_AND_PARENT_CREATED",
+    target: uniqueId,
+    details: `O'quvchi (${newStudent.name}) va Ota-ona (${parentUser.username}) hisoblari yaratildi`
+  });
+
+  saveDb();
+  broadcast('student_added', newStudent);
+  broadcast('user_added', parentUser);
+
+  res.json({
+    success: true,
+    message: "O'quvchi va Ota-ona hisobi muvaffaqiyatli yaratildi",
+    student: newStudent,
+    parent: {
+      id: parentUser.id,
+      name: parentUser.name,
+      username: parentUser.username,
+      email: parentUser.email,
+      phone: parentUser.phone,
+      plainPassword: pPass
+    }
+  });
+});
+
+// Parent: Get ONLY their own children
+app.get('/api/v1/parent/my-children', authMiddleware, (req, res) => {
+  if (req.user.role !== 'PARENT' && req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: "Faqat ota-ona hisobi uchun ruxsat etilgan" });
+  }
+
+  const childIds = req.user.childrenIds || [];
+  const seenIds = new Set();
+  const children = [];
+
+  for (const s of db.students) {
+    if (childIds.map(String).includes(String(s.id)) || childIds.map(String).includes(String(s.uniqueId))) {
+      if (!seenIds.has(s.id)) {
+        seenIds.add(s.id);
+        const telem = db.telemetryState[s.deviceId] || s.telemetry || {
+          latitude: 41.550500,
+          longitude: 60.631500,
+          batteryLevel: 85,
+          isWorn: true,
+          geofenceStatus: "INSIDE",
+          deviceStatus: "ONLINE",
+          lastSeen: Date.now()
+        };
+        const school = db.schools.find(sc => sc.id === s.schoolId);
+        children.push({
+          ...s,
+          telemetry: telem,
+          schoolGeofence: school ? {
+            polygon: school.polygon,
+            lat: school.lat,
+            lng: school.lng,
+            name: school.name
+          } : null
+        });
+      }
+    }
+  }
+
+  res.json({ success: true, children });
+});
+
+// Parent: Get Child telemetry with strict permission check
+app.get('/api/v1/parent/child/:id/telemetry', authMiddleware, (req, res) => {
+  const childId = req.params.id;
+  if (!canAccessChildLocation(req.user, childId)) {
+    return res.status(403).json({
+      success: false,
+      message: "Ruxsat berilmagan: Siz faqat o'z farzandingiz telemetriyasini ko'ra olasiz"
+    });
+  }
+
+  const student = db.students.find(s => String(s.id) === String(childId) || String(s.uniqueId) === String(childId));
+  if (!student) {
+    return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+  }
+
+  const telem = db.telemetryState[student.deviceId] || student.telemetry;
+  const school = db.schools.find(s => s.id === student.schoolId);
+
+  res.json({
+    success: true,
+    studentId: student.id,
+    deviceId: student.deviceId,
+    telemetry: telem,
+    school
   });
 });
 

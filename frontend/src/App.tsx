@@ -25,6 +25,7 @@ import {
 import { LandingPage } from '@/components/public/LandingPage';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { WebsiteManager } from '@/components/cms/WebsiteManager';
+import { ParentDashboard } from '@/components/parent/ParentDashboard';
 
 export type KpiFilter = 'ALL' | 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'SOS' | 'ONLINE' | 'OFFLINE';
 
@@ -472,14 +473,14 @@ export const App: React.FC = () => {
         theme={theme}
         toggleTheme={toggleTheme}
         onNavigate={navigateTo}
-        currentUser={users.find((u) => u.role === currentRole) || users[0]}
+        currentUser={token ? (users.find((u) => u.role === currentRole) || null) : null}
         token={token}
       />
     );
   }
 
-  // 2. DEDICATED LOGIN PAGE (/login)
-  if (currentPath === '/login') {
+  // 2. DEDICATED LOGIN PAGE (/login) OR UNAUTHENTICATED DASHBOARD ATTEMPT
+  if (currentPath === '/login' || (currentPath === '/dashboard' && !token)) {
     return (
       <LoginPage
         onLoginSuccess={(user, userToken) => {
@@ -504,11 +505,38 @@ export const App: React.FC = () => {
         theme={theme}
         toggleTheme={toggleTheme}
         onNavigate={navigateTo}
-        currentUser={users.find((u) => u.role === currentRole) || users[0]}
+        currentUser={token ? (users.find((u) => u.role === currentRole) || null) : null}
         token={token}
         isPreviewMode={true}
         onPublishDraft={() => {
           fetchStudents();
+        }}
+      />
+    );
+  }
+
+  // 4. DEDICATED PARENT DASHBOARD (Level 4 Hierarchy: views only their children on Yandex Maps)
+  if (currentRole === 'PARENT' && token) {
+    const parentUser = users.find((u) => u.role === 'PARENT') || {
+      id: 'parent-1',
+      name: 'Ota-ona',
+      email: 'parent@smartchild.uz',
+      role: 'PARENT',
+      phone: '+998903456789'
+    } as User;
+
+    return (
+      <ParentDashboard
+        currentUser={parentUser}
+        token={token}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onLogout={() => {
+          try {
+            localStorage.removeItem('maktab_auth_token');
+          } catch (_) {}
+          setToken('');
+          navigateTo('/');
         }}
       />
     );
@@ -769,13 +797,22 @@ export const App: React.FC = () => {
       <AddSchoolDialog
         open={openAddSchool}
         onOpenChange={setOpenAddSchool}
-        onAddSchool={async (sch) => {
-          await authFetch('/api/v1/schools', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(sch),
-          });
+        onAddSchool={async (sch: any) => {
+          if (sch.directorName || sch.directorLogin) {
+            await authFetch('/api/v1/super-admin/schools-with-director', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(sch),
+            });
+          } else {
+            await authFetch('/api/v1/schools', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(sch),
+            });
+          }
           fetchSchools();
+          fetchUsers();
         }}
       />
 
@@ -801,13 +838,22 @@ export const App: React.FC = () => {
         open={openAddStudent}
         onOpenChange={setOpenAddStudent}
         schools={schools}
-        onAddStudent={async (data) => {
-          await authFetch('/api/v1/students', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
+        onAddStudent={async (data: any) => {
+          if (data.parentLogin || data.parentPhone || data.parentName) {
+            await authFetch('/api/v1/teacher/students-with-parent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+          } else {
+            await authFetch('/api/v1/students', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+          }
           fetchStudents();
+          fetchUsers();
         }}
       />
 

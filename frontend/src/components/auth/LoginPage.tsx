@@ -8,7 +8,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigateHome }) => {
-  const [email, setEmail] = useState('');
+  const [loginInput, setLoginInput] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,8 +23,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
   const [changeError, setChangeError] = useState('');
   const [changingPass, setChangingPass] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performLogin = async (userLogin: string, pass: string) => {
     setErrorMessage('');
     setLoading(true);
 
@@ -32,12 +31,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
       const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password })
+        body: JSON.stringify({ login: userLogin.trim(), password: pass })
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setErrorMessage(data.message || 'Kirishda xatolik yuz berdi');
+        setErrorMessage(data.message || 'Login yoki parol noto\'g\'ri');
         setLoading(false);
         return;
       }
@@ -60,32 +59,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
     }
   };
 
-  const handleRoleQuickLogin = async (role: string) => {
-    setLoading(true);
-    setErrorMessage('');
-    try {
-      const res = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role })
-      });
-      const data = await res.json();
-      if (data.success && data.user) {
-        if (data.user?.mustChangePassword) {
-          setTempUser(data.user);
-          setTempToken(data.token);
-          setMustChangePassword(true);
-        } else {
-          onLoginSuccess(data.user, data.token);
-        }
-      } else {
-        setErrorMessage(data.message || 'Rol bo\'yicha kirishda xato');
-      }
-    } catch (_) {
-      setErrorMessage('Server bilan aloqa uzildi');
-    } finally {
-      setLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginInput.trim() || !password) {
+      setErrorMessage('Login va parol kiritilishi shart');
+      return;
     }
+    await performLogin(loginInput, password);
+  };
+
+  const handleQuickFill = (userLogin: string, pass: string) => {
+    setLoginInput(userLogin);
+    setPassword(pass);
+    performLogin(userLogin, pass);
   };
 
   const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
@@ -249,16 +235,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    Elektron pochta (Email)
+                    Login, Elektron pochta yoki Telefon raqam
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
-                      type="email"
+                      type="text"
                       required
-                      placeholder="nomingiz@smartchild.uz"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Login, email yoki telefon..."
+                      value={loginInput}
+                      onChange={(e) => setLoginInput(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:border-cyan-400 focus:outline-none"
                     />
                   </div>
@@ -305,56 +291,47 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
                 </div>
               </form>
 
-              {/* Quick Admin Helper Button */}
-              <div className="mt-5 pt-4 border-t border-white/10 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('burxonturayev7900@gmail.com');
-                  }}
-                  className="text-xs text-cyan-400 hover:underline inline-flex items-center gap-1"
-                >
-                  <span>Bosh Super Admin pochtasini to'ldirish (burxonturayev7900@gmail.com)</span>
-                </button>
-              </div>
-
-              {/* Demo Role Switcher */}
+              {/* Quick Role Fillers (1-click credential testing) */}
               <div className="mt-6 pt-5 border-t border-white/10">
                 <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 text-center mb-3">
-                  Tezkor namoyish rejimi (Demo Login):
+                  Tezkor kirish (Sinov profillari):
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
                     type="button"
-                    onClick={() => handleRoleQuickLogin('SUPER_ADMIN')}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-cyan-400 transition-colors text-center"
+                    onClick={() => handleQuickFill('burxonturayev7900@gmail.com', 'Burxon#Admin2026')}
+                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-cyan-400 transition-colors text-left"
                   >
-                    Super Admin
+                    <div className="font-bold text-cyan-400">👑 Super Admin</div>
+                    <div className="text-[10px] text-slate-400 truncate">burxonturayev7900@gmail.com</div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => handleRoleQuickLogin('SCHOOL_ADMIN')}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-blue-400 transition-colors text-center"
+                    onClick={() => handleQuickFill('admin.sch1@smartchild.uz', 'password123')}
+                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-blue-400 transition-colors text-left"
                   >
-                    Maktab Admini
+                    <div className="font-bold text-blue-400">🏫 Maktab Direktori</div>
+                    <div className="text-[10px] text-slate-400 truncate">admin.sch1@smartchild.uz</div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => handleRoleQuickLogin('TEACHER')}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-emerald-400 transition-colors text-center"
+                    onClick={() => handleQuickFill('teacher@smartchild.uz', 'password123')}
+                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-emerald-400 transition-colors text-left"
                   >
-                    O'qituvchi
+                    <div className="font-bold text-emerald-400">👩‍🏫 O'qituvchi</div>
+                    <div className="text-[10px] text-slate-400 truncate">teacher@smartchild.uz</div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => handleRoleQuickLogin('PARENT')}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-amber-400 transition-colors text-center"
+                    onClick={() => handleQuickFill('parent@smartchild.uz', 'password123')}
+                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-medium hover:text-amber-400 transition-colors text-left"
                   >
-                    Ota-ona
+                    <div className="font-bold text-amber-400">👨‍👩‍👧 Ota-ona</div>
+                    <div className="text-[10px] text-slate-400 truncate">parent@smartchild.uz</div>
                   </button>
                 </div>
               </div>

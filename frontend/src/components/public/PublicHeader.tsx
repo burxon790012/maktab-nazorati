@@ -111,24 +111,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-cyan-300" />}
             </button>
 
-            {currentUser ? (
-              <button
-                onClick={() => onNavigate('/dashboard')}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Boshqaruv paneli</span>
-                <ChevronRight className="w-4 h-4 ml-0.5" />
-              </button>
-            ) : (
-              <button
-                onClick={() => onNavigate('/login')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Kirish</span>
-              </button>
-            )}
+            {/* Single Official Login Button */}
+            <button
+              onClick={() => onNavigate('/login')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Kirish</span>
+            </button>
           </div>
 
           {/* Mobile Hamburger Toggle */}
@@ -167,29 +157,16 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
             ))}
           </nav>
           <div className="mt-4 pt-4 border-t border-white/10">
-            {currentUser ? (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onNavigate('/dashboard');
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm shadow-md"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Boshqaruv paneli</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onNavigate('/login');
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm shadow-md"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Tizimga kirish</span>
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onNavigate('/login');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-sm shadow-md"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Tizimga kirish</span>
+            </button>
           </div>
         </div>
       )}

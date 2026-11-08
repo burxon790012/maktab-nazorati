@@ -101,6 +101,99 @@
       ],
       "adminEmail": "admin.it@smartchild.uz",
       "totalStudents": 0
+    },
+    {
+      "id": "SCH040",
+      "geofenceId": "GEOSCH040",
+      "code": "SCH040",
+      "name": "Urganch 40-maktab",
+      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
+      "lat": 41.554,
+      "lng": 60.628,
+      "startTime": "08:00",
+      "endTime": "13:00",
+      "polygon": [
+        [
+          41.556000000000004,
+          60.625
+        ],
+        [
+          41.556000000000004,
+          60.631
+        ],
+        [
+          41.552,
+          60.631
+        ],
+        [
+          41.552,
+          60.625
+        ]
+      ],
+      "adminEmail": "direktor_40@smartchild.uz",
+      "createdAt": "2026-11-08T13:41:53.667Z"
+    },
+    {
+      "id": "SCH040",
+      "geofenceId": "GEOSCH040",
+      "code": "SCH040",
+      "name": "Urganch 40-maktab",
+      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
+      "lat": 41.554,
+      "lng": 60.628,
+      "startTime": "08:00",
+      "endTime": "13:00",
+      "polygon": [
+        [
+          41.556000000000004,
+          60.625
+        ],
+        [
+          41.556000000000004,
+          60.631
+        ],
+        [
+          41.552,
+          60.631
+        ],
+        [
+          41.552,
+          60.625
+        ]
+      ],
+      "adminEmail": "direktor_40@smartchild.uz",
+      "createdAt": "2026-11-08T13:49:15.924Z"
+    },
+    {
+      "id": "SCH040",
+      "geofenceId": "GEOSCH040",
+      "code": "SCH040",
+      "name": "Urganch 40-maktab",
+      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
+      "lat": 41.554,
+      "lng": 60.628,
+      "startTime": "08:00",
+      "endTime": "13:00",
+      "polygon": [
+        [
+          41.556000000000004,
+          60.625
+        ],
+        [
+          41.556000000000004,
+          60.631
+        ],
+        [
+          41.552,
+          60.631
+        ],
+        [
+          41.552,
+          60.625
+        ]
+      ],
+      "adminEmail": "direktor_40@smartchild.uz",
+      "createdAt": "2026-11-08T13:50:15.167Z"
     }
   ],
   "users": [
@@ -112,7 +205,8 @@
       "password": "$2b$12$Kj7fOA7FYUaT5CEkQpV.1OzLZXVxFeqwbAaE734tE/Cp48KMHjmM.",
       "role": "SUPER_ADMIN",
       "mustChangePassword": true,
-      "createdAt": "2026-11-06T19:27:14.847Z"
+      "createdAt": "2026-11-06T19:27:14.847Z",
+      "username": "burxon"
     },
     {
       "id": "usr-superadmin",
@@ -120,7 +214,8 @@
       "email": "superadmin@smartchild.uz",
       "phone": "+998901111111",
       "password": "$2b$12$otZwGdqUXhZkbMgFhPC20OiFUIa98V/yM9L68TghNf4vujRqAlUQG",
-      "role": "SUPER_ADMIN"
+      "role": "SUPER_ADMIN",
+      "username": "superadmin"
     },
     {
       "id": "usr-admin-sch1",
@@ -129,7 +224,8 @@
       "phone": "+998901234567",
       "password": "$2b$12$cd4ukDQlfgOGsm3gGqu8b.FFabRYESSpJSY7iHr5XnwIECVddxGT6",
       "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH001"
+      "schoolId": "SCH001",
+      "username": "direktor"
     },
     {
       "id": "usr-teacher-1",
@@ -139,7 +235,8 @@
       "password": "$2b$12$SuS4Sz2Pf4dCUWuBbqDoqO.QUxGEQRImAVSpzkJDGHdqQez16rwqy",
       "role": "TEACHER",
       "schoolId": "SCH001",
-      "classId": "cls-5b"
+      "classId": "cls-5b",
+      "username": "oqituvchi"
     },
     {
       "id": "usr-parent-1",
@@ -151,7 +248,100 @@
       "childrenIds": [
         "10001",
         "10002"
-      ]
+      ],
+      "username": "otaona"
+    },
+    {
+      "id": "usr-dir-1794145313667",
+      "name": "Qodir Rahimov",
+      "username": "direktor_40",
+      "email": "direktor_40@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$SsvA1vC7d4vFDVZ8W3nK2.4/VAOpq7R2BjS5yJHnSgJZGBNLn4AXS",
+      "role": "SCHOOL_ADMIN",
+      "schoolId": "SCH040",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:41:53.926Z"
+    },
+    {
+      "id": "usr-teach-1794145314213",
+      "name": "Nodira Salimova",
+      "username": "nodira_oqituvchi",
+      "email": "nodira_oqituvchi@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$dVebGhGTJcitZDWmQZ5mz.2ftgtqEPk9IrVXkaW3hU5sTBzQDhsFW",
+      "role": "TEACHER",
+      "schoolId": "SCH040",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:41:54.472Z"
+    },
+    {
+      "id": "usr-par-1794145314738",
+      "name": "Qodir Karimov",
+      "username": "ota_jasurbek",
+      "email": "ota_jasurbek@smartchild.uz",
+      "phone": "+998909876543",
+      "password": "$2b$12$aqgIKkJ3OV79Irpu/qaL8eM8QNfUCnn21nsq4nONq3iy4vPjcrZ1q",
+      "role": "PARENT",
+      "childrenIds": [
+        "STU-4001"
+      ],
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:41:54.994Z"
+    },
+    {
+      "id": "usr-dir-1794145755924",
+      "name": "Qodir Rahimov",
+      "username": "direktor_40",
+      "email": "direktor_40@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$dC.xg2vMicMt8pDPuzEx0uOqc3cachplWqljgdy60r766Uj.5fgBq",
+      "role": "SCHOOL_ADMIN",
+      "schoolId": "SCH040",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:49:16.182Z"
+    },
+    {
+      "id": "usr-teach-1794145756462",
+      "name": "Nodira Salimova",
+      "username": "nodira_oqituvchi",
+      "email": "nodira_oqituvchi@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$Gt3jH/dkbvAjY8Njr62GPexK20H1GiCT6ohMHxOUuyCwDp0DPMFkO",
+      "role": "TEACHER",
+      "schoolId": "SCH040",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:49:16.720Z"
+    },
+    {
+      "id": "usr-dir-1794145815167",
+      "name": "Qodir Rahimov",
+      "username": "direktor_40",
+      "email": "direktor_40@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$Va7raxdhJY9h3T6iTNo7Ze0LzcsGXnwBtfCXYbewdkOHzLu1vpzMe",
+      "role": "SCHOOL_ADMIN",
+      "schoolId": "SCH040",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:50:15.424Z"
+    },
+    {
+      "id": "usr-teach-1794145815702",
+      "name": "Nodira Salimova",
+      "username": "nodira_oqituvchi",
+      "email": "nodira_oqituvchi@smartchild.uz",
+      "phone": "+998901234567",
+      "password": "$2b$12$va1tHfRl3w32jkJDNKzArOgBHoEuEbconI7vesXJg/Ab0Hg7QibYy",
+      "role": "TEACHER",
+      "schoolId": "SCH040",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "mustChangePassword": false,
+      "createdAt": "2026-11-08T13:50:15.959Z"
     }
   ],
   "students": [
@@ -373,6 +563,62 @@
         "lastSeen": 1715000000000,
         "address": "Urganch sh., 30-maktab hududi"
       }
+    },
+    {
+      "id": "STU-4001",
+      "studentId": "STU-4001",
+      "uniqueId": "STU-4001",
+      "name": "Jasurbek Qodirov",
+      "schoolId": "SCH040",
+      "schoolName": "Urganch 40-maktab",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "parentId": "usr-par-1794145314738",
+      "parentName": "Qodir Karimov",
+      "parentPhone": "+998909876543",
+      "deviceId": "watch-5pro-4001",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "telemetry": {
+        "latitude": 41.554,
+        "longitude": 60.628,
+        "batteryLevel": 95,
+        "isWorn": true,
+        "geofenceStatus": "INSIDE",
+        "deviceStatus": "ONLINE",
+        "heartRate": 78,
+        "steps": 1250,
+        "lastSeen": 1794145816223
+      }
+    },
+    {
+      "id": "STU-4001",
+      "studentId": "STU-4001",
+      "uniqueId": "STU-4001",
+      "name": "Jasurbek Qodirov",
+      "schoolId": "SCH040",
+      "schoolName": "Urganch 40-maktab",
+      "classId": "cls-40-5a",
+      "className": "5-A",
+      "parentId": "usr-par-1794145314738",
+      "parentName": "Qodir Karimov",
+      "parentPhone": "+998909876543",
+      "deviceId": "watch-5pro-4001",
+      "deviceModel": "Samsung Galaxy Watch5 Pro",
+      "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+      "status": "ACTIVE",
+      "telemetry": {
+        "latitude": 41.554,
+        "longitude": 60.628,
+        "batteryLevel": 95,
+        "isWorn": true,
+        "geofenceStatus": "INSIDE",
+        "deviceStatus": "ONLINE",
+        "heartRate": 78,
+        "steps": 1250,
+        "lastSeen": 1794145756987
+      }
     }
   ],
   "attendance": [
@@ -593,6 +839,19 @@
       "distFromSchool": 0,
       "lastSeen": 1793890692998,
       "isRealDevice": true
+    },
+    "watch-5pro-4001": {
+      "deviceId": "watch-5pro-4001",
+      "studentId": "STU-4001",
+      "latitude": 41.554,
+      "longitude": 60.628,
+      "batteryLevel": 95,
+      "isWorn": true,
+      "geofenceStatus": "INSIDE",
+      "deviceStatus": "ONLINE",
+      "heartRate": 78,
+      "steps": 1250,
+      "lastSeen": 1794145816223
     }
   },
   "notifications": [
@@ -921,6 +1180,87 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1794145816223",
+      "timestamp": "2026-11-08T13:50:16.223Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794145815959",
+      "timestamp": "2026-11-08T13:50:15.959Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794145815702",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794145815424",
+      "timestamp": "2026-11-08T13:50:15.424Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
+    {
+      "id": "log-1794145756987",
+      "timestamp": "2026-11-08T13:49:16.987Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794145756720",
+      "timestamp": "2026-11-08T13:49:16.720Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794145756462",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794145756182",
+      "timestamp": "2026-11-08T13:49:16.182Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
+    {
+      "id": "log-1794145314994",
+      "timestamp": "2026-11-08T13:41:54.994Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794145314472",
+      "timestamp": "2026-11-08T13:41:54.472Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794145314213",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794145313926",
+      "timestamp": "2026-11-08T13:41:53.926Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
     {
       "id": "log-1",
       "timestamp": "2026-11-04T07:33:50.072Z",

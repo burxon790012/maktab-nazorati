@@ -304,12 +304,12 @@ const defaultPublishedCms = {
     }
   ],
   contact: {
-    phone: "+998 71 200-50-50",
-    mobile: "+998 90 123-45-67",
-    email: "info@smartchild.uz",
-    address: "O'zbekiston Respublikasi, Toshkent sh., Chilonzor tumani, Bunyodkor shoh ko'chasi, 42-uy",
+    phone: "+998 97 200-12-79",
+    mobile: "+998 97 200-12-79",
+    email: "burxonturayev7900@gmail.com",
+    address: "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
     workingHours: "Dushanba - Shanba: 08:30 - 18:30",
-    telegram: "https://t.me/smartchild_uz",
+    telegram: "https://t.me/MMSA571",
     instagram: "https://instagram.com/smartchild_uz",
     youtube: "https://youtube.com/@smartchild_uz"
   },

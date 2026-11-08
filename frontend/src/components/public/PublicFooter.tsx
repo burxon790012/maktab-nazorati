@@ -51,17 +51,16 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
 
             {/* Social Links */}
             <div className="flex items-center gap-3 pt-2">
-              {contact?.telegram && (
-                <a
-                  href={contact.telegram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-400 transition-colors"
-                  aria-label="Telegram kanal"
-                >
-                  <Send className="w-4 h-4" />
-                </a>
-              )}
+              <a
+                href={contact?.telegram || "https://t.me/MMSA571"}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2.5 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-400 transition-colors"
+                aria-label="Telegram (@MMSA571)"
+                title="Telegram (@MMSA571)"
+              >
+                <Send className="w-4 h-4" />
+              </a>
               {contact?.instagram && (
                 <a
                   href={contact.instagram}
@@ -152,14 +151,17 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
               Aloqa
             </h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              {contact?.address}
+              {contact?.address || "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy"}
             </p>
             <div className="text-xs space-y-1">
-              <a href={`tel:${contact?.phone}`} className="block text-white hover:text-cyan-400">
-                {contact?.phone}
+              <a href="tel:+998972001279" className="block text-white hover:text-cyan-400 font-semibold">
+                +998 97 200-12-79
               </a>
-              <a href={`mailto:${contact?.email}`} className="block text-slate-300 hover:text-cyan-400">
-                {contact?.email}
+              <a href="mailto:burxonturayev7900@gmail.com" className="block text-slate-300 hover:text-cyan-400">
+                burxonturayev7900@gmail.com
+              </a>
+              <a href="https://t.me/MMSA571" target="_blank" rel="noreferrer" className="block text-cyan-400 hover:text-cyan-300">
+                Telegram: @MMSA571
               </a>
             </div>
           </div>

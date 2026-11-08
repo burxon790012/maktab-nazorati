@@ -421,11 +421,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({
                   </div>
                   <div>
                     <div className="font-semibold text-white">Maktab navbatchi qismi</div>
-                    <div className="text-[11px] text-slate-400">+998 71 200-50-50</div>
+                    <div className="text-[11px] text-slate-400">+998 97 200-12-79</div>
                   </div>
                 </div>
                 <a
-                  href="tel:+998712005050"
+                  href="tel:+998972001279"
                   className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition"
                 >
                   Qo'ng'iroq

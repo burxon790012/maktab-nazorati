@@ -54,14 +54,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telefon raqamlari</h4>
                 <div className="mt-1 space-y-0.5">
-                  <a href={`tel:${contact?.phone}`} className="block text-base font-bold text-white hover:text-cyan-400 transition-colors">
-                    {contact?.phone || "+998 71 200-50-50"}
+                  <a href="tel:+998972001279" className="block text-base font-bold text-white hover:text-cyan-400 transition-colors">
+                    +998 97 200-12-79
                   </a>
-                  {contact?.mobile && (
-                    <a href={`tel:${contact.mobile}`} className="block text-sm text-slate-300 hover:text-cyan-400 transition-colors">
-                      {contact.mobile}
-                    </a>
-                  )}
                 </div>
               </div>
             </div>
@@ -72,8 +67,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Elektron pochta</h4>
-                <a href={`mailto:${contact?.email}`} className="mt-1 block text-base font-bold text-white hover:text-cyan-400 transition-colors">
-                  {contact?.email || "info@smartchild.uz"}
+                <a href="mailto:burxonturayev7900@gmail.com" className="mt-1 block text-base font-bold text-white hover:text-cyan-400 transition-colors">
+                  burxonturayev7900@gmail.com
                 </a>
               </div>
             </div>
@@ -85,8 +80,25 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bosh ofis manzili</h4>
                 <p className="mt-1 text-sm font-medium text-slate-200 leading-relaxed">
-                  {contact?.address || "O'zbekiston, Toshkent sh., Chilonzor tumani, Bunyodkor shoh ko'chasi, 42-uy"}
+                  O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy
                 </p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-slate-900/60 border border-white/10 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <Send className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telegram</h4>
+                <a
+                  href="https://t.me/MMSA571"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 block text-base font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+                >
+                  @MMSA571
+                </a>
               </div>
             </div>
 

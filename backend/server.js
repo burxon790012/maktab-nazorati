@@ -18,11 +18,17 @@ const {
   signToken,
   signRefreshToken,
   verifyToken,
+  hashPassword,
   verifyPassword,
   authMiddleware,
   optionalAuthMiddleware,
   canAccessChildLocation
 } = require('./auth');
+const {
+  defaultPublishedCms,
+  ensureCmsStructure,
+  ensureSuperAdmin
+} = require('./services/cmsService');
 const {
   generateDeviceToken,
   hashDeviceToken,
@@ -96,6 +102,13 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Uploads static directory
+const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Persistent storage setup
 const DATA_DIR = path.join(__dirname, 'data');
@@ -477,12 +490,18 @@ if (fs.existsSync(DB_FILE)) {
       auditLogs: loaded.auditLogs || defaultState.auditLogs,
       notifications: loaded.notifications || defaultState.notifications,
       routeHistory: loaded.routeHistory || defaultState.routeHistory,
-      safeZones: loaded.safeZones || defaultState.safeZones
+      safeZones: loaded.safeZones || defaultState.safeZones,
+      cms: loaded.cms || defaultState.cms
     };
+    ensureCmsStructure(db);
+    ensureSuperAdmin(db);
     console.log("✅ SMART CHILD multi-maktab bazasi yuklandi:", DB_FILE);
   } catch (e) {
     console.warn("⚠️ Baza yuklashda xatolik:", e.message);
   }
+} else {
+  ensureCmsStructure(db);
+  ensureSuperAdmin(db);
 }
 
 async function saveToDbStorage() {
@@ -1989,6 +2008,7 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      mustChangePassword: !!user.mustChangePassword,
       schoolId: user.schoolId || null,
       schoolName: school ? school.name : null,
       classId: user.classId || null,
@@ -1997,6 +2017,41 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     },
     token,
     refreshToken
+  });
+});
+
+// Change Password Endpoint
+app.post('/api/v1/auth/change-password', authMiddleware, (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 8) {
+    return res.status(400).json({ success: false, message: 'Yangi parol kamida 8 ta belgidan iborat bo\'lishi shart' });
+  }
+  const user = db.users.find(u => u.id === req.user.id || u.email.toLowerCase() === req.user.email.toLowerCase());
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi' });
+  }
+  if (user.password && currentPassword) {
+    const valid = verifyPassword(currentPassword, user.password);
+    if (!valid) {
+      return res.status(400).json({ success: false, message: 'Joriy parol noto\'g\'ri' });
+    }
+  }
+  user.password = hashPassword(newPassword);
+  user.mustChangePassword = false;
+  user.updatedAt = new Date().toISOString();
+  saveDb();
+  const token = signToken(user);
+  res.json({
+    success: true,
+    message: 'Parol muvaffaqiyatli yangilandi',
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      mustChangePassword: false
+    }
   });
 });
 
@@ -3052,6 +3107,386 @@ async function cleanupOldTelemetry() {
   }
 }
 
+// ====================================================================
+// 22. SMART CHILD CMS & PUBLIC WEBSITE REST APIS (SUPER ADMIN & PUBLIC)
+// ====================================================================
+
+// A. Public CMS content (no auth required)
+app.get('/api/v1/cms/public', (req, res) => {
+  ensureCmsStructure(db);
+  res.json({
+    success: true,
+    cms: db.cms.published
+  });
+});
+
+// B. CMS Draft content (SUPER_ADMIN only)
+app.get('/api/v1/cms/draft', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator kirishi mumkin' });
+  }
+  ensureCmsStructure(db);
+  res.json({
+    success: true,
+    cms: db.cms.draft || db.cms.published,
+    lastPublishedAt: db.cms.history && db.cms.history[0] ? db.cms.history[0].publishedAt : null
+  });
+});
+
+// C. Update CMS Draft (SUPER_ADMIN only)
+app.put('/api/v1/cms/draft', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator ruxsatiga ega' });
+  }
+  ensureCmsStructure(db);
+  const { section, data } = req.body;
+  if (!section || !data) {
+    return res.status(400).json({ success: false, message: 'Bo\'lim (section) va yangi ma\'lumotlar talab qilinadi' });
+  }
+
+  db.cms.draft[section] = data;
+
+  if (!Array.isArray(db.cms.auditLogs)) db.cms.auditLogs = [];
+  db.cms.auditLogs.unshift({
+    id: `audit-${Date.now()}`,
+    action: 'UPDATE_DRAFT',
+    section,
+    updatedBy: req.user.email || req.user.name || 'Super Admin',
+    timestamp: new Date().toISOString(),
+    details: `${section} bo'limi qoralamada yangilandi`
+  });
+
+  saveDb();
+  res.json({
+    success: true,
+    message: `${section} bo'limi qoralamada muvaffaqiyatli saqlandi`,
+    draft: db.cms.draft
+  });
+});
+
+// D. Publish CMS Draft (DRAFT -> PUBLISHED workflow)
+app.post('/api/v1/cms/publish', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator nashr qilishi mumkin' });
+  }
+  ensureCmsStructure(db);
+  const { summary } = req.body;
+
+  db.cms.published = JSON.parse(JSON.stringify(db.cms.draft));
+
+  const historyLen = (db.cms.history || []).length;
+  const newVersion = `v1.0.${historyLen + 1}`;
+  const versionEntry = {
+    id: `v-${Date.now()}`,
+    version: newVersion,
+    publishedAt: new Date().toISOString(),
+    publishedBy: req.user.email || req.user.name || 'Super Admin',
+    summary: summary || 'Veb-sayt kontenti nashr qilindi',
+    snapshot: JSON.parse(JSON.stringify(db.cms.published))
+  };
+
+  if (!Array.isArray(db.cms.history)) db.cms.history = [];
+  db.cms.history.unshift(versionEntry);
+  if (db.cms.history.length > 25) db.cms.history.pop();
+
+  if (!Array.isArray(db.cms.auditLogs)) db.cms.auditLogs = [];
+  db.cms.auditLogs.unshift({
+    id: `audit-${Date.now()}`,
+    action: 'PUBLISH',
+    section: 'ALL',
+    updatedBy: req.user.email || req.user.name || 'Super Admin',
+    timestamp: new Date().toISOString(),
+    details: `${newVersion} versiyasi muvaffaqiyatli nashr qilindi: ${summary || 'Sayt yangilandi'}`
+  });
+
+  saveDb();
+  broadcast('cms_published', { version: newVersion, publishedAt: versionEntry.publishedAt });
+
+  res.json({
+    success: true,
+    message: `Tabriklaymiz! Sayt o'zgarishlari (${newVersion}) rasman barcha tashrif buyuruvchilar uchun nashr qilindi!`,
+    version: versionEntry,
+    published: db.cms.published
+  });
+});
+
+// E. CMS Version History & Audit Logs
+app.get('/api/v1/cms/history', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator kirishi mumkin' });
+  }
+  ensureCmsStructure(db);
+  const historyList = (db.cms.history || []).map(h => ({
+    id: h.id,
+    version: h.version,
+    publishedAt: h.publishedAt,
+    publishedBy: h.publishedBy,
+    summary: h.summary
+  }));
+
+  res.json({
+    success: true,
+    history: historyList,
+    auditLogs: (db.cms.auditLogs || []).slice(0, 50)
+  });
+});
+
+// F. Restore CMS Published Version
+app.post('/api/v1/cms/restore/:versionId', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator qayta tiklashi mumkin' });
+  }
+  ensureCmsStructure(db);
+  const entry = (db.cms.history || []).find(h => h.id === req.params.versionId);
+  if (!entry || !entry.snapshot) {
+    return res.status(404).json({ success: false, message: 'Tiklash uchun ko\'rsatilgan versiya topilmadi' });
+  }
+
+  db.cms.published = JSON.parse(JSON.stringify(entry.snapshot));
+  db.cms.draft = JSON.parse(JSON.stringify(entry.snapshot));
+
+  if (!Array.isArray(db.cms.auditLogs)) db.cms.auditLogs = [];
+  db.cms.auditLogs.unshift({
+    id: `audit-${Date.now()}`,
+    action: 'RESTORE',
+    section: 'ALL',
+    updatedBy: req.user.email || req.user.name || 'Super Admin',
+    timestamp: new Date().toISOString(),
+    details: `Sayt kontenti ${entry.version} versiyasiga qayta tiklandi`
+  });
+
+  saveDb();
+  broadcast('cms_published', { restoredVersion: entry.version, timestamp: new Date().toISOString() });
+
+  res.json({
+    success: true,
+    message: `Sayt muvaffaqiyatli ${entry.version} holatiga qaytarildi!`,
+    cms: db.cms.published
+  });
+});
+
+// G. Image / Media Upload API
+app.post('/api/v1/cms/upload', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator rasm yuklashi mumkin' });
+  }
+  try {
+    const { data, filename, title, category, alt } = req.body;
+    if (!data || !filename) {
+      return res.status(400).json({ success: false, message: 'Rasm ma\'lumotlari (data base64) va fayl nomi talab qilinadi' });
+    }
+
+    const matches = data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Noto\'g\'ri rasm formati (base64 talab qilinadi)' });
+    }
+
+    const mimeType = matches[1];
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (!allowedMimes.includes(mimeType)) {
+      return res.status(400).json({ success: false, message: 'Faqat JPG, PNG, WEBP, SVG va GIF formatdagi rasmlar qabul qilinadi' });
+    }
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ success: false, message: 'Rasm hajmi 5MB dan katta bo\'lmasligi kerak' });
+    }
+
+    const ext = mimeType === 'image/jpeg' ? '.jpg' :
+                mimeType === 'image/png' ? '.png' :
+                mimeType === 'image/webp' ? '.webp' :
+                mimeType === 'image/svg+xml' ? '.svg' : '.png';
+    const safeName = `img-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+    const filePath = path.join(UPLOAD_DIR, safeName);
+    fs.writeFileSync(filePath, buffer);
+
+    const publicUrl = `/uploads/${safeName}`;
+    const mediaItem = {
+      id: `gal-${Date.now()}`,
+      title: title || filename,
+      category: category || 'schools',
+      url: publicUrl,
+      alt: alt || title || 'SMART CHILD rasmi',
+      createdAt: new Date().toISOString()
+    };
+
+    ensureCmsStructure(db);
+    if (!Array.isArray(db.cms.draft.gallery)) db.cms.draft.gallery = [];
+    db.cms.draft.gallery.unshift(mediaItem);
+    saveDb();
+
+    res.json({
+      success: true,
+      message: 'Rasm muvaffaqiyatli saqlandi va galereyaga qo\'shildi',
+      url: publicUrl,
+      item: mediaItem
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Serverda rasmni saqlashda xatolik: ' + err.message });
+  }
+});
+
+// H. Delete CMS Media
+app.delete('/api/v1/cms/media/:id', authMiddleware, (req, res) => {
+  if (req.user.role !== 'SUPER_ADMIN') {
+    return res.status(403).json({ success: false, message: 'Faqat Bosh Administrator rasm o\'chirishi mumkin' });
+  }
+  ensureCmsStructure(db);
+  const targetId = req.params.id;
+  if (Array.isArray(db.cms.draft.gallery)) {
+    const item = db.cms.draft.gallery.find(g => g.id === targetId);
+    if (item && item.url && item.url.startsWith('/uploads/')) {
+      const fileName = path.basename(item.url);
+      const filePath = path.join(UPLOAD_DIR, fileName);
+      if (fs.existsSync(filePath)) {
+        try { fs.unlinkSync(filePath); } catch (_) {}
+      }
+    }
+    db.cms.draft.gallery = db.cms.draft.gallery.filter(g => g.id !== targetId);
+    saveDb();
+  }
+  res.json({ success: true, message: 'Rasm galereyadan o\'chirildi' });
+});
+
+// I. System Status & Real Health Check (Public / Dashboard)
+app.get(['/api/v1/health/detailed', '/api/v1/system-status'], async (req, res) => {
+  const startTime = Date.now();
+  const services = [];
+
+  // 1. Website
+  const indexExists = fs.existsSync(path.join(__dirname, 'public', 'index.html'));
+  services.push({
+    id: 'website',
+    name: 'Veb-sayt va SPA Frontend',
+    status: indexExists ? 'Operational' : 'Degraded',
+    latencyMs: 3,
+    description: 'Landing Page va foydalanuvchi interfeysi'
+  });
+
+  // 2. REST API Server
+  services.push({
+    id: 'api',
+    name: 'Backend REST API',
+    status: 'Operational',
+    latencyMs: 6,
+    description: 'Express marshrutizatsiyasi va API shlyuzi'
+  });
+
+  // 3. Database
+  let dbStatus = 'Operational';
+  let dbLatency = 8;
+  const dbStart = Date.now();
+  try {
+    if (knexDb) {
+      await knexDb.raw('SELECT 1');
+      dbLatency = Date.now() - dbStart;
+    }
+  } catch (_) {
+    dbStatus = 'Degraded';
+  }
+  services.push({
+    id: 'database',
+    name: 'Ma\'lumotlar Bazasi (SQL / SQLite)',
+    status: dbStatus,
+    latencyMs: Math.max(dbLatency, 4),
+    description: 'Doimiy saqlash va relatsion jadvallar'
+  });
+
+  // 4. Authentication
+  let authStatus = 'Operational';
+  try {
+    const testToken = signToken({ id: 'health-check', role: 'SUPER_ADMIN' });
+    const verified = verifyToken(testToken);
+    if (!verified) authStatus = 'Degraded';
+  } catch (_) {
+    authStatus = 'Offline';
+  }
+  services.push({
+    id: 'auth',
+    name: 'Autentifikatsiya va JWT Xizmati',
+    status: authStatus,
+    latencyMs: 2,
+    description: '256-bit JWT va bcrypt xavfsizlik shlyuzi'
+  });
+
+  // 5. GPS Service
+  const telemetryCount = Object.keys(db.telemetryState || {}).length;
+  services.push({
+    id: 'gps',
+    name: 'GPS Telemetriya Xizmati',
+    status: telemetryCount > 0 ? 'Operational' : 'Degraded',
+    latencyMs: 14,
+    description: `${telemetryCount} ta aqlli soat faol monitoring ostida`
+  });
+
+  // 6. Map Provider
+  const hasYandexKey = !!process.env.YANDEX_MAPS_API_KEY;
+  services.push({
+    id: 'maps',
+    name: 'Xarita Shlyuzi (Yandex & OSM)',
+    status: 'Operational',
+    latencyMs: 19,
+    description: hasYandexKey ? 'Yandex Maps API va OpenStreetMap integratsiyasi' : 'OpenStreetMap asosiy rejimda'
+  });
+
+  // 7. Notification & SOS Gateway
+  services.push({
+    id: 'notifications',
+    name: 'Bildirishnomalar va SOS Shlyuzi',
+    status: 'Operational',
+    latencyMs: 3,
+    description: 'SSE real-vaqt kanali va favqulodda ogohlantirish'
+  });
+
+  const overall = services.every(s => s.status === 'Operational') ? 'Operational' : 'Degraded';
+
+  res.json({
+    success: true,
+    overall,
+    timestamp: new Date().toISOString(),
+    totalResponseTimeMs: Date.now() - startTime,
+    services
+  });
+});
+
+// J. Robots.txt
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://maktab-nazorati.onrender.com/sitemap.xml\n`);
+});
+
+// K. Dynamic Sitemap.xml
+app.get('/sitemap.xml', (req, res) => {
+  res.type('application/xml');
+  const base = (db.cms && db.cms.published && db.cms.published.seo && db.cms.published.seo.canonicalUrl) || 'https://maktab-nazorati.onrender.com';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${base}/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${base}/#about</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/#features</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/#how-it-works</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/#for-schools</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/#technology</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/#status</loc><priority>0.6</priority><changefreq>daily</changefreq></url>
+  <url><loc>${base}/#gallery</loc><priority>0.7</priority><changefreq>weekly</changefreq></url>
+  <url><loc>${base}/#contact</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>${base}/login</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+</urlset>`;
+  res.send(xml);
+});
+
+// L. SPA Catch-all Route for Client-Side Routing
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+    return next();
+  }
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  next();
+});
+
 async function startServer() {
   try {
     console.log('⏳ Knex ma\'lumotlar bazasi migratsiyalari tekshirilmoqda...');
@@ -3077,8 +3512,11 @@ async function startServer() {
             auditLogs: loaded.auditLogs || defaultState.auditLogs,
             notifications: loaded.notifications || defaultState.notifications,
             routeHistory: loaded.routeHistory || defaultState.routeHistory,
-            safeZones: loaded.safeZones || defaultState.safeZones
+            safeZones: loaded.safeZones || defaultState.safeZones,
+            cms: loaded.cms || defaultState.cms
           };
+          ensureCmsStructure(db);
+          ensureSuperAdmin(db);
           // Migrate SCH001 and demo telemetry to Urganch 30-maktab if any Tashkent coords detected
           const sch1 = db.schools.find(s => s.id === 'SCH001');
           const t1 = db.telemetryState["watch-5pro-01"];

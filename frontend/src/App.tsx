@@ -22,6 +22,9 @@ import {
   CorrectionDialog,
   NotificationDrawer,
 } from '@/components/Modals';
+import { LandingPage } from '@/components/public/LandingPage';
+import { LoginPage } from '@/components/auth/LoginPage';
+import { WebsiteManager } from '@/components/cms/WebsiteManager';
 
 export type KpiFilter = 'ALL' | 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'SOS' | 'ONLINE' | 'OFFLINE';
 
@@ -79,6 +82,37 @@ export const App: React.FC = () => {
   const [statsDrawerOpen, setStatsDrawerOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
+
+  // Client Routing state (Public Website vs Dashboard vs Login)
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname;
+      if (p === '/login') return '/login';
+      if (p === '/preview') return '/preview';
+      if (p === '/dashboard') return '/dashboard';
+      if (window.location.search.includes('dashboard') || window.location.hash.includes('dashboard')) {
+        return '/dashboard';
+      }
+      return '/';
+    }
+    return '/';
+  });
+
+  const navigateTo = (path: string) => {
+    setCurrentPath(path);
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.pushState({}, '', path);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const onPop = () => {
+      setCurrentPath(window.location.pathname || '/');
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   // Modals state
   const [openAddSchool, setOpenAddSchool] = useState(false);
@@ -431,6 +465,55 @@ export const App: React.FC = () => {
 
   const unreadAlertsCount = notifications.filter((n) => !n.isRead).length;
 
+  // 1. PUBLIC LANDING PAGE (First page visitors see when opening domain)
+  if (currentPath === '/') {
+    return (
+      <LandingPage
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onNavigate={navigateTo}
+        currentUser={users.find((u) => u.role === currentRole) || users[0]}
+        token={token}
+      />
+    );
+  }
+
+  // 2. DEDICATED LOGIN PAGE (/login)
+  if (currentPath === '/login') {
+    return (
+      <LoginPage
+        onLoginSuccess={(user, userToken) => {
+          setToken(userToken);
+          try {
+            localStorage.setItem('maktab_auth_token', userToken);
+          } catch (_) {}
+          if (user.role) {
+            setCurrentRole(user.role as Role);
+          }
+          navigateTo('/dashboard');
+        }}
+        onNavigateHome={() => navigateTo('/')}
+      />
+    );
+  }
+
+  // 3. PREVIEW MODE FOR CMS DRAFTS (/preview)
+  if (currentPath === '/preview') {
+    return (
+      <LandingPage
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onNavigate={navigateTo}
+        currentUser={users.find((u) => u.role === currentRole) || users[0]}
+        token={token}
+        isPreviewMode={true}
+        onPublishDraft={() => {
+          fetchStudents();
+        }}
+      />
+    );
+  }
+
   return (
     <div
       className={`flex h-screen w-screen overflow-hidden bg-[#0b1220] text-[#eaf2ff] select-none ${
@@ -485,10 +568,11 @@ export const App: React.FC = () => {
               localStorage.removeItem('maktab_auth_token');
             } catch (_) {}
             setToken('');
-            loginWithRole('PARENT');
+            navigateTo('/');
           }}
           isDemoMode={isDemoMode}
           onToggleDemoMode={() => setIsDemoMode(!isDemoMode)}
+          onOpenPublicWebsite={() => navigateTo('/')}
           activeSosStudent={
             students.find((s) => s.telemetry?.isSos) || null
           }
@@ -623,6 +707,17 @@ export const App: React.FC = () => {
                   }}
                   onOpenAddUser={() => {}}
                   onFlyToSchool={() => setCurrentTab('map')}
+                  token={token}
+                  onPreview={() => navigateTo('/preview')}
+                />
+              </div>
+            )}
+
+            {currentTab === 'website' && (
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
+                <WebsiteManager
+                  token={token}
+                  onPreview={() => navigateTo('/preview')}
                 />
               </div>
             )}

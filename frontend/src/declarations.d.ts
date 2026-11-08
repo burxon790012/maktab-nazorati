@@ -187,6 +187,35 @@ declare module 'lucide-react' {
   export const PieChart: any;
   export const Info: any;
   export const ExternalLink: any;
+  export const Globe: any;
+  export const ArrowLeft: any;
+  export const ArrowRight: any;
+  export const LogIn: any;
+  export const Lock: any;
+  export const Mail: any;
+  export const EyeOff: any;
+  export const KeyRound: any;
+  export const Image: any;
+  export const Megaphone: any;
+  export const Newspaper: any;
+  export const Palette: any;
+  export const Save: any;
+  export const Send: any;
+  export const History: any;
+  export const Upload: any;
+  export const HeartHandshake: any;
+  export const MessageSquare: any;
+  export const BellRing: any;
+  export const Sliders: any;
+  export const Building: any;
+  export const Instagram: any;
+  export const Youtube: any;
+  export const LayoutDashboard: any;
+  export const XCircle: any;
+  export const Cpu: any;
+  export const Satellite: any;
+  export const Wifi: any;
+  export const Settings: any;
 }
 
 declare module '@radix-ui/react-slot' {

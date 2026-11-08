@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronDown,
   ShieldAlert,
+  Globe,
 } from 'lucide-react';
 import { Student } from '@/types';
 
@@ -41,6 +42,7 @@ interface TopbarProps {
   onSelectSosStudent?: (student: Student) => void;
   onToggleStats?: () => void;
   isStatsOpen?: boolean;
+  onOpenPublicWebsite?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -65,6 +67,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   onSelectSosStudent,
   onToggleStats,
   isStatsOpen,
+  onOpenPublicWebsite,
 }) => {
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -292,6 +295,18 @@ export const Topbar: React.FC<TopbarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Link to Public Website */}
+        {onOpenPublicWebsite && (
+          <button
+            onClick={onOpenPublicWebsite}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[#22d3ee] hover:text-white text-xs font-semibold transition"
+            title="Ommaviy veb-saytni ko'rish"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Veb-sayt</span>
+          </button>
+        )}
 
         {/* EXACTLY ONE Theme Toggle */}
         <button

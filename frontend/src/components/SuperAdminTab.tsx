@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { School, Student, User } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { School as SchoolIcon, Users, CheckCircle2, Watch, Edit3, MapPin, Plus } from 'lucide-react';
+import { School as SchoolIcon, Users, CheckCircle2, Watch, Edit3, MapPin, Plus, Globe, Settings } from 'lucide-react';
+import { WebsiteManager } from '@/components/cms/WebsiteManager';
 
 interface SuperAdminTabProps {
   schools: School[];
@@ -14,6 +15,8 @@ interface SuperAdminTabProps {
   onOpenEditSchool: (school: School) => void;
   onOpenAddUser: () => void;
   onFlyToSchool: (school: School) => void;
+  token?: string;
+  onPreview?: () => void;
 }
 
 export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
@@ -24,28 +27,63 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
   onOpenEditSchool,
   onOpenAddUser,
   onFlyToSchool,
+  token = '',
+  onPreview = () => {}
 }) => {
+  const [currentSection, setCurrentSection] = useState<'schools' | 'cms'>('schools');
+
   return (
     <div className="space-y-6">
-      {/* Top Banner & Action Buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-extrabold tracking-tight">👑 Super Admin Boshqaruv Paneli</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Barcha maktablar, unikal School ID va Geofence chegaralari, ma'murlar va platforma xavfsizligi
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={onOpenAddSchool} className="gap-1.5 shadow-md">
-            <Plus className="w-4 h-4" />
-            Yangi Maktab Qo'shish
-          </Button>
-          <Button variant="outline" onClick={onOpenAddUser} className="gap-1.5">
-            <Users className="w-4 h-4" />
-            Admin / O'qituvchi Qo'shish
-          </Button>
-        </div>
+      {/* Super Admin Section Navigation */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface border border-border w-fit">
+        <button
+          onClick={() => setCurrentSection('schools')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            currentSection === 'schools'
+              ? 'bg-cyan-500 text-slate-950 shadow-md'
+              : 'text-muted hover:text-text'
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          <span>Maktablar va Foydalanuvchilar</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentSection('cms')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            currentSection === 'cms'
+              ? 'bg-cyan-500 text-slate-950 shadow-md'
+              : 'text-muted hover:text-text'
+          }`}
+        >
+          <Globe className="w-4 h-4" />
+          <span>WEBSITE MANAGEMENT (CMS)</span>
+        </button>
       </div>
+
+      {currentSection === 'cms' ? (
+        <WebsiteManager token={token} onPreview={onPreview} />
+      ) : (
+        <>
+          {/* Top Banner & Action Buttons */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold tracking-tight">👑 Super Admin Boshqaruv Paneli</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Barcha maktablar, unikal School ID va Geofence chegaralari, ma'murlar va platforma xavfsizligi
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={onOpenAddSchool} className="gap-1.5 shadow-md">
+                <Plus className="w-4 h-4" />
+                Yangi Maktab Qo'shish
+              </Button>
+              <Button variant="outline" onClick={onOpenAddUser} className="gap-1.5">
+                <Users className="w-4 h-4" />
+                Admin / O'qituvchi Qo'shish
+              </Button>
+            </div>
+          </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -245,6 +283,8 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
           </TableBody>
         </Table>
       </Card>
+        </>
+      )}
     </div>
   );
 };

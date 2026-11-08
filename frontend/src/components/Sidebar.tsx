@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Globe,
 } from 'lucide-react';
 
 export type NavTab =
@@ -25,7 +26,8 @@ export type NavTab =
   | 'health'
   | 'parents'
   | 'reports'
-  | 'superadmin';
+  | 'superadmin'
+  | 'website';
 
 interface SidebarProps {
   currentTab: NavTab;
@@ -63,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'parents' as NavTab, label: 'Ota-ona ilovasi', icon: Smartphone },
     { id: 'reports' as NavTab, label: 'Hisobotlar', icon: FileText },
     { id: 'superadmin' as NavTab, label: 'Super Admin', icon: ShieldAlert },
+    { id: 'website' as NavTab, label: 'Veb-sayt (CMS)', icon: Globe },
   ];
 
   return (

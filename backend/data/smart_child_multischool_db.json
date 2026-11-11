@@ -15,20 +15,20 @@
       "color": "#10b981",
       "polygon": [
         [
-          41.5522,
-          60.6292
+          41.5513,
+          60.6305
         ],
         [
-          41.5522,
-          60.6338
+          41.5513,
+          60.6325
         ],
         [
-          41.5488,
-          60.6338
+          41.5497,
+          60.6325
         ],
         [
-          41.5488,
-          60.6292
+          41.5497,
+          60.6305
         ]
       ],
       "adminEmail": "admin.sch1@smartchild.uz",
@@ -131,937 +131,7 @@
         ]
       ],
       "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T13:41:53.667Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T13:49:15.924Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T13:50:15.167Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T14:34:05.065Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T17:37:04.005Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T17:38:20.734Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T17:38:40.927Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T17:51:17.354Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T18:53:00.648Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T18:56:45.564Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T18:57:28.692Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-08T19:01:06.487Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-09T17:09:17.731Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:21:48.782Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:22:16.518Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:22:47.047Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:23:16.885Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:30:50.953Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T08:59:25.911Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T09:00:02.487Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T09:01:15.280Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T09:01:47.291Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:28:08.284Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:39:19.415Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:43:16.610Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:48:23.173Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:54:30.420Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T15:58:20.125Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-10T16:11:53.631Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-11T09:47:30.837Z"
-    },
-    {
-      "id": "SCH040",
-      "geofenceId": "GEOSCH040",
-      "code": "SCH040",
-      "name": "Urganch 40-maktab",
-      "address": "Urganch shahar, Al-Xorazmiy ko'chasi",
-      "lat": 41.554,
-      "lng": 60.628,
-      "startTime": "08:00",
-      "endTime": "13:00",
-      "polygon": [
-        [
-          41.556000000000004,
-          60.625
-        ],
-        [
-          41.556000000000004,
-          60.631
-        ],
-        [
-          41.552,
-          60.631
-        ],
-        [
-          41.552,
-          60.625
-        ]
-      ],
-      "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-11T09:55:24.327Z"
+      "createdAt": "2026-11-11T10:06:07.991Z"
     }
   ],
   "users": [
@@ -1120,30 +190,30 @@
       "username": "otaona"
     },
     {
-      "id": "usr-dir-1794145313667",
+      "id": "usr-dir-1794391567991",
       "name": "Qodir Rahimov",
       "username": "direktor_40",
       "email": "direktor_40@smartchild.uz",
       "phone": "+998901234567",
-      "password": "$2b$12$SsvA1vC7d4vFDVZ8W3nK2.4/VAOpq7R2BjS5yJHnSgJZGBNLn4AXS",
+      "password": "$2b$12$GjT4JICyeN8fHpfSghJglOStxR4irLcCl/cecfQFqlmd98QoahyAi",
       "role": "SCHOOL_ADMIN",
       "schoolId": "SCH040",
       "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:41:53.926Z"
+      "createdAt": "2026-11-11T10:06:08.438Z"
     },
     {
-      "id": "usr-teach-1794145314213",
+      "id": "usr-teach-1794391568931",
       "name": "Nodira Salimova",
       "username": "nodira_oqituvchi",
       "email": "nodira_oqituvchi@smartchild.uz",
       "phone": "+998901234567",
-      "password": "$2b$12$dVebGhGTJcitZDWmQZ5mz.2ftgtqEPk9IrVXkaW3hU5sTBzQDhsFW",
+      "password": "$2b$12$qu6uPdXQoZdnvvT7f4JS1.rcOFujwzS2RDD5kaNAaVG2N6Mdsvi7C",
       "role": "TEACHER",
       "schoolId": "SCH040",
       "classId": "cls-40-5a",
       "className": "5-A",
       "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:41:54.472Z"
+      "createdAt": "2026-11-11T10:06:09.373Z"
     },
     {
       "id": "usr-par-1794145314738",
@@ -1158,786 +228,6 @@
       ],
       "mustChangePassword": false,
       "createdAt": "2026-11-08T13:41:54.994Z"
-    },
-    {
-      "id": "usr-dir-1794145755924",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$dC.xg2vMicMt8pDPuzEx0uOqc3cachplWqljgdy60r766Uj.5fgBq",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:49:16.182Z"
-    },
-    {
-      "id": "usr-teach-1794145756462",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Gt3jH/dkbvAjY8Njr62GPexK20H1GiCT6ohMHxOUuyCwDp0DPMFkO",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:49:16.720Z"
-    },
-    {
-      "id": "usr-dir-1794145815167",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Va7raxdhJY9h3T6iTNo7Ze0LzcsGXnwBtfCXYbewdkOHzLu1vpzMe",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:50:15.424Z"
-    },
-    {
-      "id": "usr-teach-1794145815702",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$va1tHfRl3w32jkJDNKzArOgBHoEuEbconI7vesXJg/Ab0Hg7QibYy",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T13:50:15.959Z"
-    },
-    {
-      "id": "usr-dir-1794148445065",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$ymoGoiG.yNRx4XSgayhgJOPgLMTiugVAbW0x/KCA4J4845KYIivVm",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T14:34:05.321Z"
-    },
-    {
-      "id": "usr-teach-1794148445604",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$SD.y4riOJ8NZmNoQLfp3b.1y1LVZ7pHXo2VbNt0SIa/5a8a85FwZy",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T14:34:05.861Z"
-    },
-    {
-      "id": "usr-dir-1794159424005",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$lIVeuq7BZGKeXFDPyFJ0S.OTfQPpa9I3e65NMBqSSsOWHP85Qh4PK",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:37:04.262Z"
-    },
-    {
-      "id": "usr-teach-1794159424550",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$5JEr2MUvMObiGOIO.Zu86uO.LGXG6bXaTlStyd039X24mA49qi0Wq",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:37:04.806Z"
-    },
-    {
-      "id": "usr-dir-1794159500734",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$tMfPmTFAOFaCj.GgKMrHv.MxJ3o9EQJ7SPbniiHxHPPDI0pfrHPY6",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:38:20.990Z"
-    },
-    {
-      "id": "usr-teach-1794159501268",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$iLSFOJkqfQ9GOzBSosjwmuDRHAZbIrU5lOIwX/vdYQTb2bY80B4Ea",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:38:21.523Z"
-    },
-    {
-      "id": "usr-dir-1794159520927",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$bly1j5PIP3pewb1N9Vt/IOJTPLmvPqIluUOnC/I8ivfTNwR8QiKO2",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:38:41.184Z"
-    },
-    {
-      "id": "usr-teach-1794159521464",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$nEYApMQouSrUQQtdVznBkeRmvopIvM1z7CJji36kPmPbe.a32WijK",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:38:41.719Z"
-    },
-    {
-      "id": "usr-dir-1794160277354",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$RQzUUciFCUlqSjbJHmEtaOrK4sElaWeX.MCocJOW22gtT88ksgLxi",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:51:17.610Z"
-    },
-    {
-      "id": "usr-teach-1794160277890",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$YlBo6bwGJfrq.hU9Yv.H7erPMnLrtxUm6bUVY.w6NnT7laNUTuvgq",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T17:51:18.146Z"
-    },
-    {
-      "id": "usr-dir-1794163980648",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$bbcSBut5jNlhlEW4Hf5rg.7HeIip0JGUrASHo5fzW7ngWXzFkgWza",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:53:00.904Z"
-    },
-    {
-      "id": "usr-teach-1794163981186",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$hLfpmEpOD2VYjClOzcqTyOe1LjzHGHGUo9RT0ZPQu7aRq8SGHVTQq",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:53:01.442Z"
-    },
-    {
-      "id": "usr-dir-1794164205564",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$cTzZec6fjFhlWfS7waUQ2O12wA8SZXLq/u7Wixel.QUyTrExOZ7YO",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:56:45.820Z"
-    },
-    {
-      "id": "usr-teach-1794164206099",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$x8.SyMVCRvlHMCqxgH8moeySHBiDLKZEmkCkWGVAqvX1nEvnywBGi",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:56:46.355Z"
-    },
-    {
-      "id": "usr-dir-1794164248692",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$vX7/YSzAp2Pa/h/XSlLPQ.3HxDz1mx5t1gEh48CycHb/PIo5ajNoG",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:57:28.948Z"
-    },
-    {
-      "id": "usr-teach-1794164249227",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$VU0y7733mQS1dE/OTvqdW.SxL6ZSaFClT7hMN1aMc9muIaMAAe3JO",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T18:57:29.482Z"
-    },
-    {
-      "id": "usr-dir-1794164466487",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$O4hESedGYdGphPKLL29jHeSRbBzW4JZtqbZ1Hzl4sN0V.OmiOg3qG",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T19:01:06.743Z"
-    },
-    {
-      "id": "usr-teach-1794164467029",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$CeTqV6W97UOriZCiU7AI4OKkgtqLi18Qfo5gkaz3TXz9pMN4vTb06",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-08T19:01:07.285Z"
-    },
-    {
-      "id": "usr-dir-1794244157731",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$1ZeewT1EX0nauySd0P7gkum/Bq7g7V7GVd5Kig4I8v3X/RqYA2svG",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-09T17:09:17.989Z"
-    },
-    {
-      "id": "usr-teach-1794244158272",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$vwo3TWkQEiZQtJq20zY9mewtfCDFPJhjb2d3g.UsfK7gjYdo2.AAe",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-09T17:09:18.529Z"
-    },
-    {
-      "id": "usr-dir-1794298908782",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Ns7lCVMWnNuAHDh4zrM2nOBTTrOWCWMiu9tYJmfM0sq7bSmXs6Tvm",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:21:49.047Z"
-    },
-    {
-      "id": "usr-teach-1794298909333",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$mOvKGimIHSMgQG4ZsEB58ODJKiS8BC8Nlq69NNrrcgZGWEmZ07uq2",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:21:49.597Z"
-    },
-    {
-      "id": "usr-dir-1794298936518",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$fK5vu6aGJZMRw.vYCebXseckGqm9g/kfLUx2HIyYmxNJ3ypHKBplq",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:22:16.774Z"
-    },
-    {
-      "id": "usr-teach-1794298937051",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$lkkncDKWBuzVP0imj8QETuPolJlmJ4aztdEadh2PgXvaVtKL/xkYW",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:22:17.306Z"
-    },
-    {
-      "id": "usr-dir-1794298967047",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Ng5EqnIHtSKROABcUdgttuNo98hzwYMqVtY3xPlzOTYo.RMuHgoVq",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:22:47.303Z"
-    },
-    {
-      "id": "usr-teach-1794298967584",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$ZJiR8miAkNIHHq3ZgZiAYeOm4o1wPaSH6VaBsTpJ0k/U14mMbmZWS",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:22:47.842Z"
-    },
-    {
-      "id": "usr-dir-1794298996885",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$2yqNJenv4jMmvSS2i4pKfuXAGeEMwiWXpku72z7EHVYpqXIZC4wUW",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:23:17.141Z"
-    },
-    {
-      "id": "usr-teach-1794298997420",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Bu.4eqTHq1qCLJRvD5MdlOLXXO164AQRUrDeQvfjRbsjaPV5Z9Aym",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:23:17.676Z"
-    },
-    {
-      "id": "usr-dir-1794299450953",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$VbEPhw/zxRAwx88ATiSkWef.xzz7WHXbLnbt4/MixQqsfM7x9RXEW",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:30:51.210Z"
-    },
-    {
-      "id": "usr-teach-1794299451502",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Mi6uCrhcgGEBHD5/9WQTIe2Xk3oC1CmLJ0yyR3aQvC3jR8QcyqqE.",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:30:51.757Z"
-    },
-    {
-      "id": "usr-dir-1794301165911",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$W/VQXSKzjjrMvysc2uk3uuEytnMsk/68h7C.kctjPmhybWs7gIhhS",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:59:26.167Z"
-    },
-    {
-      "id": "usr-teach-1794301166460",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$JPVaUQfiJ6vS1fZviAiBW.Wngq0LlwBFEV9Mz2mqf.SBgwA3lOdKO",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T08:59:26.715Z"
-    },
-    {
-      "id": "usr-dir-1794301202487",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$JlywthVeelsE7PjvzCcWF.FUed/4eEoEkqlqp32m0uCLHyEr8CD42",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:00:02.743Z"
-    },
-    {
-      "id": "usr-teach-1794301203022",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$DlcdS6BtagkWIACWcArwCOfVzSmyAeKpz7zih88qeZ/hCSUBqT6eq",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:00:03.278Z"
-    },
-    {
-      "id": "usr-dir-1794301275280",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$sh.C32Q2FP9Ol8sZza5aVeNtcowCfBA/1tedXCGUgQZ95o0FfZ8sS",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:01:15.537Z"
-    },
-    {
-      "id": "usr-teach-1794301275815",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$pa3.435.CNq4rnj9mwCx4Ol1Vzcs4WZGCRsqzXquzXodv2IP.4ZoK",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:01:16.070Z"
-    },
-    {
-      "id": "usr-dir-1794301307291",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$kYpHo/Fg.uUN2eZJQDnu6uSOhIr9mw21cp8WuYKCwz8FUC1OCw4hS",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:01:47.555Z"
-    },
-    {
-      "id": "usr-teach-1794301307836",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$8iPuGkAUk4b6./QkoIgDS.DbGLzULH4XuC7zecb9EY26WBm3ccl5i",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T09:01:48.092Z"
-    },
-    {
-      "id": "usr-dir-1794324488284",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$8U0byPkCTQDysXFZe7SXWed/YXEG36g0l22xA5BNqg4Q7bG4UqlUK",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:28:08.541Z"
-    },
-    {
-      "id": "usr-teach-1794324488827",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$Wvhe9i/exrbtcVrsq3M.keLnr0FJDHHg4PYPbyAkq0hE0.mEhzOve",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:28:09.083Z"
-    },
-    {
-      "id": "usr-dir-1794325159415",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$VYzccqD8oTxWpi3.A2G9iuRh1YjkiZRQlK8B2q/5YjoeMr2uvMQKy",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:39:19.671Z"
-    },
-    {
-      "id": "usr-teach-1794325159951",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$LDqkFOt4piLcI75ER27iY.2SM9bgrWpGEvFLnBYoZaQHHAZU7mlYS",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:39:20.207Z"
-    },
-    {
-      "id": "usr-dir-1794325396610",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$J5.GKyor0cArbiromLVrduYcPmoroWPuQ0aBYKViD5J9eMXOS338y",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:43:16.866Z"
-    },
-    {
-      "id": "usr-teach-1794325397146",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$tCCSCuj9J5UQ8WcuV/BN2OwQdt7AZtSTzyWcj2xjAhZUsnB.d6Ryu",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:43:17.404Z"
-    },
-    {
-      "id": "usr-dir-1794325703173",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$OMlb84OK8dhbu9LqriI96e7IiNjaPj/2z6IBocLKLIs19BgaOdWOe",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:48:23.429Z"
-    },
-    {
-      "id": "usr-teach-1794325703708",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$O0v7vubh.FDEzPVcFGHJx.8jDEeRi9qI0AaKVV/7Oa1ODSglWwRFK",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:48:23.963Z"
-    },
-    {
-      "id": "usr-dir-1794326070420",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$pwq8nyTrmBCcQMZk6Cy35eeIZvSQGgDAgoPbLKw1racAVWTt4tIeC",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:54:30.676Z"
-    },
-    {
-      "id": "usr-teach-1794326070961",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$ctZT5AtsxwRM/IWoSR6Ky.nqpXu.gNRjWX1W8fxdYAHX1iX.Y4AXa",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:54:31.217Z"
-    },
-    {
-      "id": "usr-dir-1794326300125",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$PTzDAXmu6C/4UcE2/oV7QuOV3dBjdc2n/gpAmBtYXzgYg2pk9loey",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:58:20.382Z"
-    },
-    {
-      "id": "usr-teach-1794326300668",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$1tE2kWIBMnylB5YeOVYDMOpDZGyXnBEAblndF2MReF7goFkWjXavC",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T15:58:20.924Z"
-    },
-    {
-      "id": "usr-dir-1794327113631",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$ZrYp8yp5Ns2W9HfxLTAXp.ohcsqy9In3EO2RISFv4ZFX/hlrK9gxW",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T16:11:53.887Z"
-    },
-    {
-      "id": "usr-teach-1794327114169",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$wXD.aEirQM1c/8uKq4B.6uiv9CuT2gTu1OFdmYSW7jfDLEffPGeaS",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-10T16:11:54.425Z"
-    },
-    {
-      "id": "usr-dir-1794390450837",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$M4qGOWwpbjVANhoTCOYameI2.1lfubXOV8LcTlX8ADQV95I9qINlC",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-11T09:47:31.094Z"
-    },
-    {
-      "id": "usr-teach-1794390451424",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$yXx4miOaITGIbzAiMt04P.t72HaG6sIC7XGEcDVJ4YW.D1PztbgKi",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-11T09:47:31.680Z"
-    },
-    {
-      "id": "usr-dir-1794390924327",
-      "name": "Qodir Rahimov",
-      "username": "direktor_40",
-      "email": "direktor_40@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$MRlSMq48xiiotM3FvIC2xOHnfrmjreEubXyVTAHemQA2AbuS8rLhu",
-      "role": "SCHOOL_ADMIN",
-      "schoolId": "SCH040",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-11T09:55:24.771Z"
-    },
-    {
-      "id": "usr-teach-1794390925256",
-      "name": "Nodira Salimova",
-      "username": "nodira_oqituvchi",
-      "email": "nodira_oqituvchi@smartchild.uz",
-      "phone": "+998901234567",
-      "password": "$2b$12$O9nNPNuCN/ZkfJUtGfDGsefog7ympDf/9q1RjQ7VNLGOZjb8iVgyu",
-      "role": "TEACHER",
-      "schoolId": "SCH040",
-      "classId": "cls-40-5a",
-      "className": "5-A",
-      "mustChangePassword": false,
-      "createdAt": "2026-11-11T09:55:25.692Z"
     }
   ],
   "students": [
@@ -1953,7 +243,7 @@
       "parentId": "usr-parent-1",
       "parentName": "Jasur Bekmirzayev",
       "parentPhone": "+998903456789",
-      "deviceId": "W5P-TEST-1794390935736",
+      "deviceId": "W5P-TEST-1794391579994",
       "deviceModel": "Samsung Galaxy Watch 5 Pro",
       "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
       "status": "ACTIVE",
@@ -1978,7 +268,7 @@
         "isSos": true,
         "signalSource": "gps",
         "connectionType": "WIFI",
-        "deviceTimestamp": 1794390935955,
+        "deviceTimestamp": 1794391580227,
         "recordId": null,
         "geofenceStatus": "OUTSIDE",
         "statusColor": "RED",
@@ -1986,7 +276,7 @@
         "assignedSchoolId": "SCH001",
         "address": "Toshkent shahri (taxminiy)",
         "distFromSchool": 717925,
-        "lastSeen": 1794390935955,
+        "lastSeen": 1794391580227,
         "deviceStatus": "ONLINE",
         "isRealDevice": true
       }
@@ -2174,7 +464,7 @@
       "schoolName": "Urganch 40-maktab",
       "classId": "cls-40-5a",
       "className": "5-A",
-      "teacherId": "usr-teach-1794145314213",
+      "teacherId": "usr-teach-1794391568931",
       "parentId": "usr-par-1794145314738",
       "parentName": "Qodir Karimov",
       "parentPhone": "+998909876543",
@@ -2191,7 +481,7 @@
         "deviceStatus": "ONLINE",
         "heartRate": 78,
         "steps": 1250,
-        "lastSeen": 1794390926130
+        "lastSeen": 1794391569839
       }
     },
     {
@@ -2301,7 +591,7 @@
       "studentId": "10001",
       "schoolId": "SCH001",
       "date": "2026-11-11",
-      "arrivalTime": "4:55:34 AM",
+      "arrivalTime": "5:06:18 AM",
       "departureTime": null,
       "status": "LATE",
       "statusColor": "GREEN",
@@ -2331,7 +621,7 @@
       "isSos": true,
       "signalSource": "gps",
       "connectionType": "WIFI",
-      "deviceTimestamp": 1794390935955,
+      "deviceTimestamp": 1794391580227,
       "recordId": null,
       "geofenceStatus": "OUTSIDE",
       "statusColor": "RED",
@@ -2339,7 +629,7 @@
       "assignedSchoolId": "SCH001",
       "address": "Toshkent shahri (taxminiy)",
       "distFromSchool": 717925,
-      "lastSeen": 1794390935955,
+      "lastSeen": 1794391580227,
       "deviceStatus": "ONLINE",
       "isRealDevice": true
     },
@@ -2494,7 +784,7 @@
       "deviceStatus": "ONLINE",
       "heartRate": 78,
       "steps": 1250,
-      "lastSeen": 1794390926130
+      "lastSeen": 1794391569839
     },
     "W5P-TEST-1794159515635": {
       "deviceId": "W5P-TEST-1794159515635",
@@ -4292,9 +2582,185 @@
       "lastSeen": 1794390935872,
       "deviceStatus": "ONLINE",
       "isRealDevice": true
+    },
+    "W5P-DISCOV-1794391573966": {
+      "deviceId": "W5P-DISCOV-1794391573966",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794391574575,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794391574628": {
+      "deviceId": "W5P-DISCOV-AUTH-1794391574628",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794391574635
+    },
+    "W5P-CONTRACT-mwbyeya0": {
+      "deviceId": "W5P-CONTRACT-mwbyeya0",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5507,
+      "longitude": 60.6317,
+      "accuracy": 4.8,
+      "speed": 0,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 78,
+      "bodyTemperature": 36.6,
+      "stepCount": 4210,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794391577571,
+      "recordId": "rec-dup-1794391577571",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 0,
+      "lastSeen": 1794391577626,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-REVOKED-mwbyeya0": {
+      "deviceId": "W5P-REVOKED-mwbyeya0",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "model": "Samsung Galaxy Watch 5 Pro",
+      "status": "OFFLINE",
+      "battery": 100,
+      "isWorn": true,
+      "lastSeen": null,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-TEST-GW5-1794391578736": {
+      "deviceId": "W5P-TEST-GW5-1794391578736",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5505,
+      "longitude": 60.6305,
+      "accuracy": 4.2,
+      "speed": 0.8,
+      "heading": 0,
+      "altitude": 435,
+      "heartRate": 76,
+      "bodyTemperature": 36.6,
+      "stepCount": 3100,
+      "batteryLevel": 88,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794391578959,
+      "recordId": "rec_bt_1794391578959",
+      "geofenceStatus": "VERIFYING",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 208,
+      "lastSeen": 1794391578984,
+      "deviceStatus": "OFFLINE",
+      "isRealDevice": true,
+      "isRevoked": true
+    },
+    "W5P-TEST-1794391579994": {
+      "deviceId": "W5P-TEST-1794391579994",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.31108,
+      "longitude": 69.24056,
+      "accuracy": 4.5,
+      "speed": 1.2,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 85,
+      "bodyTemperature": 36.6,
+      "stepCount": 3450,
+      "batteryLevel": 92,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "WIFI",
+      "deviceTimestamp": 1794391580127,
+      "recordId": null,
+      "geofenceStatus": "OUTSIDE",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 717925,
+      "lastSeen": 1794391580132,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
     }
   },
   "notifications": [
+    {
+      "id": "notif-1794391580228",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "5:06:20 AM"
+    },
+    {
+      "id": "notif-1794391578930",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (5:06:18 AM)",
+      "isRead": false,
+      "time": "5:06:18 AM"
+    },
+    {
+      "id": "notif-1794391577631",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "5:06:17 AM"
+    },
+    {
+      "id": "notif-1794391577538",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (5:06:17 AM)",
+      "isRead": false,
+      "time": "5:06:17 AM"
+    },
     {
       "id": "notif-1794390935955",
       "userId": "usr-parent-1",
@@ -4444,614 +2910,10 @@
       "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:58:25 AM)",
       "isRead": false,
       "time": "10:58:25 AM"
-    },
-    {
-      "id": "notif-1794326305287",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:58:25 AM)",
-      "isRead": false,
-      "time": "10:58:25 AM"
-    },
-    {
-      "id": "notif-1794326076219",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:54:36 AM)",
-      "isRead": false,
-      "time": "10:54:36 AM"
-    },
-    {
-      "id": "notif-1794326075589",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:54:35 AM"
-    },
-    {
-      "id": "notif-1794326075562",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:54:35 AM)",
-      "isRead": false,
-      "time": "10:54:35 AM"
-    },
-    {
-      "id": "notif-1794326069576",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:54:29 AM"
-    },
-    {
-      "id": "notif-1794325709692",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:48:29 AM"
-    },
-    {
-      "id": "notif-1794325709057",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:48:29 AM"
-    },
-    {
-      "id": "notif-1794325709027",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:48:29 AM)",
-      "isRead": false,
-      "time": "10:48:29 AM"
-    },
-    {
-      "id": "notif-1794325708339",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:48:28 AM)",
-      "isRead": false,
-      "time": "10:48:28 AM"
-    },
-    {
-      "id": "notif-1794325395726",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:43:15 AM)",
-      "isRead": false,
-      "time": "10:43:15 AM"
-    },
-    {
-      "id": "notif-1794325395100",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:43:15 AM"
-    },
-    {
-      "id": "notif-1794325394451",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:43:14 AM"
-    },
-    {
-      "id": "notif-1794325394424",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:43:14 AM)",
-      "isRead": false,
-      "time": "10:43:14 AM"
-    },
-    {
-      "id": "notif-1794325161957",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:39:21 AM"
-    },
-    {
-      "id": "notif-1794324494010",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:28:14 AM"
-    },
-    {
-      "id": "notif-1794324493274",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:28:13 AM)",
-      "isRead": false,
-      "time": "10:28:13 AM"
-    },
-    {
-      "id": "notif-1794324492619",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "10:28:12 AM"
-    },
-    {
-      "id": "notif-1794324492586",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (10:28:12 AM)",
-      "isRead": false,
-      "time": "10:28:12 AM"
-    },
-    {
-      "id": "notif-1794301377608",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:02:57 AM"
-    },
-    {
-      "id": "notif-1794301376354",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:02:56 AM)",
-      "isRead": false,
-      "time": "4:02:56 AM"
-    },
-    {
-      "id": "notif-1794301312873",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:01:52 AM"
-    },
-    {
-      "id": "notif-1794301312221",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:01:52 AM"
-    },
-    {
-      "id": "notif-1794301312194",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:01:52 AM)",
-      "isRead": false,
-      "time": "4:01:52 AM"
-    },
-    {
-      "id": "notif-1794301311545",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:01:51 AM)",
-      "isRead": false,
-      "time": "4:01:51 AM"
-    },
-    {
-      "id": "notif-1794301280851",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "EXIT_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🔴 Ali Valiyev maktab hududidan chiqdi (4:01:20 AM)",
-      "isRead": false,
-      "time": "4:01:20 AM"
-    },
-    {
-      "id": "notif-1794301280850",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:01:20 AM"
-    },
-    {
-      "id": "notif-1794301280215",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:01:20 AM"
-    },
-    {
-      "id": "notif-1794301280190",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:01:20 AM)",
-      "isRead": false,
-      "time": "4:01:20 AM"
-    },
-    {
-      "id": "notif-1794301279496",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:01:19 AM)",
-      "isRead": false,
-      "time": "4:01:19 AM"
-    },
-    {
-      "id": "notif-1794301262676",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:01:02 AM)",
-      "isRead": false,
-      "time": "4:01:02 AM"
-    },
-    {
-      "id": "notif-1794301256062",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "4:00:56 AM"
-    },
-    {
-      "id": "notif-1794301256033",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (4:00:56 AM)",
-      "isRead": false,
-      "time": "4:00:56 AM"
-    },
-    {
-      "id": "notif-1794301133721",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "3:58:53 AM"
-    },
-    {
-      "id": "notif-1794301132542",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (3:58:52 AM)",
-      "isRead": false,
-      "time": "3:58:52 AM"
-    },
-    {
-      "id": "notif-1794164252690",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "1:57:32 PM"
-    },
-    {
-      "id": "notif-1794164252266",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:57:32 PM)",
-      "isRead": false,
-      "time": "1:57:32 PM"
-    },
-    {
-      "id": "notif-1794164241755",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:57:21 PM)",
-      "isRead": false,
-      "time": "1:57:21 PM"
-    },
-    {
-      "id": "notif-1794164230087",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:57:10 PM)",
-      "isRead": false,
-      "time": "1:57:10 PM"
-    },
-    {
-      "id": "notif-1794164209086",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "1:56:49 PM"
-    },
-    {
-      "id": "notif-1794163982665",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "1:53:02 PM"
-    },
-    {
-      "id": "notif-1794160280922",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "12:51:20 PM"
-    },
-    {
-      "id": "notif-1794159524483",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "12:38:44 PM"
-    },
-    {
-      "id": "notif-1794159515735",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "EXIT_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🔴 Ali Valiyev maktab hududidan chiqdi (12:38:35 PM)",
-      "isRead": false,
-      "time": "12:38:35 PM"
-    },
-    {
-      "id": "notif-1794159515735",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "12:38:35 PM"
-    },
-    {
-      "id": "notif-1793890694000",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "9:58:14 AM"
-    },
-    {
-      "id": "notif-1793890693028",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (9:58:13 AM)",
-      "isRead": false,
-      "time": "9:58:13 AM"
-    },
-    {
-      "id": "notif-1793890057621",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "9:47:37 AM"
-    },
-    {
-      "id": "notif-1793890056644",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (9:47:36 AM)",
-      "isRead": false,
-      "time": "9:47:36 AM"
-    },
-    {
-      "id": "notif-1793890052394",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "9:47:32 AM"
-    },
-    {
-      "id": "notif-1793890051421",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ENTER_SCHOOL",
-      "title": "⚠️ Ogohlantirish",
-      "message": "🟢 Ali Valiyev maktab hududiga kirdi (9:47:31 AM)",
-      "isRead": false,
-      "time": "9:47:31 AM"
-    },
-    {
-      "id": "notif-1793890010851",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "SOS",
-      "title": "🚨 SOS Signali!",
-      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
-      "isRead": false,
-      "time": "9:46:50 AM"
-    },
-    {
-      "id": "notif-1793777674632",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ARRIVAL",
-      "title": "🟢 Maktabga yetib keldi",
-      "message": "Ali Valiyev soat 2:34:34 AM da o'zining maktabi (1-Sonli Namunaviy Maktab) hududiga kirdi. Holati: PRESENT – INSIDE SCHOOL.",
-      "isRead": false,
-      "time": "2:34:34 AM"
-    },
-    {
-      "id": "notif-1",
-      "userId": "usr-parent-1",
-      "studentId": "10001",
-      "type": "ARRIVAL",
-      "title": "Maktabga yetib keldi",
-      "title_ru": "Прибыл в школу",
-      "title_en": "Arrived at school",
-      "message": "Ali Valiyev 08:18 da 1-Sonli Namunaviy Maktab (SCH001) hududiga yetib keldi.",
-      "isRead": false,
-      "time": "08:18"
     }
   ],
   "routeHistory": {
     "10001": [
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "4:01:52 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "4:01:52 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "4:01:52 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "4:01:52 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "4:01:52 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.5492,
-        "lng": 60.6298,
-        "time": "4:02:56 AM",
-        "speed": 1.2067097817810455,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.54933,
-        "lng": 60.62997,
-        "time": "4:02:56 AM",
-        "speed": 1.1705000838984294,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.549459999999996,
-        "lng": 60.630140000000004,
-        "time": "4:02:56 AM",
-        "speed": 1.3116058109542845,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
       {
         "lat": 41.54959,
         "lng": 60.63031,
@@ -5879,6 +3741,78 @@
         "address": "Toshkent shahri (taxminiy)",
         "status": "OUTSIDE",
         "color": "RED"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "5:06:17 AM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "5:06:17 AM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "5:06:17 AM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5512,
+        "lng": 60.6318,
+        "time": "5:06:18 AM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5515,
+        "lng": 60.632,
+        "time": "5:06:18 AM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "VERIFYING",
+        "color": "YELLOW"
+      },
+      {
+        "lat": 41.552,
+        "lng": 60.633,
+        "time": "5:06:18 AM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "5:06:20 AM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "5:06:20 AM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
       }
     ],
     "10002": [
@@ -5984,6 +3918,33 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1794391569839",
+      "timestamp": "2026-11-11T10:06:09.839Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794391569373",
+      "timestamp": "2026-11-11T10:06:09.373Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794391568931",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794391568438",
+      "timestamp": "2026-11-11T10:06:08.438Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
     {
       "id": "log-1794390926130",
       "timestamp": "2026-11-11T09:55:26.130Z",
@@ -6208,627 +4169,6 @@
       "action": "STUDENT_AND_PARENT_CREATED",
       "target": "STU-4001",
       "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794324489083",
-      "timestamp": "2026-11-10T15:28:09.083Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794324488827",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794324488541",
-      "timestamp": "2026-11-10T15:28:08.541Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794301308357",
-      "timestamp": "2026-11-10T09:01:48.357Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794301308092",
-      "timestamp": "2026-11-10T09:01:48.092Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794301307836",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794301307555",
-      "timestamp": "2026-11-10T09:01:47.555Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794301276335",
-      "timestamp": "2026-11-10T09:01:16.335Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794301276070",
-      "timestamp": "2026-11-10T09:01:16.070Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794301275815",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794301275537",
-      "timestamp": "2026-11-10T09:01:15.537Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794301203543",
-      "timestamp": "2026-11-10T09:00:03.543Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794301203278",
-      "timestamp": "2026-11-10T09:00:03.278Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794301203022",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794301202743",
-      "timestamp": "2026-11-10T09:00:02.743Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794301166980",
-      "timestamp": "2026-11-10T08:59:26.980Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794301166715",
-      "timestamp": "2026-11-10T08:59:26.715Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794301166460",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794301166167",
-      "timestamp": "2026-11-10T08:59:26.167Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794299452023",
-      "timestamp": "2026-11-10T08:30:52.023Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794299451757",
-      "timestamp": "2026-11-10T08:30:51.757Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794299451502",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794299451210",
-      "timestamp": "2026-11-10T08:30:51.210Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794298997940",
-      "timestamp": "2026-11-10T08:23:17.940Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794298997676",
-      "timestamp": "2026-11-10T08:23:17.676Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794298997420",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794298997141",
-      "timestamp": "2026-11-10T08:23:17.141Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794298968106",
-      "timestamp": "2026-11-10T08:22:48.106Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794298967842",
-      "timestamp": "2026-11-10T08:22:47.842Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794298967584",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794298967303",
-      "timestamp": "2026-11-10T08:22:47.303Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794298937571",
-      "timestamp": "2026-11-10T08:22:17.571Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794298937307",
-      "timestamp": "2026-11-10T08:22:17.307Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794298937051",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794298936774",
-      "timestamp": "2026-11-10T08:22:16.774Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794298909870",
-      "timestamp": "2026-11-10T08:21:49.870Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794298909597",
-      "timestamp": "2026-11-10T08:21:49.597Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794298909333",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794298909047",
-      "timestamp": "2026-11-10T08:21:49.047Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794244158798",
-      "timestamp": "2026-11-09T17:09:18.798Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794244158529",
-      "timestamp": "2026-11-09T17:09:18.529Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794244158272",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794244157989",
-      "timestamp": "2026-11-09T17:09:17.989Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794164467550",
-      "timestamp": "2026-11-08T19:01:07.550Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794164467285",
-      "timestamp": "2026-11-08T19:01:07.285Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794164467029",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794164466743",
-      "timestamp": "2026-11-08T19:01:06.743Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794164249746",
-      "timestamp": "2026-11-08T18:57:29.746Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794164249482",
-      "timestamp": "2026-11-08T18:57:29.482Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794164249227",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794164248948",
-      "timestamp": "2026-11-08T18:57:28.948Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794164206620",
-      "timestamp": "2026-11-08T18:56:46.620Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794164206355",
-      "timestamp": "2026-11-08T18:56:46.355Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794164206099",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794164205820",
-      "timestamp": "2026-11-08T18:56:45.820Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794163981705",
-      "timestamp": "2026-11-08T18:53:01.705Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794163981442",
-      "timestamp": "2026-11-08T18:53:01.442Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794163981186",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794163980904",
-      "timestamp": "2026-11-08T18:53:00.904Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794160278410",
-      "timestamp": "2026-11-08T17:51:18.410Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794160278146",
-      "timestamp": "2026-11-08T17:51:18.146Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794160277890",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794160277610",
-      "timestamp": "2026-11-08T17:51:17.610Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794159521982",
-      "timestamp": "2026-11-08T17:38:41.982Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794159521719",
-      "timestamp": "2026-11-08T17:38:41.719Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794159521464",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794159521184",
-      "timestamp": "2026-11-08T17:38:41.184Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794159501787",
-      "timestamp": "2026-11-08T17:38:21.787Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794159501523",
-      "timestamp": "2026-11-08T17:38:21.523Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794159501268",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794159500990",
-      "timestamp": "2026-11-08T17:38:20.990Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794159425072",
-      "timestamp": "2026-11-08T17:37:05.072Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794159424806",
-      "timestamp": "2026-11-08T17:37:04.806Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794159424550",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794159424262",
-      "timestamp": "2026-11-08T17:37:04.262Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794148446126",
-      "timestamp": "2026-11-08T14:34:06.126Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794148445861",
-      "timestamp": "2026-11-08T14:34:05.861Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794148445604",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794148445321",
-      "timestamp": "2026-11-08T14:34:05.321Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794145816223",
-      "timestamp": "2026-11-08T13:50:16.223Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794145815959",
-      "timestamp": "2026-11-08T13:50:15.959Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794145815702",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794145815424",
-      "timestamp": "2026-11-08T13:50:15.424Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794145756987",
-      "timestamp": "2026-11-08T13:49:16.987Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794145756720",
-      "timestamp": "2026-11-08T13:49:16.720Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794145756462",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794145756182",
-      "timestamp": "2026-11-08T13:49:16.182Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1794145314994",
-      "timestamp": "2026-11-08T13:41:54.994Z",
-      "user": "O'qituvchi",
-      "role": "TEACHER",
-      "action": "STUDENT_AND_PARENT_CREATED",
-      "target": "STU-4001",
-      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
-    },
-    {
-      "id": "log-1794145314472",
-      "timestamp": "2026-11-08T13:41:54.472Z",
-      "user": "direktor_40@smartchild.uz",
-      "role": "SCHOOL_ADMIN",
-      "action": "TEACHER_CREATED",
-      "target": "usr-teach-1794145314213",
-      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
-    },
-    {
-      "id": "log-1794145313926",
-      "timestamp": "2026-11-08T13:41:53.926Z",
-      "user": "burxonturayev7900@gmail.com",
-      "role": "SUPER_ADMIN",
-      "action": "SCHOOL_AND_DIRECTOR_CREATED",
-      "target": "SCH040",
-      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
-    },
-    {
-      "id": "log-1",
-      "timestamp": "2026-11-04T07:33:50.072Z",
-      "user": "Sardor Alimov (Super Admin)",
-      "role": "SUPER_ADMIN",
-      "action": "PLATFORM_INITIALIZED",
-      "target": "SYSTEM",
-      "details": "SMART CHILD multi-school platform engine initialized."
     }
   ],
   "cms": {
@@ -7631,6 +4971,412 @@
       }
     },
     "history": [
+      {
+        "id": "v-1794391576286",
+        "version": "v1.0.18",
+        "publishedAt": "2026-11-11T10:06:16.286Z",
+        "publishedBy": "burxonturayev7900@gmail.com",
+        "summary": "Test avtomatlashtirilgan nashr",
+        "snapshot": {
+          "seo": {
+            "title": "SMART CHILD — Maktab Nazorati va Bolalar Xavfsizligi Intellektual Tizimi",
+            "description": "Maktablar, o'quvchilar va ota-onalarni aqlli soatlar va real vaqt rejimidagi GPS monitoring orqali birlashtiruvchi xavfsizlik ekotizimi.",
+            "keywords": "smart child, maktab nazorati, bolalar xavfsizligi, gps monitoring, aqlli soat, o'zbekiston ta'lim",
+            "ogImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "canonicalUrl": "https://maktab-nazorati.onrender.com"
+          },
+          "appearance": {
+            "brandName": "SMART CHILD",
+            "badgeText": "INTELLEKTUAL MAKTAB XAVFSIZLIGI PLATFORMASI",
+            "primaryColor": "#22d3ee",
+            "accentColor": "#2563eb",
+            "themeMode": "dark"
+          },
+          "banner": {
+            "enabled": true,
+            "badge": "YANGILIK",
+            "text": "2026-o'quv yili uchun umumta'lim maktablarida GPS monitoring va xavfsizlik tizimi integratsiyasi boshlandi!",
+            "linkText": "Batafsil tanishing",
+            "linkUrl": "#about"
+          },
+          "hero": {
+            "badge": "XALQARO TA'LIM TEXNOLOGIYASI",
+            "headline": "SMART CHILD — Har bir bola uchun xavfsiz kelajak",
+            "subtitle": "Maktablar, o'qituvchilar va oilalarni zamonaviy texnologiyalar orqali birlashtiruvchi intellektual maktab xavfsizligi va GPS monitoring tizimi.",
+            "primaryCta": {
+              "text": "Platformani o'rganish",
+              "link": "#features"
+            },
+            "secondaryCta": {
+              "text": "Tizimga kirish",
+              "link": "/login"
+            },
+            "heroImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "stats": [
+              {
+                "label": "Ulangan maktablar",
+                "value": "15+"
+              },
+              {
+                "label": "Kuzatuvdagi o'quvchilar",
+                "value": "1,200+"
+              },
+              {
+                "label": "GPS aniqligi",
+                "value": "±3 metr"
+              },
+              {
+                "label": "SOS javob vaqti",
+                "value": "< 2 soniya"
+              }
+            ]
+          },
+          "about": {
+            "badge": "BIZNING MISSIYAMIZ",
+            "title": "SMART CHILD platformasi qanday yaratildi va nima uchun muhim?",
+            "subtitle": "Farzandlarimizning maktabga borish va qaytish yo'lidagi har bir qadami xavfsiz, ota-onalar va ta'lim maskanlari esa xotirjam bo'lishi shart.",
+            "story": "SMART CHILD — zamonaviy axborot texnologiyalari, IoT aqlli soatlar va sun'iy yo'ldosh navigatsiyasini uyg'unlashtirgan innovatsion milliy loyihadir. Platforma orqali maktab rahbariyati o'quvchilar davomati va hududdagi xavfsizlikni, ota-onalar esa o'z farzandlarining joriy geolokatsiyasi va salomatlik holatini to'liq shaffof nazorat qila oladilar.",
+            "features": [
+              {
+                "title": "To'liq avtomatlashtirilgan davomat",
+                "desc": "O'quvchi maktab darvozasidan o'tishi bilanoq virtual geozona orqali tizimga avtomatik belgi qo'yiladi."
+              },
+              {
+                "title": "24/7 Favqulodda SOS himoyasi",
+                "desc": "Xavf yuzaga kelganda soatdagi bitta tugma orqali maktab xavfsizlik xizmati va ota-onaga tezkor signal boradi."
+              },
+              {
+                "title": "Maxfiylik va qat'iy ma'lumotlar xavfsizligi",
+                "desc": "O'quvchining shaxsiy koordinatalari faqat qonuniy ota-onasi va vakolatli xavfsizlik ma'muriga ko'rinadi."
+              }
+            ]
+          },
+          "features": [
+            {
+              "id": "feat-1",
+              "title": "Jonli GPS Kuzatuv",
+              "desc": "O'quvchining harakatlanish trayektoriyasi va joriy koordinatalarini real vaqtda yuqori aniqlikda xaritada ko'rish.",
+              "icon": "Compass",
+              "tag": "Real-vaqt",
+              "enabled": true
+            },
+            {
+              "id": "feat-2",
+              "title": "Aqlli Soatlar Integratsiyasi",
+              "desc": "Samsung Galaxy Watch va bolalar GPS soatlari bilan to'liq avtomatik uzluksiz sinxronizatsiya.",
+              "icon": "Watch",
+              "tag": "IoT Qurilmalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-3",
+              "title": "Maktab Boshqaruvi",
+              "desc": "Ko'p maktabli arxitektura, binolar xaritasi, sinflar va o'quvchilar kontingentini markazlashgan boshqaruv.",
+              "icon": "School",
+              "tag": "Ma'muriyat",
+              "enabled": true
+            },
+            {
+              "id": "feat-4",
+              "title": "O'quvchilar Monitoringi",
+              "desc": "O'quvchining maktab hududida, tashqarisida yoki chegarada ekanligini avtomatik aniqlash.",
+              "icon": "UserCheck",
+              "tag": "Monitoring",
+              "enabled": true
+            },
+            {
+              "id": "feat-5",
+              "title": "Sinf Rahbari Paneli",
+              "desc": "O'qituvchi o'z sinfidagi o'quvchilarning darsdagi davomati va holatini tezkor kuzatishi uchun qulay interfeys.",
+              "icon": "LayoutDashboard",
+              "tag": "O'qituvchilar",
+              "enabled": true
+            },
+            {
+              "id": "feat-6",
+              "title": "Xavfsizlik Geozonalari",
+              "desc": "Maktab atrofi, xavfli yo'llar va hududlarni poligon shaklida chizish hamda chegarani kesib o'tishni qayd etish.",
+              "icon": "ShieldAlert",
+              "tag": "Geozonalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-7",
+              "title": "Favqulodda SOS Signallari",
+              "desc": "Soatdagi SOS tugmasi 3 soniya bosilganda zudlik bilan koordinatalar bilan birga audio va vizual signal yuboriladi.",
+              "icon": "BellRing",
+              "tag": "Favqulodda",
+              "enabled": true
+            },
+            {
+              "id": "feat-8",
+              "title": "Batareya Quvvati Nazorati",
+              "desc": "Soat quvvati 20% dan pastga tushganda ota-ona va maktabga qurilmani quvvatlantirish haqida eslatma yuboriladi.",
+              "icon": "BatteryCharging",
+              "tag": "Texnik holat",
+              "enabled": true
+            },
+            {
+              "id": "feat-9",
+              "title": "Harakatlanish Tarixi",
+              "desc": "Kun, hafta yoki oy davomida bosib o'tilgan yo'nalishlar, to'xtash nuqtalari va tezlik tahlilini xaritada qayta o'ynash.",
+              "icon": "History",
+              "tag": "Tahlil",
+              "enabled": true
+            },
+            {
+              "id": "feat-10",
+              "title": "Maktab Tahliliyoti",
+              "desc": "Davomat foizi, kechikishlar statistikasi va xavfsizlik hisobotlarini avtomatik generatsiya qilish.",
+              "icon": "BarChart3",
+              "tag": "Statistika",
+              "enabled": true
+            },
+            {
+              "id": "feat-11",
+              "title": "Xavfsiz Huquqlar Tizimi",
+              "desc": "Super Admin, Maktab Admini, O'qituvchi va Ota-onalar uchun qat'iy cheklangan, shifrlangan kirish huquqlari.",
+              "icon": "Lock",
+              "tag": "Xavfsizlik",
+              "enabled": true
+            },
+            {
+              "id": "feat-12",
+              "title": "Markazlashgan Ma'muriyat",
+              "desc": "Barcha maktablar, qurilmalar va veb-sayt kontentini yagona qulay boshqaruv panelidan nazorat qilish.",
+              "icon": "Sliders",
+              "tag": "CMS Boshqaruv",
+              "enabled": true
+            }
+          ],
+          "howItWorks": {
+            "badge": "BOSQICHMA-BOSQICH",
+            "title": "SMART CHILD tizimi qanday ishlaydi?",
+            "subtitle": "Maktabdan to ota-ona smartfonigacha bo'lgan 4 ta oson va ishonchli qadam",
+            "steps": [
+              {
+                "number": "01",
+                "title": "Maktab ro'yxatdan o'tadi",
+                "desc": "Ta'lim muassasasi platformaga ulanadi, maktab binosi va uning xavfsiz geozona chegaralari xaritada belgilanadi."
+              },
+              {
+                "number": "02",
+                "title": "Sinflar va o'quvchilar kiritiladi",
+                "desc": "Direktor va mas'ul o'qituvchilar sinflar ro'yxatini shakllantirib, o'quvchilar va ularning ota-onalari ma'lumotlarini biriktiradi."
+              },
+              {
+                "number": "03",
+                "title": "Aqlli soatlar xavfsiz bog'lanadi",
+                "desc": "Har bir o'quvchining shaxsiy profiliga xavfsiz token orqali Samsung Galaxy Watch yoki GPS soat biriktiriladi."
+              },
+              {
+                "number": "04",
+                "title": "Xavfsizlik va davomat nazorat qilinadi",
+                "desc": "Vakolatli shaxslar real vaqt rejimida o'quvchining joylashuvi, davomati va xavfsizlik holatini uzluksiz kuzatib boradi."
+              }
+            ]
+          },
+          "forSchools": {
+            "badge": "MAKTABLAR VA DIREKTORLAR UCHUN",
+            "title": "Ta'lim muassasasi uchun zamonaviy xavfsizlik standarti",
+            "subtitle": "Maktab nufuzini oshirish, ota-onalar ishonchini qozonish va har bir o'quvchining xavfsizligini kafolatlash",
+            "benefits": [
+              {
+                "title": "Davomatni 100% shaffoflashtirish",
+                "desc": "Qog'oz jurnallarsiz, inson omilisiz avtomatik elektron davomat hisoboti."
+              },
+              {
+                "title": "Xavfsizlik hodisalarini 95% ga kamaytirish",
+                "desc": "Dars vaqtida maktab hududini ruxsatsiz tark etish holatlarini oldini olish."
+              },
+              {
+                "title": "Vazirlik va shahar ta'lim boshqarmasi integratsiyasi",
+                "desc": "Yagona tizim orqali markazlashgan hisobotlar va tahliliy ma'lumotlar taqdim etish."
+              }
+            ]
+          },
+          "technology": {
+            "badge": "TEXNOLOGIK ARXITEKTURA",
+            "title": "Ishonchli va zamonaviy texnologiyalar ustiga qurilgan",
+            "subtitle": "Uzluksiz 99.9% faoliyat ko'rsatish va milliy xavfsizlik talablariga mos keluvchi backend infratuzilmasi",
+            "items": [
+              {
+                "title": "GPS & LBS Multi-Positioning",
+                "desc": "Sun'iy yo'ldosh GPS va mobil baza stantsiyalari (LBS) orqali bino ichida va ochiq maydonda aniq geolokatsiya.",
+                "badge": "Yuqori aniqlik"
+              },
+              {
+                "title": "Yandex Maps & OpenStreetMap",
+                "desc": "O'zbekistonning barcha viloyat, shahar va mahallalari bo'yicha to'liq yangilangan vektor va sun'iy yo'ldosh xaritalari.",
+                "badge": "Mahalliy xaritalar"
+              },
+              {
+                "title": "Samsung Galaxy Watch Integratsiyasi",
+                "desc": "WearOS tizimida ishlovchi Samsung soatlari bilan integratsiya va telemetriya protokoli.",
+                "badge": "WearOS / Tizen"
+              },
+              {
+                "title": "Real-time WebSocket & SSE",
+                "desc": "Kechikishlarsiz soniyali ma'lumot almashinuvi va zudlik bilan yetib boruvchi hodisalar kanali.",
+                "badge": "< 50ms kechikish"
+              },
+              {
+                "title": "Ray-Casting Geofencing Algoritmi",
+                "desc": "Matematik poligon algoritmi orqali maktab binosi va nozik zonalarni 100% aniqlik bilan nazorat qilish.",
+                "badge": "Matematik model"
+              },
+              {
+                "title": "TLS Shifrlash & JWT Autentifikatsiya",
+                "desc": "Bank darajasidagi 256-bitli ma'lumotlar shifrlanishi va foydalanuvchi huquqlarining qat'iy himoyasi.",
+                "badge": "Xavfsiz kirish"
+              }
+            ]
+          },
+          "gallery": [
+            {
+              "id": "gal-1",
+              "title": "30-sonli maktab binosi va hududi",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab binosi va sport maydoni"
+            },
+            {
+              "id": "gal-2",
+              "title": "Samsung Galaxy Watch bolalar soati",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Aqlli soat bilaguzukda"
+            },
+            {
+              "id": "gal-3",
+              "title": "Fleet Management xarita interfeysi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Platforma tahliliy paneli"
+            },
+            {
+              "id": "gal-4",
+              "title": "O'quvchilar xavfsizligi va dars jarayoni",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab o'quvchilari sinfxonada"
+            },
+            {
+              "id": "gal-5",
+              "title": "Mobil ilova orqali joylashuv monitoringi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Smartfon ekrani va xarita"
+            },
+            {
+              "id": "gal-6",
+              "title": "GPS Telemetriya va sensorlar",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Soat datchiklari va yurak urishi monitoringi"
+            }
+          ],
+          "news": [
+            {
+              "id": "news-1",
+              "title": "Urganch shahridagi 30-maktabda tizim to'liq ishga tushirildi",
+              "date": "2026-11-05",
+              "summary": "Tajriba tariqasida barcha boshlang'ich sinf o'quvchilari aqlli soatlar va xavfsizlik geozonalari bilan ta'minlandi."
+            },
+            {
+              "id": "news-2",
+              "title": "Yangi avlod favqulodda SOS audio-uzatish moduli qo'shildi",
+              "date": "2026-11-01",
+              "summary": "Endilikda SOS signali bosilganda 10 soniyali qisqa audio yozuv ham xavfsizlik paneliga yetkaziladi."
+            }
+          ],
+          "contact": {
+            "phone": "+998 97 200-12-79",
+            "mobile": "+998 97 200-12-79",
+            "email": "burxonturayev7900@gmail.com",
+            "address": "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
+            "workingHours": "Dushanba - Shanba: 08:30 - 18:30",
+            "telegram": "https://t.me/MMSA571",
+            "instagram": "https://instagram.com/smartchild_uz",
+            "youtube": "https://youtube.com/@smartchild_uz"
+          },
+          "navigation": {
+            "headerLinks": [
+              {
+                "id": "home",
+                "label": "Asosiy",
+                "href": "#hero"
+              },
+              {
+                "id": "about",
+                "label": "Biz haqimizda",
+                "href": "#about"
+              },
+              {
+                "id": "features",
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "id": "how",
+                "label": "Qanday ishlaydi",
+                "href": "#how-it-works"
+              },
+              {
+                "id": "schools",
+                "label": "Maktablar uchun",
+                "href": "#for-schools"
+              },
+              {
+                "id": "tech",
+                "label": "Texnologiya",
+                "href": "#technology"
+              },
+              {
+                "id": "status",
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "id": "gallery",
+                "label": "Galereya",
+                "href": "#gallery"
+              },
+              {
+                "id": "contact",
+                "label": "Bog'lanish",
+                "href": "#contact"
+              }
+            ],
+            "footerLinks": [
+              {
+                "label": "Asosiy sahifa",
+                "href": "#hero"
+              },
+              {
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "label": "Tizimga kirish",
+                "href": "/login"
+              },
+              {
+                "label": "Maxfiylik siyosati",
+                "href": "#"
+              },
+              {
+                "label": "Foydalanish shartlari",
+                "href": "#"
+              }
+            ]
+          }
+        }
+      },
       {
         "id": "v-1794390932237",
         "version": "v1.0.17",
@@ -14535,6 +12281,30 @@
       }
     ],
     "auditLogs": [
+      {
+        "id": "audit-1794391576286",
+        "action": "PUBLISH",
+        "section": "ALL",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-11T10:06:16.286Z",
+        "details": "v1.0.18 versiyasi muvaffaqiyatli nashr qilindi: Test avtomatlashtirilgan nashr"
+      },
+      {
+        "id": "audit-1794391576273",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-11T10:06:16.273Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794391576233",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-11T10:06:16.233Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
       {
         "id": "audit-1794390932237",
         "action": "PUBLISH",

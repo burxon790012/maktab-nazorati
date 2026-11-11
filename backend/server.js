@@ -850,7 +850,12 @@ app.post('/api/v1/schools', (req, res) => {
     totalStudents: 0
   };
 
-  db.schools.push(newSchool);
+  const existingSchoolIdx = db.schools.findIndex(s => s.id === schoolId || (s.code && s.code === schoolId));
+  if (existingSchoolIdx >= 0) {
+    db.schools[existingSchoolIdx] = { ...db.schools[existingSchoolIdx], ...newSchool };
+  } else {
+    db.schools.push(newSchool);
+  }
   if (!db.auditLogs) db.auditLogs = [];
   db.auditLogs.unshift({
     id: `log-${Date.now()}`,
@@ -3379,7 +3384,12 @@ app.post('/api/v1/super-admin/schools-with-director', authMiddleware, (req, res)
     createdAt: new Date().toISOString()
   };
 
-  db.schools.push(newSchool);
+  const existingSchoolIdx = db.schools.findIndex(s => s.id === schoolId || (s.code && s.code === schoolId));
+  if (existingSchoolIdx >= 0) {
+    db.schools[existingSchoolIdx] = { ...db.schools[existingSchoolIdx], ...newSchool };
+  } else {
+    db.schools.push(newSchool);
+  }
 
   // Create Director Account if details provided
   let newDirector = null;
@@ -3398,7 +3408,12 @@ app.post('/api/v1/super-admin/schools-with-director', authMiddleware, (req, res)
       mustChangePassword: false,
       createdAt: new Date().toISOString()
     };
-    db.users.push(newDirector);
+    const existingDirIdx = db.users.findIndex(u => (u.login && u.login.toLowerCase() === dirUsername) || (u.username && u.username.toLowerCase() === dirUsername));
+    if (existingDirIdx >= 0) {
+      db.users[existingDirIdx] = { ...db.users[existingDirIdx], ...newDirector };
+    } else {
+      db.users.push(newDirector);
+    }
   }
 
   if (!db.auditLogs) db.auditLogs = [];
@@ -3463,7 +3478,12 @@ app.post('/api/v1/director/teachers', authMiddleware, (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  db.users.push(newTeacher);
+  const existingTeachIdx = db.users.findIndex(u => (u.login && u.login.toLowerCase() === teacherUsername) || (u.username && u.username.toLowerCase() === teacherUsername));
+  if (existingTeachIdx >= 0) {
+    db.users[existingTeachIdx] = { ...db.users[existingTeachIdx], ...newTeacher };
+  } else {
+    db.users.push(newTeacher);
+  }
 
   if (!db.auditLogs) db.auditLogs = [];
   db.auditLogs.unshift({

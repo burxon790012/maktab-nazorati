@@ -310,7 +310,10 @@ export class YandexMapAdapter implements MapAdapter {
     this.schoolBadges.forEach((b) => this.map.geoObjects.remove(b));
     this.schoolBadges.clear();
 
-    schools.forEach((sch) => {
+    // Deduplicate schools by ID to ensure clean single-layer geofences
+    const uniqueSchools = Array.from(new Map(schools.map((s) => [s.id, s])).values());
+
+    uniqueSchools.forEach((sch) => {
       if (sch.polygon && sch.polygon.length > 2) {
         const isSelected = sch.id === selectedSchoolId;
         const color = sch.color || '#2ee59d';
@@ -344,10 +347,10 @@ export class YandexMapAdapter implements MapAdapter {
             `,
           },
           {
-            fillColor: isSelected ? `${color}44` : `${color}26`,
+            fillColor: isSelected ? `${color}33` : `${color}18`,
             strokeColor: color,
-            strokeWidth: isSelected ? 3 : 2,
-            strokeOpacity: 0.9,
+            strokeWidth: isSelected ? 2.5 : 1.5,
+            strokeOpacity: 0.8,
           }
         );
 

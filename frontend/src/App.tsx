@@ -26,6 +26,7 @@ import { LandingPage } from '@/components/public/LandingPage';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { WebsiteManager } from '@/components/cms/WebsiteManager';
 import { ParentDashboard } from '@/components/parent/ParentDashboard';
+import { WatchManager } from '@/components/admin/WatchManager';
 
 export type KpiFilter = 'ALL' | 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'SOS' | 'ONLINE' | 'OFFLINE';
 
@@ -803,13 +804,14 @@ export const App: React.FC = () => {
             )}
 
             {currentTab === 'devices' && (
-              <DevicesTab
-                devices={devicesList}
-                students={students}
-                onRefresh={fetchDevices}
-                onRegisterDevice={handleRegisterDevice}
-                onRegenerateToken={handleRegenerateToken}
-              />
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#101a2e] rounded-2xl border border-white/[0.07]">
+                <WatchManager
+                  schools={schools}
+                  students={students}
+                  token={token}
+                  onRefreshStudents={fetchStudents}
+                />
+              </div>
             )}
 
             {currentTab === 'alerts' && (

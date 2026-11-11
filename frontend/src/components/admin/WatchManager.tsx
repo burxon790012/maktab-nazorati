@@ -28,7 +28,8 @@ import {
   ShieldAlert,
   Clock,
   Copy,
-  Check
+  Check,
+  Plus,
 } from 'lucide-react';
 
 export interface UnknownDevice {
@@ -103,6 +104,49 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
   // Confirmation Modals
   const [unassignModalOpen, setUnassignModalOpen] = useState<boolean>(false);
   const [revokeModalOpen, setRevokeModalOpen] = useState<boolean>(false);
+
+  // Manual Discover Modal
+  const [manualDiscoverOpen, setManualDiscoverOpen] = useState<boolean>(false);
+  const [manualDevUid, setManualDevUid] = useState<string>('');
+  const [manualDevModel, setManualDevModel] = useState<string>('Samsung Galaxy Watch5 Pro (SM-R920)');
+  const [manualDevBattery, setManualDevBattery] = useState<number>(100);
+
+  // Submit Manual Device Discovery
+  const handleManualDiscoverSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualDevUid.trim()) return;
+    setActionLoading(true);
+    setFeedbackMessage(null);
+    try {
+      const res = await fetch('/api/v1/devices/discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceUid: manualDevUid.trim(),
+          model: manualDevModel.trim(),
+          batteryLevel: Number(manualDevBattery),
+          connectionType: 'WIFI',
+          appVersion: '1.0.0'
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Soatni aniqlashda xatolik");
+      }
+      setFeedbackMessage({ type: 'success', text: "Yangi soat muvaffaqiyatli aniqlandi va Ro'yxatdan o'tmagan soatlar safiga qo'shildi!" });
+      setActiveTab('unknown');
+      await fetchDevices();
+      setManualDevUid('');
+      setTimeout(() => {
+        setManualDiscoverOpen(false);
+        setFeedbackMessage(null);
+      }, 1200);
+    } catch (err: any) {
+      setFeedbackMessage({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Fetch devices
   const fetchDevices = async () => {
@@ -408,10 +452,23 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
             size="sm"
             onClick={fetchDevices}
             disabled={loading}
-            className="gap-2 text-xs h-9 border-white/[0.07] hover:bg-white/5"
+            className="gap-2 text-xs h-9 border-white/[0.07] hover:bg-white/5 text-[#cbd5e1]"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Yangilash</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => {
+              setManualDevUid('');
+              setFeedbackMessage(null);
+              setManualDiscoverOpen(true);
+            }}
+            className="gap-2 text-xs h-9 bg-[#2ee59d] hover:bg-[#25c485] text-[#0b1220] font-bold shadow-md shadow-[#2ee59d]/20 transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Yangi Soat Qo'shish</span>
           </Button>
         </div>
       </div>
@@ -421,7 +478,7 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
         <Card className="bg-[#101a2e] border-white/[0.07]">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-[#8ea3c4]">Jami Aniqlangan Soatlar</p>
+              <p className="text-xs font-semibold text-[#8ea3c4]">Jami Soatlar</p>
               <div className="text-2xl font-black text-[#eaf2ff] mt-1">
                 {unknownDevices.length + registeredDevices.length}
               </div>
@@ -444,7 +501,7 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
-                <span>Notanish Soatlar</span>
+                <span>Ro'yxatdan O'tmagan Soatlar</span>
                 {unknownDevices.length > 0 && (
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                 )}
@@ -506,7 +563,7 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Notanish Soatlar</span>
+            <span>Ro'yxatdan O'tmagan Soatlar (Notanish)</span>
             <Badge
               variant="outline"
               className={`ml-1 text-[10px] px-1.5 py-0 border-0 ${
@@ -1069,6 +1126,96 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
                 Ha, butunlay bekor qilish
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MANUAL DISCOVER MODAL */}
+      {manualDiscoverOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#101a2e] border border-white/[0.07] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/[0.07] flex items-center justify-between bg-[#16233d]">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#2ee59d]/15 flex items-center justify-center text-[#2ee59d]">
+                  <Plus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#eaf2ff] text-sm">Yangi Soatni Aniqlash (Kiritish)</h3>
+                  <p className="text-[11px] text-[#8ea3c4]">Soat ID raqamini ro'yxatdan o'tmagan soatlar safiga qo'shish</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setManualDiscoverOpen(false)}
+                className="text-[#8ea3c4] hover:text-[#eaf2ff] p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleManualDiscoverSubmit} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">
+                  Qurilma ID / UID (Unikal raqami): *
+                </label>
+                <Input
+                  required
+                  placeholder="Masalan: watch-5pro-05 yoki W5P-99234"
+                  value={manualDevUid}
+                  onChange={(e) => setManualDevUid(e.target.value)}
+                  className="h-10 text-xs bg-[#16233d] border-white/[0.07] text-[#eaf2ff] focus-visible:ring-cyan-500 font-mono"
+                />
+                <p className="text-[10px] text-[#8ea3c4] mt-1">
+                  Galaxy Watch 5 Pro soatidagi dastur yuboradigan ID yoki seriya raqami.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">
+                  Soat Modeli:
+                </label>
+                <Input
+                  value={manualDevModel}
+                  onChange={(e) => setManualDevModel(e.target.value)}
+                  className="h-10 text-xs bg-[#16233d] border-white/[0.07] text-[#eaf2ff] focus-visible:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">
+                  Boshlang'ich Batareya (%):
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={manualDevBattery}
+                  onChange={(e) => setManualDevBattery(Number(e.target.value))}
+                  className="h-10 text-xs bg-[#16233d] border-white/[0.07] text-[#eaf2ff] focus-visible:ring-cyan-500"
+                />
+              </div>
+
+              {feedbackMessage && (
+                <div className={`p-3 rounded-xl text-xs font-semibold ${
+                  feedbackMessage.type === 'success' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                }`}>
+                  {feedbackMessage.text}
+                </div>
+              )}
+
+              <div className="p-4 border-t border-white/[0.07] flex items-center justify-end gap-2 -mx-5 -mb-5 mt-5 bg-[#0b1220]/60">
+                <Button type="button" variant="outline" size="sm" onClick={() => setManualDiscoverOpen(false)}>
+                  Bekor qilish
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={actionLoading || !manualDevUid.trim()}
+                  className="bg-[#2ee59d] hover:bg-[#25c485] text-[#0b1220] font-bold"
+                >
+                  {actionLoading ? "Kiritilmoqda..." : "Aniqlash va Qo'shish"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

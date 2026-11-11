@@ -13,6 +13,7 @@ export class YandexMapAdapter implements MapAdapter {
   private options!: MapInitOptions;
 
   private studentMarkers: Map<string, any> = new Map();
+  private accuracyCircles: Map<string, any> = new Map();
   private schoolPolygons: Map<string, any> = new Map();
   private schoolBadges: Map<string, any> = new Map();
   private trailPolylines: Map<string, any> = new Map();
@@ -166,12 +167,43 @@ export class YandexMapAdapter implements MapAdapter {
     const statusColor = isSos ? '#ff4d5e' : isInside ? '#2ee59d' : isVerifying ? '#ffb020' : '#ff4d5e';
     const initials = student.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-    // Remove existing placemark if present
+    // Step 3 Item 2: Time ago, Channel, Status, Accuracy Circle and Address
+    const accuracy = student.telemetry.accuracy || 15;
+    const lastSeenTs = student.telemetry.deviceTimestamp || student.telemetry.lastSeen || Date.now();
+    const diffSec = Math.max(0, Math.round((Date.now() - lastSeenTs) / 1000));
+    const timeAgoText = diffSec < 60 ? `${diffSec} soniya oldin` : `${Math.floor(diffSec / 60)} daqiqa oldin`;
+    const connType = student.telemetry.connectionType || 'WIFI';
+    const channelText = connType === 'BLUETOOTH' ? 'Telefon (Bluetooth)' : connType === 'LTE' ? 'Mobil (LTE)' : 'Soat Wi-Fi';
+    const devStatus = student.telemetry.deviceStatus || (diffSec < 60 ? 'ONLINE' : diffSec < 300 ? 'DELAYED' : 'OFFLINE');
+    const isReal = Boolean(student.telemetry.isRealDevice);
+    const address = student.telemetry.address || "Urganch, O'zbekiston";
+
+    // Remove existing accuracy circle & placemark if present
+    const existingCircle = this.accuracyCircles.get(student.id);
+    if (existingCircle) {
+      this.map.geoObjects.remove(existingCircle);
+      this.accuracyCircles.delete(student.id);
+    }
     const existing = this.studentMarkers.get(student.id);
     if (existing) {
       this.map.geoObjects.remove(existing);
       this.studentMarkers.delete(student.id);
     }
+
+    // Accuracy Circle
+    const accCircle = new ymaps.Circle(
+      [[latitude, longitude], accuracy],
+      {},
+      {
+        fillColor: statusColor === '#2ee59d' ? '2ee59d22' : 'ff4d5e22',
+        strokeColor: statusColor,
+        strokeOpacity: 0.6,
+        strokeWidth: 1.5,
+        zIndex: 100
+      }
+    );
+    this.map.geoObjects.add(accCircle);
+    this.accuracyCircles.set(student.id, accCircle);
 
     // Custom HTML Layout for Yandex Placemark
     const pinLayout = ymaps.templateLayoutFactory.createClass(
@@ -193,14 +225,28 @@ export class YandexMapAdapter implements MapAdapter {
       {
         hintContent: `${student.name} (${student.className || student.classId || ''})`,
         balloonContent: `
-          <div style="padding: 8px; font-family: sans-serif; color: #1b1b33;">
-            <div style="font-weight: bold; font-size: 14px;">${student.name}</div>
-            <div style="font-size: 12px; color: #666;">Sinf: ${student.className || student.classId || 'N/A'}</div>
-            <div style="margin-top: 6px; font-size: 12px;">
-              Holati: <strong style="color: ${statusColor}">${isSos ? 'SOS XAVF' : isInside ? 'Maktabda' : isVerifying ? 'Chegarada' : 'Tashqarida'}</strong>
+          <div style="padding: 10px; font-family: sans-serif; color: #1b1b33; min-width: 220px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-weight: bold; font-size: 14px;">${student.name}</span>
+              <span style="font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 4px; background: ${isReal ? '#0ea5e9' : '#8b5cf6'}; color: #fff;">
+                ${isReal ? 'GALAXY WATCH' : 'DEMO'}
+              </span>
             </div>
-            <div style="font-size: 12px; margin-top: 2px;">
-              Batareya: <strong>${batteryLevel || '--'}%</strong> | Puls: <strong>${heartRate || '--'} bpm</strong>
+            <div style="font-size: 11px; color: #64748b;">Sinf: ${student.className || student.classId || 'N/A'} • ${timeAgoText}</div>
+            <div style="margin-top: 6px; font-size: 12px;">
+              Holati: <strong style="color: ${statusColor}">${isSos ? '🚨 SOS XAVF' : isInside ? '🟢 Maktabda' : isVerifying ? '🟡 Chegarada' : '🔴 Tashqarida'}</strong>
+              <span style="margin-left: 6px; font-size: 11px; padding: 1px 5px; border-radius: 3px; background: ${devStatus === 'ONLINE' ? '#dcfce7; color: #166534;' : devStatus === 'DELAYED' ? '#fef9c3; color: #854d0e;' : '#fee2e2; color: #991b1b;'} font-weight: bold;">
+                ${devStatus}
+              </span>
+            </div>
+            <div style="font-size: 11px; margin-top: 4px; color: #334155;">
+              🔋 <strong>${batteryLevel || '--'}%</strong> | 💓 <strong>${heartRate || '--'} bpm</strong> | 🎯 <strong>±${Math.round(accuracy)}m</strong>
+            </div>
+            <div style="font-size: 11px; margin-top: 4px; color: #334155;">
+              📡 Kanal: <strong>${channelText}</strong>
+            </div>
+            <div style="font-size: 11px; margin-top: 4px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 4px;">
+              📍 ${address}
             </div>
           </div>
         `,
@@ -234,6 +280,11 @@ export class YandexMapAdapter implements MapAdapter {
       this.map.geoObjects.remove(marker);
       this.studentMarkers.delete(studentId);
     }
+    const circle = this.accuracyCircles.get(studentId);
+    if (circle && this.map) {
+      this.map.geoObjects.remove(circle);
+      this.accuracyCircles.delete(studentId);
+    }
   }
 
   clearStudentMarkers(): void {
@@ -242,6 +293,10 @@ export class YandexMapAdapter implements MapAdapter {
       this.map.geoObjects.remove(marker);
     });
     this.studentMarkers.clear();
+    this.accuracyCircles.forEach((circle) => {
+      this.map.geoObjects.remove(circle);
+    });
+    this.accuracyCircles.clear();
   }
 
   renderSchoolGeofences(schools: School[], selectedSchoolId?: string): void {

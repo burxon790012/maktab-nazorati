@@ -35,6 +35,10 @@ export interface StudentTelemetry {
   isWorn?: boolean;
   address?: string;
   deviceStatus?: string;
+  deviceTimestamp?: number;
+  connectionType?: string;
+  isRealDevice?: boolean;
+  recordId?: string;
   geofenceStatus?: 'INSIDE' | 'OUTSIDE' | 'VERIFYING' | 'UNKNOWN';
   statusColor?: 'GREEN' | 'RED' | 'YELLOW' | 'GRAY';
   statusDisplay?: string;

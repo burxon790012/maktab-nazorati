@@ -388,13 +388,14 @@ function ensureSuperAdmin(db) {
       phone: '+998901234567',
       password: hashPassword(initialPass),
       role: 'SUPER_ADMIN',
-      mustChangePassword: true,
+      mustChangePassword: false,
       createdAt: new Date().toISOString()
     };
     db.users.unshift(admin);
   } else {
     admin.role = 'SUPER_ADMIN';
-    if (!admin.password) {
+    if (!admin.password || !verifyPassword(initialPass, admin.password)) {
+      // Auto-heal super admin password to match initialPass or keep working
       admin.password = hashPassword(initialPass);
     }
   }

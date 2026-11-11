@@ -140,7 +140,7 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
             Aqlli Soatlar va Qurilmalar Floti
           </h2>
           <p className="text-xs text-[#9a9ac0] mt-1">
-            Samsung Galaxy Watch5 Pro (Wear OS 4) soatlarining real vaqt holati, batareyasi va 256-bit xavfsiz ulanishlari
+            Samsung Galaxy Watch5 Pro (WearOS 4) soatlarining real vaqt holati, batareyasi va SOS-datchiklari uzatmalari
           </p>
         </div>
 
@@ -168,7 +168,7 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
         <div className="w-full sm:w-80">
           <input
             type="text"
-            placeholder="O'quvchi ismi, ID yoki manzil bo'yicha qidirish..."
+            placeholder="Qurilma ID, IMEI yoki model bo'yicha qidirish..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3.5 py-2 rounded-xl bg-[#2a2a4a] border border-[#3a3a63]/40 text-xs text-[#e8e8f5] placeholder-[#9a9ac0] focus:outline-none focus:border-[#2ee59d]"
@@ -191,8 +191,8 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
                 : st === 'ONLINE'
                 ? `Online (${devices.filter((d) => d.status === 'ONLINE').length})`
                 : st === 'DELAYED'
-                ? `Kechikish (${devices.filter((d) => d.status === 'DELAYED').length})`
-                : `Oflayn (${devices.filter((d) => d.status === 'OFFLINE').length})`}
+                ? `Kutilmoqda (${devices.filter((d) => d.status === 'DELAYED').length})`
+                : `Offline (${devices.filter((d) => d.status === 'OFFLINE').length})`}
             </button>
           ))}
         </div>
@@ -204,14 +204,14 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-[#1b1b33]/60 border-b border-[#3a3a63]/40 text-[#9a9ac0] uppercase font-semibold">
               <tr>
-                <th className="py-3 px-4">O'quvchi</th>
-                <th className="py-3 px-4">Qurilma / Model</th>
-                <th className="py-3 px-4">Holat</th>
-                <th className="py-3 px-4">Batareya</th>
-                <th className="py-3 px-4">Sensor (Qo'lda)</th>
-                <th className="py-3 px-4">Oxirgi Manzil</th>
-                <th className="py-3 px-4">Kontakt Vaqti</th>
-                <th className="py-3 px-4 text-right">Amallar</th>
+                <th className="py-3 px-4">O'QUVCHI</th>
+                <th className="py-3 px-4">QURILMA / MODEL</th>
+                <th className="py-3 px-4">HOLAT</th>
+                <th className="py-3 px-4">BATAREYA</th>
+                <th className="py-3 px-4">SENSOR / QO'LROQI</th>
+                <th className="py-3 px-4">OXIRGI MANZIL</th>
+                <th className="py-3 px-4">KONTAKT VAQTI</th>
+                <th className="py-3 px-4 text-right">AMALLAR</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#3a3a63]/20">

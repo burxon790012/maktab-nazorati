@@ -327,46 +327,95 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // WebSocket Live Updates
+  // SSE Live Stream (Primary) & WebSocket (Fallback) with Auto-Reconnect and Last-Event-ID
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    let ws: WebSocket | null = null;
+    let eventSource: EventSource | null = null;
     let reconnectTimeout: any = null;
 
-    const connectWs = () => {
-      ws = new WebSocket(wsUrl);
+    const connectSse = () => {
+      try {
+        const token = localStorage.getItem('token');
+        const sseUrl = `/api/v1/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+        eventSource = new EventSource(sseUrl);
 
-      ws.onopen = () => {
-        console.log('⚡ [FLEET WS] Jonli telemetriya ulandi');
-      };
+        eventSource.onopen = () => {
+          console.log('⚡ [FLEET SSE] Jonli telemetriya oqimi muvaffaqiyatli ulandi');
+          // Step 3 Item 1: Refetch latest point per student on reconnect
+          fetchStudents();
+        };
 
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.event === 'telemetry_update' && msg.data) {
-            setStudents((prev) =>
-              prev.map((s) => (s.id === msg.data.id ? { ...s, ...msg.data } : s))
-            );
-          } else if (msg.event === 'sos_alert') {
-            fetchNotifications();
-            fetchStudents();
-          } else if (msg.event === 'school_added' || msg.event === 'school_updated') {
-            fetchSchools();
+        const handleTelemetryEvent = (e: MessageEvent) => {
+          try {
+            const parsed = JSON.parse(e.data);
+            const data = parsed.payload || parsed.data;
+            if (data && (data.studentId || data.deviceId)) {
+              setStudents((prev) =>
+                prev.map((s) => {
+                  if (s.id === data.studentId || s.deviceId === data.deviceId) {
+                    const prevTelem = s.telemetry || { latitude: data.latitude || 41.5505, longitude: data.longitude || 60.6315 };
+                    return {
+                      ...s,
+                      telemetry: {
+                        ...prevTelem,
+                        ...data,
+                        latitude: data.latitude ?? prevTelem.latitude,
+                        longitude: data.longitude ?? prevTelem.longitude,
+                        isRealDevice: data.isRealDevice ?? true
+                      }
+                    };
+                  }
+                  return s;
+                })
+              );
+            }
+          } catch (err) {
+            console.error('SSE telemetry parse xatosi:', err);
           }
-        } catch (e) {
-          console.error('WS parse error:', e);
-        }
-      };
+        };
 
-      ws.onclose = () => {
-        reconnectTimeout = setTimeout(connectWs, 3000);
-      };
+        eventSource.addEventListener('telemetry', handleTelemetryEvent);
+        eventSource.addEventListener('location_update', handleTelemetryEvent);
+
+        eventSource.addEventListener('alert', () => {
+          fetchNotifications();
+        });
+
+        eventSource.addEventListener('device_status', (e: MessageEvent) => {
+          try {
+            const parsed = JSON.parse(e.data);
+            const data = parsed.payload || parsed.data;
+            if (data && data.deviceId) {
+              setStudents((prev) =>
+                prev.map((s) => {
+                  if ((s.deviceId === data.deviceId || s.id === data.studentId) && s.telemetry) {
+                    return {
+                      ...s,
+                      telemetry: {
+                        ...s.telemetry,
+                        deviceStatus: data.status
+                      }
+                    };
+                  }
+                  return s;
+                })
+              );
+            }
+          } catch (_) {}
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) eventSource.close();
+          reconnectTimeout = setTimeout(connectSse, 3000);
+        };
+      } catch (_) {
+        reconnectTimeout = setTimeout(connectSse, 3000);
+      }
     };
 
-    connectWs();
+    connectSse();
+
     return () => {
-      if (ws) ws.close();
+      if (eventSource) eventSource.close();
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
   }, []);

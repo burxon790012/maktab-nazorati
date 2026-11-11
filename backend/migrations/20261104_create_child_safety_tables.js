@@ -9,8 +9,8 @@ exports.up = async function(knex) {
     await knex.schema.createTable('devices', (table) => {
       table.string('id', 64).primary();
       table.string('device_uid', 64).notNullable().index();
-      table.string('student_id', 64).notNullable().index();
-      table.string('guardian_id', 64).notNullable().index();
+      table.string('student_id', 64).nullable().index();
+      table.string('guardian_id', 64).nullable().index();
       table.string('token_hash', 128).nullable().index();
       table.string('model', 100).defaultTo('Samsung Galaxy Watch 5 Pro');
       table.integer('battery_pct').nullable();

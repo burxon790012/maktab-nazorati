@@ -1,6 +1,7 @@
 package uz.maktab.watch.presentation
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -59,20 +59,42 @@ import kotlinx.coroutines.launch
 import uz.maktab.watch.data.remote.NetworkClient
 import uz.maktab.watch.presentation.theme.MaktabWatchTheme
 import uz.maktab.watch.service.TrackingService
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
-    private val permissionLauncher = registerForActivityResult(
+    /**
+     * Item 12 talabi (Android 14): Joylashuv ruxsatlarini bosqichma-bosqich so'rash.
+     * 1-bosqich: Old fon (foreground) joylashuv va bildirishnoma ruxsatlari.
+     * 2-bosqich: Orqa fon (background) joylashuv ruxsati alohida qadamda so'raladi.
+     */
+    private val backgroundLocationLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Background ruxsati berilganidan so'ng servisni boshlash
+        sendServiceAction(TrackingService.ACTION_START)
+    }
+
+    private val foregroundPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val fineLocation = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        if (fineLocation) {
-            startTrackingService()
+        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        if (fineLocationGranted) {
+            // 2-bosqich: Agar Android 10+ (Q+) bo'lsa, orqa fon ruxsatini alohida qadamda so'rash
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val bgGranted = ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (!bgGranted) {
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    return@registerForActivityResult
+                }
+            }
+            sendServiceAction(TrackingService.ACTION_START)
         } else {
-            Toast.makeText(this, "GPS ruxsati zarur!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "GPS ruxsati talab qilinadi!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -85,6 +107,7 @@ class MainActivity : ComponentActivity() {
             MaktabWatchTheme {
                 WatchAppScreen(
                     onSosTrigger = { triggerSos() },
+                    onCancelSos = { cancelSos() },
                     onToggleTracking = { toggleTracking() }
                 )
             }
@@ -103,19 +126,32 @@ class MainActivity : ComponentActivity() {
             permissions.add(Manifest.permission.BODY_SENSORS)
         }
 
-        val allGranted = permissions.all {
-            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
+        val foregroundGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
-        if (allGranted) {
-            startTrackingService()
+        if (!foregroundGranted) {
+            foregroundPermissionsLauncher.launch(permissions.toTypedArray())
         } else {
-            permissionLauncher.launch(permissions.toTypedArray())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val bgGranted = ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                if (!bgGranted) {
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    return
+                }
+            }
+            sendServiceAction(TrackingService.ACTION_START)
         }
     }
 
-    private fun startTrackingService() {
-        val intent = Intent(this, TrackingService::class.java)
+    private fun sendServiceAction(actionString: String) {
+        val intent = Intent(this, TrackingService::class.java).apply {
+            action = actionString
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
@@ -125,26 +161,30 @@ class MainActivity : ComponentActivity() {
 
     private fun toggleTracking() {
         val isRunning = TrackingService.serviceState.value.isRunning
-        val intent = Intent(this, TrackingService::class.java)
         if (isRunning) {
-            stopService(intent)
+            sendServiceAction(TrackingService.ACTION_STOP)
         } else {
-            startTrackingService()
+            sendServiceAction(TrackingService.ACTION_START)
         }
     }
 
+    /**
+     * Item 1 talabi: SOS boshlash va bekor qilish to'liq Intent actions orqali.
+     * Hech qanday statik instansiya ishlatilmaydi.
+     */
     private fun triggerSos() {
-        val intent = Intent(this, TrackingService::class.java)
-        startTrackingService()
-        // Servis orqali SOS chaqirish
-        TrackingService.instance?.triggerSos()
-        Toast.makeText(this, "🚨 SOS SIGNAL YUBORILDI!", Toast.LENGTH_LONG).show()
+        sendServiceAction(TrackingService.ACTION_SOS)
+    }
+
+    private fun cancelSos() {
+        sendServiceAction(TrackingService.ACTION_CANCEL_SOS)
     }
 }
 
 @Composable
 fun WatchAppScreen(
     onSosTrigger: () -> Unit,
+    onCancelSos: () -> Unit,
     onToggleTracking: () -> Unit
 ) {
     val serviceState by TrackingService.serviceState.collectAsState()
@@ -160,13 +200,35 @@ fun WatchAppScreen(
     ) {
         item {
             Text(
-                text = "MAKTAB NAZORATI",
+                text = "SMART CHILD WATCH",
                 style = MaterialTheme.typography.title1,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF00E5FF),
                 modifier = Modifier.padding(top = 16.dp)
             )
+        }
+
+        // Item 6: Avtorizatsiya xatosi (401/403) bo'lsa "Qayta biriktiring" ogohlantirishi
+        if (serviceState.authError != null) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFD50000))
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "⚠️ ${serviceState.authError}",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
 
         // QURILMA VA ALOQA HOLATI
@@ -178,7 +240,7 @@ fun WatchAppScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Online/Offline indikatori
+                // Online/Offline va kanal
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -188,7 +250,7 @@ fun WatchAppScreen(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (serviceState.isOnline) "Online" else "Oflayn",
+                        text = if (serviceState.isOnline) serviceState.connectionType else "Oflayn",
                         fontSize = 10.sp,
                         color = Color.LightGray
                     )
@@ -204,12 +266,52 @@ fun WatchAppScreen(
             }
         }
 
-        // KATTA SOS TUGMASI (3 soniya bosib turish progress halqasi bilan)
+        // Item 1: SOS HOLATI VA BOSHQARISH
         item {
-            SosHoldButton(onSosTrigger = onSosTrigger)
+            if (serviceState.isSosActive) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF3700B3))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "🚨 SOS FAOL",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                    Text(
+                        text = serviceState.sosStatus ?: "Yuborilmoqda...",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFFFFEB3B),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                    Button(
+                        onClick = onCancelSos,
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFCF6679)),
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .height(30.dp)
+                    ) {
+                        Text(
+                            text = "SOS ni Bekor qilish",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            } else {
+                SosHoldButton(onSosTrigger = onSosTrigger)
+            }
         }
 
-        // GEOFENCE HOLATI
+        // Item 7: GEOFENCE HOLATI (Boshlang'ich qiymat: UNKNOWN)
         item {
             val statusColor = when (serviceState.geofenceStatus) {
                 "INSIDE" -> Color(0xFF00E676)
@@ -219,7 +321,7 @@ fun WatchAppScreen(
             val statusText = when (serviceState.geofenceStatus) {
                 "INSIDE" -> "YASHIL: Maktab hududida"
                 "OUTSIDE" -> "QIZIL: Maktabdan tashqarida"
-                else -> "SARIQ: Noma'lum"
+                else -> "SARIQ: Noma'lum (UNKNOWN)"
             }
 
             Box(
@@ -287,7 +389,7 @@ fun WatchAppScreen(
                     .height(36.dp)
             ) {
                 Text(
-                    text = if (serviceState.isRunning) "Xizmatni to'xtatish" else "Kuzatuvni boshlash",
+                    text = if (serviceState.isRunning) "Monitoringni to'xtatish" else "Kuzatuvni boshlash",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -326,7 +428,7 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                         progress = 0f
                         holdJob = scope.launch {
                             val startTime = System.currentTimeMillis()
-                            val duration = 3000L // 3 soniya
+                            val duration = 3000L // 3 soniya bosib turish
 
                             while (System.currentTimeMillis() - startTime < duration) {
                                 val elapsed = System.currentTimeMillis() - startTime
@@ -334,7 +436,6 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                                 delay(50)
                             }
                             progress = 1f
-                            // 3 soniya to'lganda vibratsiya va signal
                             vibrateDevice(context)
                             onSosTrigger()
                             delay(500)
@@ -343,7 +444,6 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                         }
 
                         tryAwaitRelease()
-                        // Barmoq olinsa bekor qilish
                         holdJob?.cancel()
                         progress = 0f
                         isHolding = false
@@ -352,49 +452,50 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
             },
         contentAlignment = Alignment.Center
     ) {
-        // Aylana progress halqasi (3 soniyani ko'rsatadi)
         if (isHolding) {
             CircularProgressIndicator(
                 progress = animatedProgress,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.size(96.dp),
                 indicatorColor = Color(0xFFFF1744),
                 trackColor = Color(0x33FF1744),
-                strokeWidth = 5.dp
+                strokeWidth = 4.dp
             )
         }
 
-        // Markazdagi qizil SOS doirasi
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(76.dp)
                 .clip(CircleShape)
-                .background(if (isHolding) Color(0xFFD50000) else Color(0xFFFF1744)),
+                .background(Color(0xFFD50000)),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "SOS",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
                     color = Color.White
                 )
                 Text(
-                    text = if (isHolding) "${((1f - progress) * 3).toInt() + 1}s" else "3s bosing",
-                    fontSize = 9.sp,
-                    color = Color.White.copy(alpha = 0.8f)
+                    text = "3s bosing",
+                    fontSize = 8.sp,
+                    color = Color(0xFFFFCDD2)
                 )
             }
         }
     }
 }
 
-private fun vibrateDevice(context: android.content.Context) {
+private fun vibrateDevice(context: Context) {
     try {
-        val vibrator = context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as? Vibrator
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+            vibratorManager?.defaultVibrator?.vibrate(
+                VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+            )
         } else {
             @Suppress("DEPRECATION")
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             vibrator?.vibrate(500)
         }
     } catch (_: Exception) {}

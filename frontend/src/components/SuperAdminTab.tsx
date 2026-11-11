@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { School as SchoolIcon, Users, CheckCircle2, Watch, Edit3, MapPin, Plus, Globe, Settings } from 'lucide-react';
 import { WebsiteManager } from '@/components/cms/WebsiteManager';
+import { WatchManager } from '@/components/admin/WatchManager';
 
 interface SuperAdminTabProps {
   schools: School[];
@@ -30,12 +31,12 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
   token = '',
   onPreview = () => {}
 }) => {
-  const [currentSection, setCurrentSection] = useState<'schools' | 'cms'>('schools');
+  const [currentSection, setCurrentSection] = useState<'schools' | 'watches' | 'cms'>('schools');
 
   return (
     <div className="space-y-6">
       {/* Super Admin Section Navigation */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface border border-border w-fit">
+      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-surface border border-border w-fit">
         <button
           onClick={() => setCurrentSection('schools')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -46,6 +47,18 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
         >
           <Settings className="w-4 h-4" />
           <span>Maktablar va Foydalanuvchilar</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentSection('watches')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            currentSection === 'watches'
+              ? 'bg-cyan-500 text-slate-950 shadow-md'
+              : 'text-muted hover:text-text'
+          }`}
+        >
+          <Watch className="w-4 h-4" />
+          <span>Aqlli Soatlar Nazorati (Notanish va Biriktirilgan)</span>
         </button>
 
         <button
@@ -63,6 +76,8 @@ export const SuperAdminTab: React.FC<SuperAdminTabProps> = ({
 
       {currentSection === 'cms' ? (
         <WebsiteManager token={token} onPreview={onPreview} />
+      ) : currentSection === 'watches' ? (
+        <WatchManager schools={schools} students={students} token={token} />
       ) : (
         <>
           {/* Top Banner & Action Buttons */}

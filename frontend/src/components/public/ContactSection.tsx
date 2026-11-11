@@ -54,9 +54,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telefon raqamlari</h4>
                 <div className="mt-1 space-y-0.5">
-                  <a href="tel:+998972001279" className="block text-base font-bold text-white hover:text-cyan-400 transition-colors">
-                    +998 97 200-12-79
+                  <a href={`tel:${(contact?.phone || '+998 97 200-12-79').replace(/\s+/g, '')}`} className="block text-base font-bold text-white hover:text-cyan-400 transition-colors">
+                    {contact?.phone || '+998 97 200-12-79'}
                   </a>
+                  {contact?.mobile ? (
+                    <a href={`tel:${contact.mobile.replace(/\s+/g, '')}`} className="block text-xs font-semibold text-slate-400 hover:text-cyan-400 transition-colors">
+                      {contact.mobile}
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -67,8 +72,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Elektron pochta</h4>
-                <a href="mailto:burxonturayev7900@gmail.com" className="mt-1 block text-base font-bold text-white hover:text-cyan-400 transition-colors">
-                  burxonturayev7900@gmail.com
+                <a href={`mailto:${contact?.email || 'burxonturayev7900@gmail.com'}`} className="mt-1 block text-base font-bold text-white hover:text-cyan-400 transition-colors">
+                  {contact?.email || 'burxonturayev7900@gmail.com'}
                 </a>
               </div>
             </div>
@@ -80,7 +85,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bosh ofis manzili</h4>
                 <p className="mt-1 text-sm font-medium text-slate-200 leading-relaxed">
-                  O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy
+                  {contact?.address || "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy"}
                 </p>
               </div>
             </div>
@@ -92,12 +97,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ contact }) => {
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telegram</h4>
                 <a
-                  href="https://t.me/MMSA571"
+                  href={contact?.telegram?.startsWith('http') ? contact.telegram : `https://t.me/${(contact?.telegram || 'MMSA571').replace('@', '')}`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-1 block text-base font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
                 >
-                  @MMSA571
+                  {contact?.telegram ? (contact.telegram.includes('/') ? `@${contact.telegram.split('/').pop()}` : contact.telegram) : '@MMSA571'}
                 </a>
               </div>
             </div>

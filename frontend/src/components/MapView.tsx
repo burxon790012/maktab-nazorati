@@ -652,6 +652,15 @@ export const MapView: React.FC<MapViewProps> = ({
       }`}
     >
       {/* 1. MAP ENGINE CANVAS (Full Remaining Height) */}
+      {isFullscreen && (
+        <button
+          onClick={() => setIsFullscreen(false)}
+          className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#101a2e]/95 text-white border border-[#22d3ee]/40 shadow-2xl backdrop-blur-xl text-xs font-bold hover:bg-[#16233d] transition"
+        >
+          <Minimize2 className="w-4 h-4 text-[#22d3ee]" />
+          <span>Oddiy ko'rinishga qaytish</span>
+        </button>
+      )}
       <div
         ref={containerRef}
         id="smart-child-map-container"

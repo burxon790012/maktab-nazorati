@@ -744,6 +744,12 @@ export const App: React.FC = () => {
           }}
           onToggleStats={() => setStatsDrawerOpen(!statsDrawerOpen)}
           isStatsOpen={statsDrawerOpen}
+          currentTab={currentTab}
+          onSelectTab={(tab) => {
+            setCurrentTab(tab);
+            if (tab === 'map') setViewMode('map');
+            else if (tab === 'students') setViewMode('cards');
+          }}
         />
 
         {/* 3. Fleet Dashboard Workspace: Central Map + Right Stats Column (340px) */}

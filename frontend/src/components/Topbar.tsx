@@ -15,8 +15,12 @@ import {
   ChevronDown,
   ShieldAlert,
   Globe,
+  Watch,
+  Users as UsersIcon,
+  Shield,
 } from 'lucide-react';
 import { Student } from '@/types';
+import { NavTab } from './Sidebar';
 
 export type ViewMode = 'map' | 'cards' | 'list';
 
@@ -43,6 +47,8 @@ interface TopbarProps {
   onToggleStats?: () => void;
   isStatsOpen?: boolean;
   onOpenPublicWebsite?: () => void;
+  currentTab?: NavTab;
+  onSelectTab?: (tab: NavTab) => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -68,6 +74,8 @@ export const Topbar: React.FC<TopbarProps> = ({
   onToggleStats,
   isStatsOpen,
   onOpenPublicWebsite,
+  currentTab = 'map',
+  onSelectTab,
 }) => {
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -91,7 +99,7 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="flex items-center gap-2.5 min-w-0">
         <button
           onClick={onToggleMobileMenu}
-          className="lg:hidden p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8ea3c4] hover:text-[#eaf2ff] transition"
+          className="md:hidden p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#8ea3c4] hover:text-[#eaf2ff] transition"
           aria-label="Menyuni ochish"
         >
           <Menu className="w-4 h-4" />
@@ -99,7 +107,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-sm sm:text-base font-bold text-[#eaf2ff] tracking-tight truncate flex items-center gap-1.5">
+            <h1 className="text-sm sm:base font-bold text-[#eaf2ff] tracking-tight truncate flex items-center gap-1.5">
               <span className="hidden sm:inline">SMART CHILD</span>
               <span className="sm:hidden text-xs text-[#22d3ee] font-black">SC</span>
             </h1>
@@ -136,44 +144,71 @@ export const Topbar: React.FC<TopbarProps> = ({
         </div>
       </div>
 
-      {/* Center: View Switcher (Xarita / Kartalar / Ro'yxat) */}
-      <div className="hidden md:flex items-center bg-[#0b1220] p-0.5 rounded-xl border border-white/[0.07]">
+      {/* Center: Main Section Navigation Tabs (Xarita / Soatlar / O'quvchilar / Super Admin) */}
+      <div className="hidden sm:flex items-center bg-[#0b1220] p-1 rounded-xl border border-white/[0.07] gap-0.5">
         <button
-          onClick={() => onChangeViewMode('map')}
+          onClick={() => {
+            if (onSelectTab) onSelectTab('map');
+            onChangeViewMode('map');
+          }}
           aria-label="Xarita ko'rinishi"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-            viewMode === 'map'
+            currentTab === 'map'
               ? 'bg-[#22d3ee] text-[#0b1220] shadow-sm font-bold'
-              : 'text-[#8ea3c4] hover:text-[#eaf2ff]'
+              : 'text-[#8ea3c4] hover:text-[#eaf2ff] hover:bg-white/[0.04]'
           }`}
         >
           <MapIcon className="w-3.5 h-3.5" />
           <span>Xarita</span>
         </button>
+
         <button
-          onClick={() => onChangeViewMode('cards')}
-          aria-label="Kartalar ko'rinishi"
+          onClick={() => {
+            if (onSelectTab) onSelectTab('devices');
+          }}
+          aria-label="Aqlli soatlar floti"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-            viewMode === 'cards'
-              ? 'bg-[#22d3ee] text-[#0b1220] shadow-sm font-bold'
-              : 'text-[#8ea3c4] hover:text-[#eaf2ff]'
+            currentTab === 'devices'
+              ? 'bg-[#2ee59d] text-[#0b1220] shadow-sm font-bold'
+              : 'text-[#8ea3c4] hover:text-[#eaf2ff] hover:bg-white/[0.04]'
           }`}
         >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          <span>Kartalar</span>
+          <Watch className="w-3.5 h-3.5" />
+          <span>Soatlar</span>
         </button>
+
         <button
-          onClick={() => onChangeViewMode('list')}
-          aria-label="Ro'yxat ko'rinishi"
+          onClick={() => {
+            if (onSelectTab) onSelectTab('students');
+            onChangeViewMode('cards');
+          }}
+          aria-label="O'quvchilar ro'yxati"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-            viewMode === 'list'
+            currentTab === 'students'
               ? 'bg-[#22d3ee] text-[#0b1220] shadow-sm font-bold'
-              : 'text-[#8ea3c4] hover:text-[#eaf2ff]'
+              : 'text-[#8ea3c4] hover:text-[#eaf2ff] hover:bg-white/[0.04]'
           }`}
         >
-          <List className="w-3.5 h-3.5" />
-          <span>Ro'yxat</span>
+          <UsersIcon className="w-3.5 h-3.5" />
+          <span>O'quvchilar</span>
         </button>
+
+        {currentRole === 'SUPER_ADMIN' && (
+          <button
+            onClick={() => {
+              if (onSelectTab) onSelectTab('superadmin');
+            }}
+            aria-label="Super Admin boshqaruv paneli"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              currentTab === 'superadmin'
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-sm font-black'
+                : 'text-amber-400 hover:text-amber-300 hover:bg-amber-400/10'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Super Admin</span>
+          </button>
+        )}
       </div>
 
       {/* Right Controls: School Selector, Alerts, ONE Theme Toggle, Profile */}
@@ -201,29 +236,30 @@ export const Topbar: React.FC<TopbarProps> = ({
             </div>
           )}
 
-          {currentRole === 'SUPER_ADMIN' && showSchoolDropdown && (
-            <div className="absolute right-0 mt-2 w-64 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50">
-              <div className="px-2.5 py-1.5 text-xs font-bold text-[#8ea3c4] uppercase tracking-wider">
+          {showSchoolDropdown && currentRole === 'SUPER_ADMIN' && (
+            <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95">
+              <div className="px-3 py-1.5 text-[11px] font-bold text-[#8ea3c4] uppercase tracking-wider border-b border-white/[0.07] mb-1">
                 Maktabni tanlang
               </div>
               <div className="max-h-60 overflow-y-auto space-y-0.5 scrollbar-thin">
-                {schools.map((school) => (
+                {schools.map((s) => (
                   <button
-                    key={school.id}
+                    key={s.id}
                     onClick={() => {
-                      onSelectSchool(school.id);
+                      onSelectSchool(s.id);
                       setShowSchoolDropdown(false);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition ${
-                      school.id === selectedSchoolId
+                      s.id === selectedSchoolId
                         ? 'bg-[#22d3ee]/15 text-[#22d3ee] font-bold'
                         : 'text-[#eaf2ff] hover:bg-white/[0.06]'
                     }`}
                   >
-                    <span className="truncate">{school.name}</span>
-                    {school.id === selectedSchoolId && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#22d3ee]" />
-                    )}
+                    <div className="truncate">
+                      <div className="font-semibold truncate">{s.name}</div>
+                      <div className="text-[10px] text-[#8ea3c4] truncate">{s.city || s.region || s.id}</div>
+                    </div>
+                    {s.id === selectedSchoolId && <CheckCircle2 className="w-3.5 h-3.5 text-[#22d3ee] shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -231,7 +267,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           )}
         </div>
 
-        {/* Alerts Bell */}
+        {/* Alerts Bell Icon with Badge & Dropdown */}
         <div className="relative">
           <button
             onClick={() => {
@@ -239,32 +275,27 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowSchoolDropdown(false);
               setShowRoleDropdown(false);
             }}
-            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[#8ea3c4] hover:text-[#eaf2ff] transition relative"
             aria-label="Ogohlantirishlar ro'yxati"
+            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] text-[#8ea3c4] hover:text-[#eaf2ff] transition relative"
           >
             <Bell className="w-4 h-4" />
             {unreadAlertsCount > 0 && (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs font-extrabold bg-[#ff4d5e] text-white rounded-full ring-2 ring-[#101a2e] animate-pulse">
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#ff4d5e] text-white text-[10px] font-black animate-pulse">
                 {unreadAlertsCount}
               </span>
             )}
           </button>
 
           {showAlertsDropdown && (
-            <div className="absolute right-0 mt-2 w-80 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-2 z-50">
-              <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-white/[0.07]">
-                <span className="text-xs font-bold text-[#eaf2ff] flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#ffb020]" />
-                  Ogohlantirishlar ({alerts.length})
-                </span>
-                {onMarkAllAlertsRead && unreadAlertsCount > 0 && (
+            <div className="absolute right-0 mt-2 w-80 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.07]">
+                <span className="font-bold text-xs text-[#eaf2ff]">Ogohlantirishlar</span>
+                {unreadAlertsCount > 0 && onMarkAllAlertsRead && (
                   <button
-                    onClick={() => {
-                      onMarkAllAlertsRead();
-                    }}
-                    className="text-xs text-[#22d3ee] hover:underline"
+                    onClick={onMarkAllAlertsRead}
+                    className="text-[11px] font-semibold text-[#2ee59d] hover:underline"
                   >
-                    Barchasini o'qish
+                    O'qilgan deb belgilash
                   </button>
                 )}
               </div>
@@ -325,7 +356,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           {darkMode ? <Sun className="w-4 h-4 text-[#ffb020]" /> : <Moon className="w-4 h-4 text-[#22d3ee]" />}
         </button>
 
-        {/* Profile Avatar with Role Selector */}
+        {/* Profile Avatar with Role Selector & Quick Section Navigation */}
         <div className="relative">
           <button
             onClick={() => {
@@ -346,7 +377,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           </button>
 
           {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-56 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-2 z-50">
+            <div className="absolute right-0 mt-2 w-64 bg-[#16233d] border border-white/10 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95">
               <div className="px-2.5 py-1.5 border-b border-white/[0.07] mb-1">
                 <div className="text-[11px] text-[#8ea3c4] uppercase tracking-wider font-semibold">Profil holati</div>
                 <div className="text-xs font-bold text-[#eaf2ff] mt-0.5">
@@ -354,7 +385,46 @@ export const Topbar: React.FC<TopbarProps> = ({
                 </div>
               </div>
 
-              {/* Only Super Admin has view switching permission */}
+              {/* Quick Section Shortcuts for Super Admin */}
+              {currentRole === 'SUPER_ADMIN' && onSelectTab && (
+                <div className="py-1 border-b border-white/[0.07] mb-1 space-y-0.5">
+                  <div className="px-2.5 py-1 text-[10px] font-bold text-[#8ea3c4] uppercase tracking-wider">
+                    Tezkor bo'limlar
+                  </div>
+                  <button
+                    onClick={() => {
+                      onSelectTab('superadmin');
+                      setShowRoleDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium text-amber-400 hover:bg-white/[0.06] flex items-center gap-2"
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Super Admin Boshqaruvi</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onSelectTab('devices');
+                      setShowRoleDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium text-[#2ee59d] hover:bg-white/[0.06] flex items-center gap-2"
+                  >
+                    <Watch className="w-3.5 h-3.5" />
+                    <span>Aqlli Soatlar Floti</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onSelectTab('students');
+                      setShowRoleDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium text-[#22d3ee] hover:bg-white/[0.06] flex items-center gap-2"
+                  >
+                    <UsersIcon className="w-3.5 h-3.5" />
+                    <span>O'quvchilar Nazorati</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Role switcher (Only Super Admin has view switching permission) */}
               {currentRole === 'SUPER_ADMIN' && (
                 <div className="space-y-0.5 py-1">
                   <div className="px-2.5 py-1 text-[10px] font-bold text-[#8ea3c4] uppercase tracking-wider">

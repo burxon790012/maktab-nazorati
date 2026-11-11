@@ -131,16 +131,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {mobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-in fade-in"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in"
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar Container: 72px collapsed, 240px expanded */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 flex flex-col transition-all duration-200 border-r border-white/[0.07] bg-[#101a2e] text-[#eaf2ff] select-none
+        className={`fixed md:static top-0 bottom-0 left-0 z-50 flex flex-col transition-all duration-200 border-r border-white/[0.07] bg-[#101a2e] text-[#eaf2ff] select-none
           ${collapsed ? 'w-[72px]' : 'w-[240px]'}
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
         aria-label="Asosiy menyu"
       >
@@ -168,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onCloseMobile}
             aria-label="Menyuni yopish"
-            className="lg:hidden p-1.5 text-[#8ea3c4] hover:text-[#eaf2ff] rounded-xl hover:bg-white/[0.06]"
+            className="md:hidden p-1.5 text-[#8ea3c4] hover:text-[#eaf2ff] rounded-xl hover:bg-white/[0.06]"
           >
             <X className="w-5 h-5" />
           </button>

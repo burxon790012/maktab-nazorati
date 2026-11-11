@@ -117,37 +117,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1220] flex flex-col justify-between relative overflow-hidden font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div className="w-full max-w-full min-h-screen bg-[#0b1220] flex flex-col justify-between items-center relative overflow-x-hidden font-sans selection:bg-cyan-500 selection:text-slate-950">
       
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] bg-cyan-500/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Background ambient lighting - strictly constrained within viewport */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] max-w-full bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none select-none" />
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[400px] h-[350px] max-w-full bg-blue-600/10 rounded-full blur-[100px] pointer-events-none select-none" />
 
       {/* Top Bar with Back to Home button */}
-      <header className="p-6 relative z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <button
-            onClick={onNavigateHome}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-sm font-semibold transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Bosh sahifaga qaytish</span>
-          </button>
+      <header className="w-full max-w-5xl mx-auto p-4 sm:p-6 relative z-10 flex items-center justify-between shrink-0">
+        <button
+          onClick={onNavigateHome}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs sm:text-sm font-semibold transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Bosh sahifaga qaytish</span>
+        </button>
 
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md">
-              <Shield className="w-4 h-4" />
-            </div>
-            <span className="font-extrabold text-white text-base tracking-tight hidden sm:inline-block">
-              SMART CHILD
-            </span>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md">
+            <Shield className="w-4 h-4" />
           </div>
+          <span className="font-extrabold text-white text-base tracking-tight hidden sm:inline-block">
+            SMART CHILD
+          </span>
         </div>
       </header>
 
-      {/* Main Login Card */}
-      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-md">
+      {/* Main Login Card - Strictly centered horizontally and vertically */}
+      <main className="w-full flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md mx-auto">
           
           {mustChangePassword ? (
             /* First Login Password Change Box */
@@ -343,7 +341,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onNavigate
       </main>
 
       {/* Footer copyright */}
-      <footer className="p-6 text-center text-xs text-slate-500 relative z-10">
+      <footer className="w-full max-w-5xl mx-auto p-4 sm:p-6 text-center text-xs text-slate-500 relative z-10 shrink-0">
         © {new Date().getFullYear()} SMART CHILD. Maktab va bolalar xavfsizlik platformasi.
       </footer>
 

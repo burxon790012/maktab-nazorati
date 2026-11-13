@@ -136,8 +136,15 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [searchPin]);
 
-  // Trails history
+  // Trails history & display toggle
   const [trailsHistory, setTrailsHistory] = useState<Record<string, [number, number][]>>({});
+  const [showTrails, setShowTrails] = useState<boolean>(activeNavTab === 'routes');
+
+  useEffect(() => {
+    if (activeNavTab === 'routes') {
+      setShowTrails(true);
+    }
+  }, [activeNavTab]);
 
   // Active School
   const activeSchool: School = useMemo(() => {
@@ -393,17 +400,28 @@ export const MapView: React.FC<MapViewProps> = ({
       matchingStudents.push(s);
       adapter.upsertStudentMarker(s, selectedStudent?.id === s.id);
 
-      // Trails
-      setTrailsHistory((prev) => {
-        const studentTrail = prev[s.id] || [];
-        const lastPt = studentTrail[studentTrail.length - 1];
-        if (!lastPt || lastPt[0] !== telem.latitude || lastPt[1] !== telem.longitude) {
-          const updated = [...studentTrail, [telem.latitude, telem.longitude] as [number, number]];
-          if (updated.length > 50) updated.shift();
-          return { ...prev, [s.id]: updated };
-        }
-        return prev;
-      });
+      // Trails (only accumulate and draw when requested to prevent messy criss-crossing lines)
+      if (showTrails || activeNavTab === 'routes') {
+        setTrailsHistory((prev) => {
+          const studentTrail = prev[s.id] || [];
+          const lastPt = studentTrail[studentTrail.length - 1];
+          if (!lastPt || lastPt[0] !== telem.latitude || lastPt[1] !== telem.longitude) {
+            if (lastPt) {
+              const dLat = (telem.latitude - lastPt[0]) * 111320;
+              const dLng = (telem.longitude - lastPt[1]) * 111320 * Math.cos((lastPt[0] * Math.PI) / 180);
+              const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+              // If jump is more than 300m (simulator hop or GPS recalibration), start fresh without a huge line across buildings
+              if (dist > 300) {
+                return { ...prev, [s.id]: [[telem.latitude, telem.longitude] as [number, number]] };
+              }
+            }
+            const updated = [...studentTrail, [telem.latitude, telem.longitude] as [number, number]];
+            if (updated.length > 50) updated.shift();
+            return { ...prev, [s.id]: updated };
+          }
+          return prev;
+        });
+      }
     });
 
     // If exactly 1 student matches: focus safely
@@ -413,7 +431,7 @@ export const MapView: React.FC<MapViewProps> = ({
         adapter.flyTo(single.telemetry.latitude, single.telemetry.longitude, 16);
       }
     }
-  }, [students, selectedStudent, effectiveFilter]);
+  }, [students, selectedStudent, effectiveFilter, showTrails, activeNavTab]);
 
   // Render Trails
   useEffect(() => {
@@ -421,14 +439,19 @@ export const MapView: React.FC<MapViewProps> = ({
     const adapter = adapterRef.current;
     adapter.clearTrails();
 
-    Object.entries(trailsHistory).forEach(([studentId, pts]) => {
-      const std = students.find((s) => s.id === studentId);
-      const isInside = std?.telemetry?.geofenceStatus === 'INSIDE';
-      const isSos = Boolean(std?.telemetry?.isSos);
-      const color = isSos ? '#ff4d5e' : isInside ? '#2ee59d' : '#ff4d5e';
-      adapter.renderTrail(studentId, pts, color);
-    });
-  }, [trailsHistory, students]);
+    if (showTrails || activeNavTab === 'routes') {
+      Object.entries(trailsHistory).forEach(([studentId, pts]) => {
+        // If a student is selected, only draw their specific trail to keep map clean
+        if (selectedStudent && selectedStudent.id !== studentId) return;
+
+        const std = students.find((s) => s.id === studentId);
+        const isInside = std?.telemetry?.geofenceStatus === 'INSIDE';
+        const isSos = Boolean(std?.telemetry?.isSos);
+        const color = isSos ? '#ff4d5e' : isInside ? '#2ee59d' : '#ff4d5e';
+        adapter.renderTrail(studentId, pts, color);
+      });
+    }
+  }, [trailsHistory, students, showTrails, activeNavTab, selectedStudent]);
 
   // Focus selected student if changed externally
   useEffect(() => {
@@ -897,6 +920,33 @@ export const MapView: React.FC<MapViewProps> = ({
           <Layers className="w-4 h-4 text-[#22d3ee]" />
           <span className="hidden lg:inline">
             {mapLayer === 'roadmap' ? 'Xarita' : "Sun'iy yo'ldosh"}
+          </span>
+        </button>
+
+        {/* Trail Toggle & Clear */}
+        <button
+          onClick={() => {
+            if (showTrails) {
+              setShowTrails(false);
+              setTrailsHistory({});
+              adapterRef.current?.clearTrails();
+              showToast("Marshrut chiziqlari tozalandi", "info");
+            } else {
+              setShowTrails(true);
+              showToast("Marshrut chizig'i yoqildi", "info");
+            }
+          }}
+          className={`h-10 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
+            showTrails
+              ? 'bg-[#2ee59d]/20 text-[#2ee59d] border border-[#2ee59d]/40'
+              : 'text-[#8ea3c4] hover:text-[#eaf2ff] hover:bg-white/[0.04]'
+          }`}
+          aria-label="Marshrut chizig'ini yoqish yoki tozalash"
+          title={showTrails ? "Marshrut chiziqlarini tozalash / yashirish" : "Marshrut chizig'ini ko'rsatish"}
+        >
+          <Footprints className="w-4 h-4 text-[#2ee59d]" />
+          <span className="hidden md:inline">
+            {showTrails ? "Chiziqlarni tozalash" : "Marshrut"}
           </span>
         </button>
 

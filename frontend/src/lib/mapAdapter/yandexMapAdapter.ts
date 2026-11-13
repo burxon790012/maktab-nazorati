@@ -205,16 +205,16 @@ export class YandexMapAdapter implements MapAdapter {
     this.map.geoObjects.add(accCircle);
     this.accuracyCircles.set(student.id, accCircle);
 
-    // Custom HTML Layout for Yandex Placemark
+    // Custom HTML Layout for Yandex Placemark (Centered exactly at [latitude, longitude])
     const pinLayout = ymaps.templateLayoutFactory.createClass(
-      `<div style="position: relative; transform: translate(-50%, -50%); cursor: pointer;">
+      `<div style="position: relative; width: 38px; height: 38px; cursor: pointer;">
         ${isSos ? '<div style="position:absolute; inset:-8px; border-radius:9999px; background:rgba(255,77,94,0.4); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>' : ''}
         <div style="width: 38px; height: 38px; border-radius: 9999px; background: ${statusColor}; padding: 2px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
           <div style="width: 100%; height: 100%; border-radius: 9999px; background: #1b1b33; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: bold;">
             ${initials}
           </div>
         </div>
-        <div style="position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); background: rgba(27,27,51,0.92); border: 1px solid ${statusColor}; color: #e8e8f5; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+        <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: rgba(27,27,51,0.92); border: 1px solid ${statusColor}; color: #e8e8f5; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.4); pointer-events: none;">
           ${student.name.split(' ')[0]} ${isSos ? '🚨' : ''}
         </div>
       </div>`
@@ -253,10 +253,11 @@ export class YandexMapAdapter implements MapAdapter {
       },
       {
         iconLayout: pinLayout,
+        iconOffset: [-19, -19],
         iconShape: {
           type: 'Circle',
-          coordinates: [0, 0],
-          radius: 20,
+          coordinates: [19, 19],
+          radius: 19,
         },
         zIndex: isSelected ? 1000 : 500,
       }

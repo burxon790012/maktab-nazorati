@@ -76,6 +76,7 @@ class TrackingService : Service() {
     private var isSosMode = false
     private var sosJob: Job? = null
     private var heartbeatJob: Job? = null
+    private var discoveryJob: Job? = null
 
     private var lastKnownLocation: Location? = null
     private var batteryLevel: Int = 100
@@ -122,6 +123,7 @@ class TrackingService : Service() {
                 currentConnectionType = channel
                 isOnline = true
                 _serviceState.value = _serviceState.value.copy(isOnline = true, connectionType = channel)
+                performDiscovery()
                 triggerOfflineSync()
             } else {
                 activeValidatedNetworks.remove(network)
@@ -187,6 +189,7 @@ class TrackingService : Service() {
         startForeground(NOTIFICATION_ID, createNotification("Monitoring faol"))
         startLocationUpdates(isMoving = false)
         startHeartbeatLoop()
+        startDiscoveryLoop()
         _serviceState.value = _serviceState.value.copy(isRunning = true)
     }
 
@@ -209,6 +212,9 @@ class TrackingService : Service() {
             }
             ACTION_CANCEL_SOS -> {
                 handleCancelSosAction()
+            }
+            ACTION_DISCOVER -> {
+                performDiscovery()
             }
         }
         return START_STICKY
@@ -239,9 +245,10 @@ class TrackingService : Service() {
                 val token = NetworkClient.getDeviceToken(this@TrackingService)
 
                 if (token.isNullOrBlank()) {
+                    performDiscovery()
                     _serviceState.value = _serviceState.value.copy(
                         sosStatus = "SOS yuborilmadi (Qurilma biriktirilmagan)",
-                        authError = "Qayta biriktiring"
+                        authError = "Veb-saytda biriktirish kutilmoqda"
                     )
                     delay(SOS_INTERVAL_MS)
                     continue
@@ -442,7 +449,7 @@ class TrackingService : Service() {
         serviceScope.launch {
             val token = NetworkClient.getDeviceToken(this@TrackingService)
             if (token.isNullOrBlank()) {
-                _serviceState.value = _serviceState.value.copy(authError = "Qayta biriktiring")
+                performDiscovery()
                 return@launch
             }
 
@@ -457,7 +464,8 @@ class TrackingService : Service() {
                         _serviceState.value = _serviceState.value.copy(
                             lastServerContact = System.currentTimeMillis(),
                             geofenceStatus = response.body()?.geofenceStatus ?: "UNKNOWN",
-                            authError = null
+                            authError = null,
+                            isAssigned = true
                         )
                         // Item 5: Muvaffaqiyatli jonli yuborishdan so'ng agar oflayn navbatda ma'lumot bo'lsa sync qilish
                         val unsynced = db.locationDao().getUnsyncedCount()
@@ -468,7 +476,13 @@ class TrackingService : Service() {
                     } else {
                         val code = response.code()
                         if (code == 401 || code == 403) {
-                            _serviceState.value = _serviceState.value.copy(authError = "Qayta biriktiring")
+                            NetworkClient.clearDeviceToken(this@TrackingService)
+                            _serviceState.value = _serviceState.value.copy(
+                                isAssigned = false,
+                                studentName = null,
+                                authError = "Qayta biriktiring"
+                            )
+                            performDiscovery()
                             return@launch
                         }
                         if (code == 408 || code == 429 || code >= 500) {
@@ -529,7 +543,11 @@ class TrackingService : Service() {
     }
 
     private suspend fun sendHeartbeat() {
-        val token = NetworkClient.getDeviceToken(this) ?: return
+        val token = NetworkClient.getDeviceToken(this)
+        if (token.isNullOrBlank()) {
+            performDiscovery()
+            return
+        }
         val deviceId = NetworkClient.getDeviceId(this)
         val unsynced = db.locationDao().getUnsyncedCount()
 
@@ -548,10 +566,17 @@ class TrackingService : Service() {
             if (response.isSuccessful) {
                 _serviceState.value = _serviceState.value.copy(
                     lastServerContact = System.currentTimeMillis(),
-                    authError = null
+                    authError = null,
+                    isAssigned = true
                 )
             } else if (response.code() == 401 || response.code() == 403) {
-                _serviceState.value = _serviceState.value.copy(authError = "Qayta biriktiring")
+                NetworkClient.clearDeviceToken(this)
+                _serviceState.value = _serviceState.value.copy(
+                    isAssigned = false,
+                    studentName = null,
+                    authError = "Qayta biriktiring"
+                )
+                performDiscovery()
             }
         } catch (_: Exception) {}
     }
@@ -662,6 +687,7 @@ class TrackingService : Service() {
         super.onDestroy()
         sosJob?.cancel()
         heartbeatJob?.cancel()
+        discoveryJob?.cancel()
         serviceScope.cancel()
 
         fusedLocationClient.removeLocationUpdates(locationCallback)
@@ -671,6 +697,66 @@ class TrackingService : Service() {
             connectivityManager.unregisterNetworkCallback(networkCallback)
         } catch (_: Exception) {}
         _serviceState.value = _serviceState.value.copy(isRunning = false, isSosActive = false)
+    }
+
+    private fun startDiscoveryLoop() {
+        discoveryJob?.cancel()
+        discoveryJob = serviceScope.launch {
+            while (isActive) {
+                performDiscovery()
+                val isAssigned = _serviceState.value.isAssigned
+                val interval = if (isAssigned) 60_000L else 12_000L
+                delay(interval)
+            }
+        }
+    }
+
+    private fun performDiscovery() {
+        serviceScope.launch {
+            val deviceId = NetworkClient.getDeviceId(this@TrackingService)
+
+            val payload = uz.maktab.watch.data.model.DiscoverPayload(
+                deviceUid = deviceId,
+                model = "Samsung Galaxy Watch 5 Pro",
+                appVersion = "1.0.0",
+                batteryLevel = batteryLevel,
+                isCharging = isCharging,
+                connectionType = currentConnectionType
+            )
+
+            try {
+                val api = NetworkClient.getApi(this@TrackingService)
+                val response = api.discoverDevice(payload)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    val assigned = body?.isAssigned == true || body?.registered == true
+                    val token = body?.token ?: body?.deviceToken
+                    val studentName = body?.studentName
+
+                    if (assigned && !token.isNullOrBlank()) {
+                        NetworkClient.saveDeviceToken(this@TrackingService, token)
+                        _serviceState.value = _serviceState.value.copy(
+                            isAssigned = true,
+                            studentName = studentName,
+                            authError = null
+                        )
+                        updateNotification("✅ Biriktirilgan: ${studentName ?: "Faol"}")
+                    } else if (assigned) {
+                        _serviceState.value = _serviceState.value.copy(
+                            isAssigned = true,
+                            studentName = studentName
+                        )
+                    } else {
+                        val hasToken = !NetworkClient.getDeviceToken(this@TrackingService).isNullOrBlank()
+                        _serviceState.value = _serviceState.value.copy(
+                            isAssigned = false,
+                            studentName = null,
+                            authError = if (!hasToken) "Veb-saytda biriktirish kutilmoqda" else null
+                        )
+                    }
+                }
+            } catch (_: Exception) {}
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -689,7 +775,9 @@ class TrackingService : Service() {
         val connectionType: String = "OFFLINE",
         val geofenceStatus: String = "UNKNOWN", // Item 7: doim UNKNOWN boshlang'ich qiymat
         val lastServerContact: Long? = null,
-        val lastUpdated: Long? = null
+        val lastUpdated: Long? = null,
+        val isAssigned: Boolean = false,
+        val studentName: String? = null
     )
 
     companion object {
@@ -697,6 +785,7 @@ class TrackingService : Service() {
         const val ACTION_STOP = "uz.maktab.watch.action.STOP"
         const val ACTION_SOS = "uz.maktab.watch.action.SOS"
         const val ACTION_CANCEL_SOS = "uz.maktab.watch.action.CANCEL_SOS"
+        const val ACTION_DISCOVER = "uz.maktab.watch.action.DISCOVER"
 
         private const val CHANNEL_ID = "maktab_tracking_channel"
         private const val NOTIFICATION_ID = 1001

@@ -72,3 +72,26 @@ data class PairResponse(
 data class ActivateDevicePayload(
     @SerializedName("deviceId") val deviceId: String
 )
+
+data class DiscoverPayload(
+    @SerializedName("deviceUid") val deviceUid: String,
+    @SerializedName("model") val model: String = "Samsung Galaxy Watch 5 Pro",
+    @SerializedName("appVersion") val appVersion: String = "1.0.0",
+    @SerializedName("batteryLevel") val batteryLevel: Int?,
+    @SerializedName("isCharging") val isCharging: Boolean = false,
+    @SerializedName("connectionType") val connectionType: String = "WIFI"
+)
+
+data class DiscoverResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("registered") val registered: Boolean = false,
+    @SerializedName("isAssigned") val isAssigned: Boolean = false,
+    @SerializedName("deviceUid") val deviceUid: String? = null,
+    @SerializedName("studentId") val studentId: String? = null,
+    @SerializedName("studentName") val studentName: String? = null,
+    @SerializedName("token") val token: String? = null,
+    @SerializedName("deviceToken") val deviceToken: String? = null,
+    @SerializedName("status") val status: String? = "ONLINE"
+)
+

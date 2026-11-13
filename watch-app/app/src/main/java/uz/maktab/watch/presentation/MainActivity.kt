@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,7 +29,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -40,9 +45,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,9 +62,12 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Text
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import uz.maktab.watch.data.model.PairDevicePayload
 import uz.maktab.watch.data.remote.NetworkClient
 import uz.maktab.watch.presentation.theme.MaktabWatchTheme
 import uz.maktab.watch.service.TrackingService
@@ -63,15 +75,9 @@ import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
-    /**
-     * Item 12 talabi (Android 14): Joylashuv ruxsatlarini bosqichma-bosqich so'rash.
-     * 1-bosqich: Old fon (foreground) joylashuv va bildirishnoma ruxsatlari.
-     * 2-bosqich: Orqa fon (background) joylashuv ruxsati alohida qadamda so'raladi.
-     */
     private val backgroundLocationLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
-        // Background ruxsati berilganidan so'ng servisni boshlash
         sendServiceAction(TrackingService.ACTION_START)
     }
 
@@ -80,13 +86,11 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         if (fineLocationGranted) {
-            // 2-bosqich: Agar Android 10+ (Q+) bo'lsa, orqa fon ruxsatini alohida qadamda so'rash
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val bgGranted = ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
-
                 if (!bgGranted) {
                     backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     return@registerForActivityResult
@@ -100,16 +104,31 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         checkAndRequestPermissions()
-
+        sendServiceAction(TrackingService.ACTION_DISCOVER)
         setContent {
             MaktabWatchTheme {
-                WatchAppScreen(
-                    onSosTrigger = { triggerSos() },
-                    onCancelSos = { cancelSos() },
-                    onToggleTracking = { toggleTracking() }
-                )
+                val context = LocalContext.current
+                var showManualPairScreen by remember { mutableStateOf(false) }
+
+                if (showManualPairScreen) {
+                    PairScreen(
+                        onPaired = { showManualPairScreen = false },
+                        onBack = { showManualPairScreen = false }
+                    )
+                } else {
+                    WatchAppScreen(
+                        onSosTrigger = { triggerSos() },
+                        onCancelSos = { cancelSos() },
+                        onToggleTracking = { toggleTracking() },
+                        onRefreshDiscovery = { sendServiceAction(TrackingService.ACTION_DISCOVER) },
+                        onOpenManualPair = { showManualPairScreen = true },
+                        onUnpair = {
+                            NetworkClient.clearDeviceToken(context)
+                            sendServiceAction(TrackingService.ACTION_DISCOVER)
+                        }
+                    )
+                }
             }
         }
     }
@@ -168,10 +187,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Item 1 talabi: SOS boshlash va bekor qilish to'liq Intent actions orqali.
-     * Hech qanday statik instansiya ishlatilmaydi.
-     */
     private fun triggerSos() {
         sendServiceAction(TrackingService.ACTION_SOS)
     }
@@ -181,15 +196,257 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// ─────────────────────────────────────────────────────────────
+// PAIR SCREEN — Soatni serverga biriktirish ekrani
+// ─────────────────────────────────────────────────────────────
+@Composable
+fun PairScreen(
+    onPaired: () -> Unit,
+    onBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val deviceUid = remember { NetworkClient.getDeviceId(context) }
+
+    var pairCode by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var successMsg by remember { mutableStateOf<String?>(null) }
+
+    // Muvaffaqiyatli pair bo'lgandan keyin asosiy ekranga o'tish
+    LaunchedEffect(successMsg) {
+        if (successMsg != null) {
+            delay(1200)
+            onPaired()
+        }
+    }
+
+    ScalingLazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        item {
+            Text(
+                text = "SMART CHILD",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF00E5FF),
+                modifier = Modifier.padding(top = 20.dp)
+            )
+        }
+
+        item {
+            Text(
+                text = "Soatni Biriktirish",
+                fontSize = 11.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        item {
+            Text(
+                text = "Veb-saytdan olgan\n6 xonali kodni kiriting",
+                fontSize = 9.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
+
+        // Kod kiritish maydoni
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFF1E1E1E))
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (pairCode.isEmpty()) {
+                    Text(
+                        text = "XXXXXX",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF444444),
+                        letterSpacing = 6.sp
+                    )
+                }
+                BasicTextField(
+                    value = pairCode,
+                    onValueChange = { new ->
+                        if (new.length <= 6) pairCode = new.uppercase().filter { it.isLetterOrDigit() }
+                        errorMsg = null
+                    },
+                    textStyle = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00E5FF),
+                        letterSpacing = 6.sp,
+                        textAlign = TextAlign.Center
+                    ),
+                    cursorBrush = SolidColor(Color(0xFF00E5FF)),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { /* pair tugmasi orqali yuboriladi */ }
+                    ),
+                    singleLine = true
+                )
+            }
+        }
+
+        // Xato xabari
+        if (errorMsg != null) {
+            item {
+                Text(
+                    text = "❌ $errorMsg",
+                    fontSize = 9.sp,
+                    color = Color(0xFFFF5252),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }
+
+        // Muvaffaqiyat xabari
+        if (successMsg != null) {
+            item {
+                Text(
+                    text = "✅ $successMsg",
+                    fontSize = 10.sp,
+                    color = Color(0xFF00E676),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        // Biriktirish tugmasi
+        item {
+            Button(
+                onClick = {
+                    if (pairCode.length < 4) {
+                        errorMsg = "Kamida 4 ta belgi kiriting"
+                        return@Button
+                    }
+                    isLoading = true
+                    errorMsg = null
+                    scope.launch {
+                        try {
+                            val api = NetworkClient.getApi(context)
+                            val payload = PairDevicePayload(
+                                code = pairCode,
+                                deviceUid = deviceUid,
+                                model = "Samsung Galaxy Watch 5 Pro"
+                            )
+                            val response = withContext(Dispatchers.IO) {
+                                api.pairDevice(payload)
+                            }
+                            if (response.isSuccessful) {
+                                val body = response.body()
+                                val token = body?.deviceToken ?: body?.token
+                                if (!token.isNullOrBlank()) {
+                                    NetworkClient.saveDeviceToken(context, token)
+                                    successMsg = "Muvaffaqiyatli biriktirildi!"
+                                } else {
+                                    errorMsg = body?.message ?: "Token kelmadi"
+                                }
+                            } else {
+                                val errBody = response.errorBody()?.string()
+                                errorMsg = when (response.code()) {
+                                    404 -> "Noto'g'ri kod. Qayta tekshiring"
+                                    410 -> "Kod muddati o'tgan. Yangi kod oling"
+                                    409 -> "Bu soat allaqachon biriktirilgan"
+                                    else -> "Server xatosi (${response.code()})"
+                                }
+                            }
+                        } catch (e: Exception) {
+                            errorMsg = "Tarmoq xatosi: ${e.message?.take(40)}"
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading && pairCode.length >= 4,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFF00897B),
+                    disabledBackgroundColor = Color(0xFF263238)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(38.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        indicatorColor = Color.White,
+                        trackColor = Color.Transparent,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Biriktirish",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+
+        // Qurilma ID (past)
+        item {
+            Text(
+                text = "ID: $deviceUid",
+                fontSize = 7.sp,
+                color = Color(0xFF888888),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        // Orqaga tugmasi
+        item {
+            Button(
+                onClick = onBack,
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF37474F)),
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(28.dp)
+                    .padding(bottom = 12.dp)
+            ) {
+                Text(
+                    text = "Orqaga",
+                    fontSize = 9.sp,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// ASOSIY MONITORING EKRANI
+// ─────────────────────────────────────────────────────────────
 @Composable
 fun WatchAppScreen(
     onSosTrigger: () -> Unit,
     onCancelSos: () -> Unit,
-    onToggleTracking: () -> Unit
+    onToggleTracking: () -> Unit,
+    onRefreshDiscovery: () -> Unit = {},
+    onOpenManualPair: () -> Unit = {},
+    onUnpair: () -> Unit = {}
 ) {
     val serviceState by TrackingService.serviceState.collectAsState()
     val context = LocalContext.current
     val deviceId = remember { NetworkClient.getDeviceId(context) }
+    val isPaired = NetworkClient.isPaired(context) || serviceState.isAssigned
 
     ScalingLazyColumn(
         modifier = Modifier
@@ -209,8 +466,98 @@ fun WatchAppScreen(
             )
         }
 
-        // Item 6: Avtorizatsiya xatosi (401/403) bo'lsa "Qayta biriktiring" ogohlantirishi
-        if (serviceState.authError != null) {
+        // 1. Agar soat hali veb-saytda biriktirilmagan bo'lsa:
+        if (!isPaired) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF0D47A1))
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "📡 Veb-saytda aniqlandi",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00E5FF),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Veb-saytdagi 'Notanish soatlar' bo'limidan ushbu soatni biriktiring",
+                            fontSize = 8.sp,
+                            color = Color(0xFFE0E0E0),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "ID: $deviceId",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFFFD600)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = onRefreshDiscovery,
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF00897B)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(26.dp)
+                            ) {
+                                Text(
+                                    text = "Tekshirish",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                            Button(
+                                onClick = onOpenManualPair,
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF37474F)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(26.dp)
+                            ) {
+                                Text(
+                                    text = "Kod kiritish",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (serviceState.studentName != null) {
+            // Muvaffaqiyatli biriktirilgan o'quvchi
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF1B5E20))
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "👤 ${serviceState.studentName}",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB9F6CA),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else if (serviceState.authError != null && serviceState.authError != "Veb-saytda biriktirish kutilmoqda") {
+            // Avtorizatsiya xatosi (401/403)
             item {
                 Box(
                     modifier = Modifier
@@ -220,18 +567,35 @@ fun WatchAppScreen(
                         .padding(6.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "⚠️ ${serviceState.authError}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "⚠️ ${serviceState.authError}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Button(
+                            onClick = onUnpair,
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF6F00)),
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .height(26.dp)
+                        ) {
+                            Text(
+                                text = "Qayta tekshirish",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        // QURILMA VA ALOQA HOLATI
+        // Online/Offline holati va batareya
         item {
             Row(
                 modifier = Modifier
@@ -240,7 +604,6 @@ fun WatchAppScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Online/Offline va kanal
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -255,8 +618,6 @@ fun WatchAppScreen(
                         color = Color.LightGray
                     )
                 }
-
-                // Batareya foizi
                 Text(
                     text = "🔋 ${serviceState.batteryLevel}%",
                     fontSize = 10.sp,
@@ -266,7 +627,7 @@ fun WatchAppScreen(
             }
         }
 
-        // Item 1: SOS HOLATI VA BOSHQARISH
+        // SOS holati
         item {
             if (serviceState.isSosActive) {
                 Column(
@@ -311,7 +672,7 @@ fun WatchAppScreen(
             }
         }
 
-        // Item 7: GEOFENCE HOLATI (Boshlang'ich qiymat: UNKNOWN)
+        // Geofence holati
         item {
             val statusColor = when (serviceState.geofenceStatus) {
                 "INSIDE" -> Color(0xFF00E676)
@@ -323,7 +684,6 @@ fun WatchAppScreen(
                 "OUTSIDE" -> "QIZIL: Maktabdan tashqarida"
                 else -> "SARIQ: Noma'lum (UNKNOWN)"
             }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -342,7 +702,7 @@ fun WatchAppScreen(
             }
         }
 
-        // GPS KOORDINATALARI
+        // GPS koordinatalari
         item {
             Column(
                 modifier = Modifier
@@ -377,7 +737,7 @@ fun WatchAppScreen(
             }
         }
 
-        // XIZMATNI YOQISH / O'CHIRISH TUGMASI
+        // Monitoring tugmasi
         item {
             Button(
                 onClick = onToggleTracking,
@@ -396,7 +756,7 @@ fun WatchAppScreen(
             }
         }
 
-        // QURILMA IDSI
+        // Qurilma IDsi
         item {
             Text(
                 text = "ID: $deviceId",
@@ -408,6 +768,9 @@ fun WatchAppScreen(
     }
 }
 
+// ─────────────────────────────────────────────────────────────
+// SOS tugmasi
+// ─────────────────────────────────────────────────────────────
 @Composable
 fun SosHoldButton(onSosTrigger: () -> Unit) {
     val context = LocalContext.current
@@ -428,8 +791,7 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                         progress = 0f
                         holdJob = scope.launch {
                             val startTime = System.currentTimeMillis()
-                            val duration = 3000L // 3 soniya bosib turish
-
+                            val duration = 3000L
                             while (System.currentTimeMillis() - startTime < duration) {
                                 val elapsed = System.currentTimeMillis() - startTime
                                 progress = elapsed.toFloat() / duration
@@ -442,7 +804,6 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                             progress = 0f
                             isHolding = false
                         }
-
                         tryAwaitRelease()
                         holdJob?.cancel()
                         progress = 0f
@@ -461,7 +822,6 @@ fun SosHoldButton(onSosTrigger: () -> Unit) {
                 strokeWidth = 4.dp
             )
         }
-
         Box(
             modifier = Modifier
                 .size(76.dp)

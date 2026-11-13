@@ -20,6 +20,11 @@ import uz.maktab.watch.data.model.TelemetryPayload
  */
 interface ApiService {
 
+    @POST("api/devices/discover")
+    suspend fun discoverDevice(
+        @Body payload: uz.maktab.watch.data.model.DiscoverPayload
+    ): Response<uz.maktab.watch.data.model.DiscoverResponse>
+
     @POST("api/devices/location")
     suspend fun sendLocation(
         @Header("x-device-token") deviceToken: String,

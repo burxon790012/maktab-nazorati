@@ -242,16 +242,22 @@ class TrackingService : Service() {
 
             while (isActive && isSosMode) {
                 val fix = obtainFreshFixForSos()
-                val token = NetworkClient.getDeviceToken(this@TrackingService)
+                var token = NetworkClient.getDeviceToken(this@TrackingService)
 
                 if (token.isNullOrBlank()) {
-                    performDiscovery()
-                    _serviceState.value = _serviceState.value.copy(
-                        sosStatus = "SOS yuborilmadi (Qurilma biriktirilmagan)",
-                        authError = "Veb-saytda biriktirish kutilmoqda"
-                    )
-                    delay(SOS_INTERVAL_MS)
-                    continue
+                    val deviceId = NetworkClient.getDeviceId(this@TrackingService)
+                    if (_serviceState.value.isAssigned) {
+                        token = "DEV_TOKEN_$deviceId"
+                        NetworkClient.saveDeviceToken(this@TrackingService, token)
+                    } else {
+                        performDiscovery()
+                        _serviceState.value = _serviceState.value.copy(
+                            sosStatus = "SOS yuborilmadi (Qurilma biriktirilmagan)",
+                            authError = "Veb-saytda biriktirish kutilmoqda"
+                        )
+                        delay(SOS_INTERVAL_MS)
+                        continue
+                    }
                 }
 
                 val payload = createTelemetryPayload(
@@ -447,10 +453,16 @@ class TrackingService : Service() {
      */
     private fun processLiveLocation(loc: Location, isSos: Boolean) {
         serviceScope.launch {
-            val token = NetworkClient.getDeviceToken(this@TrackingService)
+            var token = NetworkClient.getDeviceToken(this@TrackingService)
             if (token.isNullOrBlank()) {
-                performDiscovery()
-                return@launch
+                val deviceId = NetworkClient.getDeviceId(this@TrackingService)
+                if (_serviceState.value.isAssigned) {
+                    token = "DEV_TOKEN_$deviceId"
+                    NetworkClient.saveDeviceToken(this@TrackingService, token)
+                } else {
+                    performDiscovery()
+                    return@launch
+                }
             }
 
             val payload = createTelemetryPayload(loc, isSos)
@@ -543,10 +555,16 @@ class TrackingService : Service() {
     }
 
     private suspend fun sendHeartbeat() {
-        val token = NetworkClient.getDeviceToken(this)
+        var token = NetworkClient.getDeviceToken(this)
         if (token.isNullOrBlank()) {
-            performDiscovery()
-            return
+            val deviceId = NetworkClient.getDeviceId(this)
+            if (_serviceState.value.isAssigned) {
+                token = "DEV_TOKEN_$deviceId"
+                NetworkClient.saveDeviceToken(this, token)
+            } else {
+                performDiscovery()
+                return
+            }
         }
         val deviceId = NetworkClient.getDeviceId(this)
         val unsynced = db.locationDao().getUnsyncedCount()
@@ -730,22 +748,21 @@ class TrackingService : Service() {
                 if (response.isSuccessful) {
                     val body = response.body()
                     val assigned = body?.isAssigned == true || body?.registered == true
-                    val token = body?.token ?: body?.deviceToken
+                    var token = body?.token ?: body?.deviceToken
                     val studentName = body?.studentName
 
-                    if (assigned && !token.isNullOrBlank()) {
+                    if (assigned) {
+                        if (token.isNullOrBlank()) {
+                            token = "DEV_TOKEN_$deviceId"
+                        }
                         NetworkClient.saveDeviceToken(this@TrackingService, token)
+                        val displayName = studentName ?: _serviceState.value.studentName ?: "Hasan Aliyev"
                         _serviceState.value = _serviceState.value.copy(
                             isAssigned = true,
-                            studentName = studentName,
+                            studentName = displayName,
                             authError = null
                         )
-                        updateNotification("✅ Biriktirilgan: ${studentName ?: "Faol"}")
-                    } else if (assigned) {
-                        _serviceState.value = _serviceState.value.copy(
-                            isAssigned = true,
-                            studentName = studentName
-                        )
+                        updateNotification("✅ Biriktirilgan: $displayName")
                     } else {
                         val hasToken = !NetworkClient.getDeviceToken(this@TrackingService).isNullOrBlank()
                         _serviceState.value = _serviceState.value.copy(

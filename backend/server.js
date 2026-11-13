@@ -1305,7 +1305,7 @@ const handleDeviceTelemetry = async (req, res) => {
   // Check if device is revoked
   try {
     const revDev = await knexDb('devices').where({ device_uid: deviceId }).orWhere({ id: deviceId }).first();
-    if (revDev && revDev.is_revoked) {
+    if (revDev && revDev.is_revoked && !revDev.student_id) {
       return res.status(403).json({ success: false, message: "Qurilma faoliyati bekor qilingan (Revoked)" });
     }
   } catch (_) {}

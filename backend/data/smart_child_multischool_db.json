@@ -293,7 +293,7 @@
       "parentId": "usr-parent-1",
       "parentName": "Zilola Alimova",
       "parentPhone": "+998911112233",
-      "deviceId": null,
+      "deviceId": "W5P-DISCOV-AUTH-1794566138337",
       "deviceModel": "Samsung Galaxy Watch5 Pro",
       "photo": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
       "status": "ACTIVE",
@@ -2990,6 +2990,30 @@
       "lastSeen": 1794437629716,
       "deviceStatus": "ONLINE",
       "isRealDevice": true
+    },
+    "W5P-DISCOV-1794566137692": {
+      "deviceId": "W5P-DISCOV-1794566137692",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794566138244,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794566138337": {
+      "deviceId": "W5P-DISCOV-AUTH-1794566138337",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794566138349
     }
   },
   "notifications": [
@@ -13974,5 +13998,9 @@
         "details": "CMS bazasi muvaffaqiyatli ishga tushirildi"
       }
     ]
+  },
+  "deviceTokens": {
+    "W5P-DISCOV-1794566137692": "f9b5647c8d860e8dea12f7988d6f4b1c249169ff7827afd65ca7196d9d212956",
+    "W5P-DISCOV-AUTH-1794566138337": "ae8ecb71f15b03ded194917cee4654e887caac912b94edcee829f9f367464759"
   }
 }

@@ -33,7 +33,7 @@ COPY . .
 
 # If built from repository root, bring backend/ files to /app root
 RUN if [ -d "backend" ] && [ -f "backend/server.js" ]; then \
-      cp -rn backend/* . 2>/dev/null || cp -r backend/* .; \
+      cp -rf backend/* . 2>/dev/null || cp -r backend/* .; \
     fi
 
 # Container environment

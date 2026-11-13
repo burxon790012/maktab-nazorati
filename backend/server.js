@@ -64,6 +64,26 @@ function calculateDeviceStatus(lastSeenAt) {
   return 'OFFLINE';
 }
 
+let hasDeviceTokenColumn = false;
+async function ensureDeviceTokenColumn() {
+  try {
+    const hasTable = await knexDb.schema.hasTable('devices');
+    if (hasTable) {
+      const hasCol = await knexDb.schema.hasColumn('devices', 'device_token');
+      if (!hasCol) {
+        await knexDb.schema.alterTable('devices', (table) => {
+          table.text('device_token').nullable();
+        });
+        console.log('✅ Added device_token column to devices table');
+      }
+      hasDeviceTokenColumn = true;
+    }
+  } catch (err) {
+    console.warn('⚠️ device_token column check warning:', err.message);
+  }
+}
+ensureDeviceTokenColumn().catch(() => {});
+
 
 // Rate Limiters
 const pairingLimiter = rateLimit({
@@ -1926,12 +1946,61 @@ app.post(['/api/devices/discover', '/api/v1/devices/discover'], async (req, res)
         updated_at: new Date()
       });
 
+    const isAssigned = Boolean(device.is_assigned);
+    let deviceToken = null;
+    let studentInfo = null;
+
+    if (isAssigned && !device.is_revoked) {
+      studentInfo = device.student_id ? db.students.find(s => String(s.id) === String(device.student_id)) : null;
+
+      if (device.device_token) {
+        deviceToken = device.device_token;
+      } else if (db.deviceTokens && db.deviceTokens[device.device_uid]) {
+        deviceToken = db.deviceTokens[device.device_uid];
+      } else {
+        deviceToken = generateDeviceToken();
+        const tokenHash = hashDeviceToken(deviceToken);
+        if (!db.deviceTokens) db.deviceTokens = {};
+        db.deviceTokens[device.device_uid] = deviceToken;
+
+        try {
+          await knexDb('devices').where({ id: device.id }).update({
+            token_hash: tokenHash,
+            device_token: deviceToken,
+            updated_at: new Date()
+          });
+        } catch (_) {
+          try {
+            await knexDb('devices').where({ id: device.id }).update({
+              token_hash: tokenHash,
+              updated_at: new Date()
+            });
+          } catch (_) {}
+        }
+
+        try {
+          await knexDb('device_credentials').insert({
+            id: 'cred_' + crypto.randomUUID(),
+            device_uid: device.device_uid,
+            token_hash: tokenHash,
+            is_revoked: 0,
+            created_at: new Date()
+          });
+        } catch (_) {}
+      }
+    }
+
     return res.status(200).json({
       success: true,
-      message: device.is_assigned ? "Soat ro'yxatdan o'tgan" : "Soat kutilmoqda (Notanish)",
-      registered: Boolean(device.is_assigned),
-      isAssigned: Boolean(device.is_assigned),
+      message: isAssigned ? "Soat ro'yxatdan o'tgan" : "Soat kutilmoqda (Notanish)",
+      registered: isAssigned,
+      isAssigned,
       deviceUid: device.device_uid,
+      studentId: device.student_id || null,
+      studentName: studentInfo ? studentInfo.name : null,
+      schoolId: device.school_id || (studentInfo ? studentInfo.schoolId : null),
+      token: deviceToken,
+      deviceToken: deviceToken,
       status: 'ONLINE'
     });
   } catch (err) {
@@ -2112,17 +2181,27 @@ app.post('/api/v1/devices/assign', authMiddleware, async (req, res) => {
       });
 
       // 8. Update device record
-      await trx('devices')
-        .where({ id: device.id })
-        .update({
-          student_id: String(studentId),
-          school_id: assignedStudent.schoolId || schoolId || 'SCH001',
-          guardian_id: assignedStudent.parentId || device.guardian_id || null,
-          token_hash: tokenHash,
-          is_assigned: 1,
-          is_paired: 1,
-          updated_at: new Date()
-        });
+      const updateData = {
+        student_id: String(studentId),
+        school_id: assignedStudent.schoolId || schoolId || 'SCH001',
+        guardian_id: assignedStudent.parentId || device.guardian_id || null,
+        token_hash: tokenHash,
+        is_assigned: 1,
+        is_paired: 1,
+        updated_at: new Date()
+      };
+      if (hasDeviceTokenColumn) {
+        updateData.device_token = generatedToken;
+      }
+      try {
+        await trx('devices').where({ id: device.id }).update(updateData);
+      } catch (_) {
+        delete updateData.device_token;
+        await trx('devices').where({ id: device.id }).update(updateData);
+      }
+
+      if (!db.deviceTokens) db.deviceTokens = {};
+      db.deviceTokens[device.device_uid] = generatedToken;
 
       assignedDevice = {
         ...device,

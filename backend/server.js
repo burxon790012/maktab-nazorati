@@ -1458,6 +1458,12 @@ const handleDeviceTelemetry = async (req, res) => {
   };
 
   if (isNewer) {
+    if (accuracy > 300 && prev.accuracy && prev.accuracy <= 100 && (now - (prev.lastSeen || 0) < 60 * 60 * 1000)) {
+      stateData.latitude = prev.latitude;
+      stateData.longitude = prev.longitude;
+      stateData.accuracy = prev.accuracy;
+      stateData.address = prev.address;
+    }
     db.telemetryState[deviceId] = stateData;
     student.telemetry = stateData;
   }

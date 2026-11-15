@@ -216,6 +216,10 @@ declare module 'lucide-react' {
   export const Satellite: any;
   export const Wifi: any;
   export const Settings: any;
+  export const Building2: any;
+  export const Bluetooth: any;
+  export const Flame: any;
+  export const Globe: any;
 }
 
 declare module '@radix-ui/react-slot' {

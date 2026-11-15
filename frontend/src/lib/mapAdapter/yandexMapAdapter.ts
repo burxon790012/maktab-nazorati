@@ -248,6 +248,15 @@ export class YandexMapAdapter implements MapAdapter {
             <div style="font-size: 11px; margin-top: 4px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 4px;">
               📍 ${address}
             </div>
+            ${(window as any).currentUserRole === 'SUPER_ADMIN' ? `
+            <div style="margin-top: 6px; padding: 4px 8px; background: #0f172a; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #06b6d4;">
+              <span style="font-family: monospace; font-size: 11px; color: #38bdf8; font-weight: bold;">
+                📍 ${latitude.toFixed(6)}, ${longitude.toFixed(6)}
+              </span>
+              <button type="button" onclick="if(window.copySmartChildCoords)window.copySmartChildCoords('${latitude.toFixed(6)}', '${longitude.toFixed(6)}')" style="background: #0284c7; color: #fff; border: none; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;">
+                📋 Nusxa olish
+              </button>
+            </div>` : ''}
           </div>
         `,
       },
@@ -338,8 +347,12 @@ export class YandexMapAdapter implements MapAdapter {
               <div style="padding: 8px; font-family: sans-serif; color: #1b1b33;">
                 <div style="font-weight: bold; font-size: 14px;">🏫 ${sch.name}</div>
                 <div style="font-size: 11px; color: #666; margin-top: 2px;">${sch.address || "O'zbekiston"}</div>
-                <div style="margin-top: 6px; padding: 4px 8px; background: #2ee59d20; border-radius: 6px; font-size: 11px; font-weight: bold; color: #1b1b33;">
-                  📍 Aniq GPS: <strong>${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}</strong>
+                <div style="margin-top: 6px; padding: 4px 8px; background: #2ee59d20; border-radius: 6px; font-size: 11px; font-weight: bold; color: #1b1b33; display: flex; align-items: center; justify-content: space-between;">
+                  <span>📍 Aniq GPS: <strong>${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}</strong></span>
+                  ${(window as any).currentUserRole === 'SUPER_ADMIN' ? `
+                  <button type="button" onclick="if(window.copySmartChildCoords)window.copySmartChildCoords('${centerLat.toFixed(6)}', '${centerLng.toFixed(6)}')" style="background: #059669; color: #fff; border: none; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-left: 6px;">
+                    📋 Nusxa
+                  </button>` : ''}
                 </div>
                 <div style="font-size: 10px; color: #777; margin-top: 4px;">
                   🛡️ Geozona: <strong>${sch.polygon.length} ta aniq burchak nuqtasi</strong>
@@ -441,7 +454,13 @@ export class YandexMapAdapter implements MapAdapter {
         balloonContent: `
           <div style="padding: 6px; font-family: sans-serif;">
             <div style="font-weight: bold; font-size: 13px; color: #1b1b33;">${safeTitle}</div>
-            <div style="font-size: 11px; color: #666; margin-top: 2px;">Koordinatalar: ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+            <div style="font-size: 11px; color: #666; margin-top: 2px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Koordinatalar: ${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+              ${(window as any).currentUserRole === 'SUPER_ADMIN' ? `
+              <button type="button" onclick="if(window.copySmartChildCoords)window.copySmartChildCoords('${lat.toFixed(6)}', '${lng.toFixed(6)}')" style="background: #0284c7; color: #fff; border: none; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-left: 6px;">
+                📋 Nusxa olish
+              </button>` : ''}
+            </div>
           </div>
         `,
       },

@@ -42,6 +42,7 @@ interface DevicesTabProps {
   onRefresh: () => void;
   onRegisterDevice: (data: { deviceId: string; studentId: string; model: string }) => Promise<any>;
   onRegenerateToken: (deviceId: string) => Promise<any>;
+  currentRole?: string;
 }
 
 export const DevicesTab: React.FC<DevicesTabProps> = ({
@@ -50,6 +51,7 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
   onRefresh,
   onRegisterDevice,
   onRegenerateToken,
+  currentRole,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ONLINE' | 'DELAYED' | 'OFFLINE'>('ALL');
@@ -322,9 +324,33 @@ export const DevicesTab: React.FC<DevicesTabProps> = ({
 
                       {/* Last Address */}
                       <td className="py-3.5 px-4 text-[#e8e8f5] max-w-[220px]">
-                        <div className="flex items-start gap-1 text-xs text-[#9a9ac0]">
+                        <div
+                          onClick={() => {
+                            const isSuperAdmin = (currentRole === 'SUPER_ADMIN') || ((window as any).currentUserRole === 'SUPER_ADMIN');
+                            if (isSuperAdmin) {
+                              const lat = (d as any).lastLatitude || (d as any).latitude || 41.550500;
+                              const lng = (d as any).lastLongitude || (d as any).longitude || 60.631500;
+                              if ((window as any).copySmartChildCoords) {
+                                (window as any).copySmartChildCoords(lat.toFixed(6), lng.toFixed(6));
+                              }
+                            }
+                          }}
+                          className={`flex items-start gap-1 text-xs text-[#9a9ac0] ${
+                            (currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN')
+                              ? 'cursor-pointer hover:text-cyan-300 transition'
+                              : ''
+                          }`}
+                          title={
+                            (currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN')
+                              ? "Super Admin: Koordinatani nusxalash uchun bosing"
+                              : undefined
+                          }
+                        >
                           <MapPin className="w-3.5 h-3.5 text-[#ff2d78] flex-shrink-0 mt-0.5" />
                           <span className="truncate">{d.lastAddress || "Toshkent shahri"}</span>
+                          {(currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN') && (
+                            <Copy className="w-3 h-3 text-cyan-400 shrink-0 ml-1 opacity-70 hover:opacity-100" />
+                          )}
                         </div>
                       </td>
 

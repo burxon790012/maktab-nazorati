@@ -131,7 +131,7 @@
         ]
       ],
       "adminEmail": "direktor_40@smartchild.uz",
-      "createdAt": "2026-11-11T22:53:42.953Z"
+      "createdAt": "2026-11-15T18:45:55.112Z"
     }
   ],
   "users": [
@@ -190,30 +190,30 @@
       "username": "otaona"
     },
     {
-      "id": "usr-dir-1794437622953",
+      "id": "usr-dir-1794768355112",
       "name": "Qodir Rahimov",
       "username": "direktor_40",
       "email": "direktor_40@smartchild.uz",
       "phone": "+998901234567",
-      "password": "$2b$12$8V3iIpRmYnJiQlAPFKos0ubWVR..hAYk9/kCz6dJPMA4Egd/0j0Fy",
+      "password": "$2b$12$uBg0AB14UT/DJmH/v5Ea6e65ka0ccg0owPTr0h/rqbNQ1KHjNOdYu",
       "role": "SCHOOL_ADMIN",
       "schoolId": "SCH040",
       "mustChangePassword": false,
-      "createdAt": "2026-11-11T22:53:43.209Z"
+      "createdAt": "2026-11-15T18:45:55.369Z"
     },
     {
-      "id": "usr-teach-1794437623540",
+      "id": "usr-teach-1794768355641",
       "name": "Nodira Salimova",
       "username": "nodira_oqituvchi",
       "email": "nodira_oqituvchi@smartchild.uz",
       "phone": "+998901234567",
-      "password": "$2b$12$zh/DkT2nhCzYysHUaRPynuoNz5KpPRJnU9475744kzBipTfhX.07C",
+      "password": "$2b$12$DfRzptW6xwambz1WO3qxSeWOgRZ5ek6eje9CVyD.qHMGaR.6VzHJq",
       "role": "TEACHER",
       "schoolId": "SCH040",
       "classId": "cls-40-5a",
       "className": "5-A",
       "mustChangePassword": false,
-      "createdAt": "2026-11-11T22:53:43.796Z"
+      "createdAt": "2026-11-15T18:45:55.896Z"
     },
     {
       "id": "usr-par-1794145314738",
@@ -243,40 +243,40 @@
       "parentId": "usr-parent-1",
       "parentName": "Jasur Bekmirzayev",
       "parentPhone": "+998903456789",
-      "deviceId": "W5P-TEST-1794437629642",
+      "deviceId": "W5P-PAIR-TEST-1794768359768",
       "deviceModel": "Samsung Galaxy Watch 5 Pro",
       "photo": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
       "status": "ACTIVE",
       "telemetry": {
-        "deviceId": "watch-5pro-01",
+        "deviceId": "W5P-CONTRACT-mwi6qpbs",
         "studentId": "10001",
         "studentName": "Ali Valiyev",
         "schoolId": "SCH001",
         "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
-        "latitude": 41.31108,
-        "longitude": 69.24056,
-        "accuracy": 4.5,
-        "speed": 1.2,
+        "latitude": 41.5507,
+        "longitude": 60.6317,
+        "accuracy": 4.8,
+        "speed": 0,
         "heading": 0,
         "altitude": 430,
-        "heartRate": 88,
+        "heartRate": 78,
         "bodyTemperature": 36.6,
-        "stepCount": 3650,
+        "stepCount": 4210,
         "batteryLevel": 87,
         "isCharging": false,
         "isWorn": true,
-        "isSos": true,
+        "isSos": false,
         "signalSource": "gps",
-        "connectionType": "WIFI",
-        "deviceTimestamp": 1794437629769,
-        "recordId": null,
-        "geofenceStatus": "OUTSIDE",
-        "statusColor": "RED",
-        "statusDisplay": "OUTSIDE – AWAY",
+        "connectionType": "OFFLINE_SYNC",
+        "deviceTimestamp": 1794768359730,
+        "recordId": "rec-dup-1794768359730",
+        "geofenceStatus": "INSIDE",
+        "statusColor": "GREEN",
+        "statusDisplay": "PRESENT – INSIDE SCHOOL",
         "assignedSchoolId": "SCH001",
         "address": "Toshkent shahri (taxminiy)",
-        "distFromSchool": 717925,
-        "lastSeen": 1794437629769,
+        "distFromSchool": 0,
+        "lastSeen": 1794768359753,
         "deviceStatus": "ONLINE",
         "isRealDevice": true
       }
@@ -293,7 +293,7 @@
       "parentId": "usr-parent-1",
       "parentName": "Zilola Alimova",
       "parentPhone": "+998911112233",
-      "deviceId": "W5P-DISCOV-AUTH-1794566138337",
+      "deviceId": null,
       "deviceModel": "Samsung Galaxy Watch5 Pro",
       "photo": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
       "status": "ACTIVE",
@@ -464,7 +464,7 @@
       "schoolName": "Urganch 40-maktab",
       "classId": "cls-40-5a",
       "className": "5-A",
-      "teacherId": "usr-teach-1794437623540",
+      "teacherId": "usr-teach-1794768355641",
       "parentId": "usr-par-1794145314738",
       "parentName": "Qodir Karimov",
       "parentPhone": "+998909876543",
@@ -481,7 +481,7 @@
         "deviceStatus": "ONLINE",
         "heartRate": 78,
         "steps": 1250,
-        "lastSeen": 1794437624071
+        "lastSeen": 1794768356165
       }
     },
     {
@@ -597,6 +597,18 @@
       "statusColor": "GREEN",
       "statusDisplay": "PRESENT – INSIDE SCHOOL",
       "isManualCorrection": false
+    },
+    {
+      "id": "att-10001-2026-11-15",
+      "studentId": "10001",
+      "schoolId": "SCH001",
+      "date": "2026-11-15",
+      "arrivalTime": "1:45:59 PM",
+      "departureTime": null,
+      "status": "LATE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "isManualCorrection": false
     }
   ],
   "telemetryState": {
@@ -621,7 +633,7 @@
       "isSos": true,
       "signalSource": "gps",
       "connectionType": "WIFI",
-      "deviceTimestamp": 1794437629769,
+      "deviceTimestamp": 1794768357843,
       "recordId": null,
       "geofenceStatus": "OUTSIDE",
       "statusColor": "RED",
@@ -629,7 +641,7 @@
       "assignedSchoolId": "SCH001",
       "address": "Toshkent shahri (taxminiy)",
       "distFromSchool": 717925,
-      "lastSeen": 1794437629769,
+      "lastSeen": 1794768357843,
       "deviceStatus": "ONLINE",
       "isRealDevice": true
     },
@@ -784,7 +796,7 @@
       "deviceStatus": "ONLINE",
       "heartRate": 78,
       "steps": 1250,
-      "lastSeen": 1794437624071
+      "lastSeen": 1794768356165
     },
     "W5P-TEST-1794159515635": {
       "deviceId": "W5P-TEST-1794159515635",
@@ -3014,9 +3026,713 @@
       "accuracy": 4.5,
       "status": "ONLINE",
       "lastSeen": 1794566138349
+    },
+    "W5P-DISCOV-1794766169322": {
+      "deviceId": "W5P-DISCOV-1794766169322",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766169654,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794766169689": {
+      "deviceId": "W5P-DISCOV-AUTH-1794766169689",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766169694
+    },
+    "W5P-CONTRACT-mwi5fsub": {
+      "deviceId": "W5P-CONTRACT-mwi5fsub",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5507,
+      "longitude": 60.6317,
+      "accuracy": 4.8,
+      "speed": 0,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 78,
+      "bodyTemperature": 36.6,
+      "stepCount": 4210,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766171502,
+      "recordId": "rec-dup-1794766171502",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 0,
+      "lastSeen": 1794766171525,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-REVOKED-mwi5fsub": {
+      "deviceId": "W5P-REVOKED-mwi5fsub",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "model": "Samsung Galaxy Watch 5 Pro",
+      "status": "OFFLINE",
+      "battery": 100,
+      "isWorn": true,
+      "lastSeen": null,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-TEST-GW5-1794766172155": {
+      "deviceId": "W5P-TEST-GW5-1794766172155",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5505,
+      "longitude": 60.6305,
+      "accuracy": 4.2,
+      "speed": 0.8,
+      "heading": 0,
+      "altitude": 435,
+      "heartRate": 76,
+      "bodyTemperature": 36.6,
+      "stepCount": 3100,
+      "batteryLevel": 88,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766172255,
+      "recordId": "rec_bt_1794766172255",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 208,
+      "lastSeen": 1794766172270,
+      "deviceStatus": "OFFLINE",
+      "isRealDevice": true,
+      "isRevoked": true
+    },
+    "W5P-TEST-1794766172914": {
+      "deviceId": "W5P-TEST-1794766172914",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.31108,
+      "longitude": 69.24056,
+      "accuracy": 4.5,
+      "speed": 1.2,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 85,
+      "bodyTemperature": 36.6,
+      "stepCount": 3450,
+      "batteryLevel": 92,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "WIFI",
+      "deviceTimestamp": 1794766172987,
+      "recordId": null,
+      "geofenceStatus": "OUTSIDE",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 717925,
+      "lastSeen": 1794766172989,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-DISCOV-1794766283739": {
+      "deviceId": "W5P-DISCOV-1794766283739",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766284072,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794766284105": {
+      "deviceId": "W5P-DISCOV-AUTH-1794766284105",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766284109
+    },
+    "W5P-CONTRACT-mwi5i92x": {
+      "deviceId": "W5P-CONTRACT-mwi5i92x",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5507,
+      "longitude": 60.6317,
+      "accuracy": 4.8,
+      "speed": 0,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 78,
+      "bodyTemperature": 36.6,
+      "stepCount": 4210,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766285838,
+      "recordId": "rec-dup-1794766285838",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 0,
+      "lastSeen": 1794766285860,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-REVOKED-mwi5i92x": {
+      "deviceId": "W5P-REVOKED-mwi5i92x",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "model": "Samsung Galaxy Watch 5 Pro",
+      "status": "OFFLINE",
+      "battery": 100,
+      "isWorn": true,
+      "lastSeen": null,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-TEST-GW5-1794766286484": {
+      "deviceId": "W5P-TEST-GW5-1794766286484",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5505,
+      "longitude": 60.6305,
+      "accuracy": 4.2,
+      "speed": 0.8,
+      "heading": 0,
+      "altitude": 435,
+      "heartRate": 76,
+      "bodyTemperature": 36.6,
+      "stepCount": 3100,
+      "batteryLevel": 88,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766286585,
+      "recordId": "rec_bt_1794766286585",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 208,
+      "lastSeen": 1794766286626,
+      "deviceStatus": "OFFLINE",
+      "isRealDevice": true,
+      "isRevoked": true
+    },
+    "W5P-TEST-1794766287253": {
+      "deviceId": "W5P-TEST-1794766287253",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.31108,
+      "longitude": 69.24056,
+      "accuracy": 4.5,
+      "speed": 1.2,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 85,
+      "bodyTemperature": 36.6,
+      "stepCount": 3450,
+      "batteryLevel": 92,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "WIFI",
+      "deviceTimestamp": 1794766287306,
+      "recordId": null,
+      "geofenceStatus": "OUTSIDE",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 717925,
+      "lastSeen": 1794766287308,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-DISCOV-1794766835153": {
+      "deviceId": "W5P-DISCOV-1794766835153",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766835498,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794766835533": {
+      "deviceId": "W5P-DISCOV-AUTH-1794766835533",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794766835537
+    },
+    "W5P-CONTRACT-mwi5u2kv": {
+      "deviceId": "W5P-CONTRACT-mwi5u2kv",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5507,
+      "longitude": 60.6317,
+      "accuracy": 4.8,
+      "speed": 0,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 78,
+      "bodyTemperature": 36.6,
+      "stepCount": 4210,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766837272,
+      "recordId": "rec-dup-1794766837272",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 0,
+      "lastSeen": 1794766837296,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-REVOKED-mwi5u2kv": {
+      "deviceId": "W5P-REVOKED-mwi5u2kv",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "model": "Samsung Galaxy Watch 5 Pro",
+      "status": "OFFLINE",
+      "battery": 100,
+      "isWorn": true,
+      "lastSeen": null,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-TEST-GW5-1794766837937": {
+      "deviceId": "W5P-TEST-GW5-1794766837937",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5505,
+      "longitude": 60.6305,
+      "accuracy": 4.2,
+      "speed": 0.8,
+      "heading": 0,
+      "altitude": 435,
+      "heartRate": 76,
+      "bodyTemperature": 36.6,
+      "stepCount": 3100,
+      "batteryLevel": 88,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794766838052,
+      "recordId": "rec_bt_1794766838052",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 208,
+      "lastSeen": 1794766838073,
+      "deviceStatus": "OFFLINE",
+      "isRealDevice": true,
+      "isRevoked": true
+    },
+    "W5P-TEST-1794766838697": {
+      "deviceId": "W5P-TEST-1794766838697",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.31108,
+      "longitude": 69.24056,
+      "accuracy": 4.5,
+      "speed": 1.2,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 85,
+      "bodyTemperature": 36.6,
+      "stepCount": 3450,
+      "batteryLevel": 92,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "WIFI",
+      "deviceTimestamp": 1794766838751,
+      "recordId": null,
+      "geofenceStatus": "OUTSIDE",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 717925,
+      "lastSeen": 1794766838753,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-TEST-GW5-1794768354004": {
+      "deviceId": "W5P-TEST-GW5-1794768354004",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5505,
+      "longitude": 60.6305,
+      "accuracy": 4.2,
+      "speed": 0.8,
+      "heading": 0,
+      "altitude": 435,
+      "heartRate": 76,
+      "bodyTemperature": 36.6,
+      "stepCount": 3100,
+      "batteryLevel": 88,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794768354113,
+      "recordId": "rec_bt_1794768354113",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 208,
+      "lastSeen": 1794768354128,
+      "deviceStatus": "OFFLINE",
+      "isRealDevice": true,
+      "isRevoked": true
+    },
+    "W5P-TEST-1794768357730": {
+      "deviceId": "W5P-TEST-1794768357730",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.31108,
+      "longitude": 69.24056,
+      "accuracy": 4.5,
+      "speed": 1.2,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 85,
+      "bodyTemperature": 36.6,
+      "stepCount": 3450,
+      "batteryLevel": 92,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "WIFI",
+      "deviceTimestamp": 1794768357785,
+      "recordId": null,
+      "geofenceStatus": "OUTSIDE",
+      "statusColor": "RED",
+      "statusDisplay": "OUTSIDE – AWAY",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 717925,
+      "lastSeen": 1794768357789,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-DISCOV-1794768358518": {
+      "deviceId": "W5P-DISCOV-1794768358518",
+      "studentId": "10003",
+      "studentName": "Hasan Aliyev",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794768358842,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
+    },
+    "W5P-DISCOV-AUTH-1794768358909": {
+      "deviceId": "W5P-DISCOV-AUTH-1794768358909",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "schoolId": "SCH001",
+      "latitude": 41.5505,
+      "longitude": 60.6315,
+      "accuracy": 4.5,
+      "status": "ONLINE",
+      "lastSeen": 1794768358918
+    },
+    "W5P-CONTRACT-mwi6qpbs": {
+      "deviceId": "W5P-CONTRACT-mwi6qpbs",
+      "studentId": "10001",
+      "studentName": "Ali Valiyev",
+      "schoolId": "SCH001",
+      "schoolName": "30-Sonli Umumiy O'rta Ta'lim Maktabi",
+      "latitude": 41.5507,
+      "longitude": 60.6317,
+      "accuracy": 4.8,
+      "speed": 0,
+      "heading": 0,
+      "altitude": 430,
+      "heartRate": 78,
+      "bodyTemperature": 36.6,
+      "stepCount": 4210,
+      "batteryLevel": 87,
+      "isCharging": false,
+      "isWorn": true,
+      "isSos": false,
+      "signalSource": "gps",
+      "connectionType": "OFFLINE_SYNC",
+      "deviceTimestamp": 1794768359730,
+      "recordId": "rec-dup-1794768359730",
+      "geofenceStatus": "INSIDE",
+      "statusColor": "GREEN",
+      "statusDisplay": "PRESENT – INSIDE SCHOOL",
+      "assignedSchoolId": "SCH001",
+      "address": "Toshkent shahri (taxminiy)",
+      "distFromSchool": 0,
+      "lastSeen": 1794768359753,
+      "deviceStatus": "ONLINE",
+      "isRealDevice": true
+    },
+    "W5P-REVOKED-mwi6qpbs": {
+      "deviceId": "W5P-REVOKED-mwi6qpbs",
+      "studentId": "10002",
+      "studentName": "Vali Karimov",
+      "model": "Samsung Galaxy Watch 5 Pro",
+      "status": "OFFLINE",
+      "battery": 100,
+      "isWorn": true,
+      "lastSeen": null,
+      "deviceStatus": "OFFLINE",
+      "isRevoked": true
     }
   },
   "notifications": [
+    {
+      "id": "notif-1794768359756",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:45:59 PM"
+    },
+    {
+      "id": "notif-1794768359721",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:45:59 PM)",
+      "isRead": false,
+      "time": "1:45:59 PM"
+    },
+    {
+      "id": "notif-1794768357844",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:45:57 PM"
+    },
+    {
+      "id": "notif-1794768354090",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:45:54 PM)",
+      "isRead": false,
+      "time": "1:45:54 PM"
+    },
+    {
+      "id": "notif-1794766838801",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:20:38 PM"
+    },
+    {
+      "id": "notif-1794766838017",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:20:38 PM)",
+      "isRead": false,
+      "time": "1:20:38 PM"
+    },
+    {
+      "id": "notif-1794766837298",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:20:37 PM"
+    },
+    {
+      "id": "notif-1794766837263",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:20:37 PM)",
+      "isRead": false,
+      "time": "1:20:37 PM"
+    },
+    {
+      "id": "notif-1794766287356",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:11:27 PM"
+    },
+    {
+      "id": "notif-1794766286564",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:11:26 PM)",
+      "isRead": false,
+      "time": "1:11:26 PM"
+    },
+    {
+      "id": "notif-1794766285863",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:11:25 PM"
+    },
+    {
+      "id": "notif-1794766285828",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:11:25 PM)",
+      "isRead": false,
+      "time": "1:11:25 PM"
+    },
+    {
+      "id": "notif-1794766173035",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:09:33 PM"
+    },
+    {
+      "id": "notif-1794766172235",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:09:32 PM)",
+      "isRead": false,
+      "time": "1:09:32 PM"
+    },
+    {
+      "id": "notif-1794766171527",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "SOS",
+      "title": "🚨 SOS Signali!",
+      "message": "🚨 Shoshilinch SOS signali! Ali Valiyev soatidan yordam so'ralmoqda",
+      "isRead": false,
+      "time": "1:09:31 PM"
+    },
+    {
+      "id": "notif-1794766171492",
+      "userId": "usr-parent-1",
+      "studentId": "10001",
+      "type": "ENTER_SCHOOL",
+      "title": "⚠️ Ogohlantirish",
+      "message": "🟢 Ali Valiyev maktab hududiga kirdi (1:09:31 PM)",
+      "isRead": false,
+      "time": "1:09:31 PM"
+    },
     {
       "id": "notif-1794437629770",
       "userId": "usr-parent-1",
@@ -3300,294 +4016,6 @@
   ],
   "routeHistory": {
     "10001": [
-      {
-        "lat": 41.55113,
-        "lng": 60.63213,
-        "time": "4:02:57 AM",
-        "speed": 0.5215023762449915,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5512,
-        "lng": 60.6322,
-        "time": "4:02:57 AM",
-        "speed": 1.5025727486923286,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.551,
-        "lng": 60.63196,
-        "time": "4:02:57 AM",
-        "speed": 1.3044466493496176,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5508,
-        "lng": 60.63172,
-        "time": "4:02:57 AM",
-        "speed": 1.2597871715831812,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5506,
-        "lng": 60.631479999999996,
-        "time": "4:02:57 AM",
-        "speed": 1.3688191382383357,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5504,
-        "lng": 60.63124,
-        "time": "4:02:57 AM",
-        "speed": 1.4700815075577505,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.550200000000004,
-        "lng": 60.631,
-        "time": "4:02:57 AM",
-        "speed": 1.2384342705266946,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.55,
-        "lng": 60.63076,
-        "time": "4:02:57 AM",
-        "speed": 1.257999951451346,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5498,
-        "lng": 60.630520000000004,
-        "time": "4:02:57 AM",
-        "speed": 1.3987275780627138,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5496,
-        "lng": 60.63028,
-        "time": "4:02:57 AM",
-        "speed": 1.204139528286863,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5494,
-        "lng": 60.63004,
-        "time": "4:02:57 AM",
-        "speed": 1.5325657240681174,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:28:12 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:28:12 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:28:12 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5512,
-        "lng": 60.6318,
-        "time": "10:28:13 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5515,
-        "lng": 60.632,
-        "time": "10:28:13 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.552,
-        "lng": 60.633,
-        "time": "10:28:13 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "10:28:13 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "10:28:14 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "10:39:21 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:43:14 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:43:14 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:43:14 AM",
-        "speed": 0,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "10:43:15 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.31108,
-        "lng": 69.24056,
-        "time": "10:43:15 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "OUTSIDE",
-        "color": "RED"
-      },
-      {
-        "lat": 41.5512,
-        "lng": 60.6318,
-        "time": "10:43:15 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5515,
-        "lng": 60.632,
-        "time": "10:43:15 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.552,
-        "lng": 60.633,
-        "time": "10:43:15 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5512,
-        "lng": 60.6318,
-        "time": "10:48:28 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5515,
-        "lng": 60.632,
-        "time": "10:48:28 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.552,
-        "lng": 60.633,
-        "time": "10:48:28 AM",
-        "speed": 0.8,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
-      {
-        "lat": 41.5505,
-        "lng": 60.6315,
-        "time": "10:48:29 AM",
-        "speed": 1.2,
-        "address": "Toshkent shahri (taxminiy)",
-        "status": "INSIDE",
-        "color": "GREEN"
-      },
       {
         "lat": 41.5505,
         "lng": 60.6315,
@@ -4199,6 +4627,294 @@
         "address": "Toshkent shahri (taxminiy)",
         "status": "OUTSIDE",
         "color": "RED"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:09:31 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:09:31 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:09:31 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5512,
+        "lng": 60.6318,
+        "time": "1:09:32 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5515,
+        "lng": 60.632,
+        "time": "1:09:32 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.552,
+        "lng": 60.633,
+        "time": "1:09:32 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:09:33 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:09:33 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:11:25 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:11:25 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:11:25 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5512,
+        "lng": 60.6318,
+        "time": "1:11:26 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5515,
+        "lng": 60.632,
+        "time": "1:11:26 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.552,
+        "lng": 60.633,
+        "time": "1:11:26 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:11:27 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:11:27 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:20:37 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:20:37 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:20:37 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5512,
+        "lng": 60.6318,
+        "time": "1:20:38 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5515,
+        "lng": 60.632,
+        "time": "1:20:38 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.552,
+        "lng": 60.633,
+        "time": "1:20:38 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:20:38 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:20:38 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.5512,
+        "lng": 60.6318,
+        "time": "1:45:54 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5515,
+        "lng": 60.632,
+        "time": "1:45:54 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.552,
+        "lng": 60.633,
+        "time": "1:45:54 PM",
+        "speed": 0.8,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:45:57 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.31108,
+        "lng": 69.24056,
+        "time": "1:45:57 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "OUTSIDE",
+        "color": "RED"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:45:59 PM",
+        "speed": 1.2,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:45:59 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
+      },
+      {
+        "lat": 41.5505,
+        "lng": 60.6315,
+        "time": "1:45:59 PM",
+        "speed": 0,
+        "address": "Toshkent shahri (taxminiy)",
+        "status": "INSIDE",
+        "color": "GREEN"
       }
     ],
     "10002": [
@@ -4304,6 +5020,114 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1794768356165",
+      "timestamp": "2026-11-15T18:45:56.165Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794768355897",
+      "timestamp": "2026-11-15T18:45:55.897Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794768355641",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794768355370",
+      "timestamp": "2026-11-15T18:45:55.370Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
+    {
+      "id": "log-1794766832724",
+      "timestamp": "2026-11-15T18:20:32.724Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794766832451",
+      "timestamp": "2026-11-15T18:20:32.451Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794766832194",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794766831921",
+      "timestamp": "2026-11-15T18:20:31.921Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
+    {
+      "id": "log-1794766281325",
+      "timestamp": "2026-11-15T18:11:21.325Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794766281052",
+      "timestamp": "2026-11-15T18:11:21.052Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794766280793",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794766280522",
+      "timestamp": "2026-11-15T18:11:20.522Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
+    {
+      "id": "log-1794766166754",
+      "timestamp": "2026-11-15T18:09:26.754Z",
+      "user": "O'qituvchi",
+      "role": "TEACHER",
+      "action": "STUDENT_AND_PARENT_CREATED",
+      "target": "STU-4001",
+      "details": "O'quvchi (Jasurbek Qodirov) va Ota-ona (ota_jasurbek) hisoblari yaratildi"
+    },
+    {
+      "id": "log-1794766166479",
+      "timestamp": "2026-11-15T18:09:26.479Z",
+      "user": "direktor_40@smartchild.uz",
+      "role": "SCHOOL_ADMIN",
+      "action": "TEACHER_CREATED",
+      "target": "usr-teach-1794766166224",
+      "details": "Yangi o'qituvchi yaratildi: Nodira Salimova (nodira_oqituvchi)"
+    },
+    {
+      "id": "log-1794766165943",
+      "timestamp": "2026-11-15T18:09:25.943Z",
+      "user": "burxonturayev7900@gmail.com",
+      "role": "SUPER_ADMIN",
+      "action": "SCHOOL_AND_DIRECTOR_CREATED",
+      "target": "SCH040",
+      "details": "Maktab (Urganch 40-maktab) va Direktor (direktor_40) yaratildi"
+    },
     {
       "id": "log-1794437624071",
       "timestamp": "2026-11-11T22:53:44.071Z",
@@ -5411,6 +6235,1630 @@
       }
     },
     "history": [
+      {
+        "id": "v-1794768353240",
+        "version": "v1.0.24",
+        "publishedAt": "2026-11-15T18:45:53.240Z",
+        "publishedBy": "burxonturayev7900@gmail.com",
+        "summary": "Test avtomatlashtirilgan nashr",
+        "snapshot": {
+          "seo": {
+            "title": "SMART CHILD — Maktab Nazorati va Bolalar Xavfsizligi Intellektual Tizimi",
+            "description": "Maktablar, o'quvchilar va ota-onalarni aqlli soatlar va real vaqt rejimidagi GPS monitoring orqali birlashtiruvchi xavfsizlik ekotizimi.",
+            "keywords": "smart child, maktab nazorati, bolalar xavfsizligi, gps monitoring, aqlli soat, o'zbekiston ta'lim",
+            "ogImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "canonicalUrl": "https://maktab-nazorati.onrender.com"
+          },
+          "appearance": {
+            "brandName": "SMART CHILD",
+            "badgeText": "INTELLEKTUAL MAKTAB XAVFSIZLIGI PLATFORMASI",
+            "primaryColor": "#22d3ee",
+            "accentColor": "#2563eb",
+            "themeMode": "dark"
+          },
+          "banner": {
+            "enabled": true,
+            "badge": "YANGILIK",
+            "text": "2026-o'quv yili uchun umumta'lim maktablarida GPS monitoring va xavfsizlik tizimi integratsiyasi boshlandi!",
+            "linkText": "Batafsil tanishing",
+            "linkUrl": "#about"
+          },
+          "hero": {
+            "badge": "XALQARO TA'LIM TEXNOLOGIYASI",
+            "headline": "SMART CHILD — Har bir bola uchun xavfsiz kelajak",
+            "subtitle": "Maktablar, o'qituvchilar va oilalarni zamonaviy texnologiyalar orqali birlashtiruvchi intellektual maktab xavfsizligi va GPS monitoring tizimi.",
+            "primaryCta": {
+              "text": "Platformani o'rganish",
+              "link": "#features"
+            },
+            "secondaryCta": {
+              "text": "Tizimga kirish",
+              "link": "/login"
+            },
+            "heroImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "stats": [
+              {
+                "label": "Ulangan maktablar",
+                "value": "15+"
+              },
+              {
+                "label": "Kuzatuvdagi o'quvchilar",
+                "value": "1,200+"
+              },
+              {
+                "label": "GPS aniqligi",
+                "value": "±3 metr"
+              },
+              {
+                "label": "SOS javob vaqti",
+                "value": "< 2 soniya"
+              }
+            ]
+          },
+          "about": {
+            "badge": "BIZNING MISSIYAMIZ",
+            "title": "SMART CHILD platformasi qanday yaratildi va nima uchun muhim?",
+            "subtitle": "Farzandlarimizning maktabga borish va qaytish yo'lidagi har bir qadami xavfsiz, ota-onalar va ta'lim maskanlari esa xotirjam bo'lishi shart.",
+            "story": "SMART CHILD — zamonaviy axborot texnologiyalari, IoT aqlli soatlar va sun'iy yo'ldosh navigatsiyasini uyg'unlashtirgan innovatsion milliy loyihadir. Platforma orqali maktab rahbariyati o'quvchilar davomati va hududdagi xavfsizlikni, ota-onalar esa o'z farzandlarining joriy geolokatsiyasi va salomatlik holatini to'liq shaffof nazorat qila oladilar.",
+            "features": [
+              {
+                "title": "To'liq avtomatlashtirilgan davomat",
+                "desc": "O'quvchi maktab darvozasidan o'tishi bilanoq virtual geozona orqali tizimga avtomatik belgi qo'yiladi."
+              },
+              {
+                "title": "24/7 Favqulodda SOS himoyasi",
+                "desc": "Xavf yuzaga kelganda soatdagi bitta tugma orqali maktab xavfsizlik xizmati va ota-onaga tezkor signal boradi."
+              },
+              {
+                "title": "Maxfiylik va qat'iy ma'lumotlar xavfsizligi",
+                "desc": "O'quvchining shaxsiy koordinatalari faqat qonuniy ota-onasi va vakolatli xavfsizlik ma'muriga ko'rinadi."
+              }
+            ]
+          },
+          "features": [
+            {
+              "id": "feat-1",
+              "title": "Jonli GPS Kuzatuv",
+              "desc": "O'quvchining harakatlanish trayektoriyasi va joriy koordinatalarini real vaqtda yuqori aniqlikda xaritada ko'rish.",
+              "icon": "Compass",
+              "tag": "Real-vaqt",
+              "enabled": true
+            },
+            {
+              "id": "feat-2",
+              "title": "Aqlli Soatlar Integratsiyasi",
+              "desc": "Samsung Galaxy Watch va bolalar GPS soatlari bilan to'liq avtomatik uzluksiz sinxronizatsiya.",
+              "icon": "Watch",
+              "tag": "IoT Qurilmalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-3",
+              "title": "Maktab Boshqaruvi",
+              "desc": "Ko'p maktabli arxitektura, binolar xaritasi, sinflar va o'quvchilar kontingentini markazlashgan boshqaruv.",
+              "icon": "School",
+              "tag": "Ma'muriyat",
+              "enabled": true
+            },
+            {
+              "id": "feat-4",
+              "title": "O'quvchilar Monitoringi",
+              "desc": "O'quvchining maktab hududida, tashqarisida yoki chegarada ekanligini avtomatik aniqlash.",
+              "icon": "UserCheck",
+              "tag": "Monitoring",
+              "enabled": true
+            },
+            {
+              "id": "feat-5",
+              "title": "Sinf Rahbari Paneli",
+              "desc": "O'qituvchi o'z sinfidagi o'quvchilarning darsdagi davomati va holatini tezkor kuzatishi uchun qulay interfeys.",
+              "icon": "LayoutDashboard",
+              "tag": "O'qituvchilar",
+              "enabled": true
+            },
+            {
+              "id": "feat-6",
+              "title": "Xavfsizlik Geozonalari",
+              "desc": "Maktab atrofi, xavfli yo'llar va hududlarni poligon shaklida chizish hamda chegarani kesib o'tishni qayd etish.",
+              "icon": "ShieldAlert",
+              "tag": "Geozonalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-7",
+              "title": "Favqulodda SOS Signallari",
+              "desc": "Soatdagi SOS tugmasi 3 soniya bosilganda zudlik bilan koordinatalar bilan birga audio va vizual signal yuboriladi.",
+              "icon": "BellRing",
+              "tag": "Favqulodda",
+              "enabled": true
+            },
+            {
+              "id": "feat-8",
+              "title": "Batareya Quvvati Nazorati",
+              "desc": "Soat quvvati 20% dan pastga tushganda ota-ona va maktabga qurilmani quvvatlantirish haqida eslatma yuboriladi.",
+              "icon": "BatteryCharging",
+              "tag": "Texnik holat",
+              "enabled": true
+            },
+            {
+              "id": "feat-9",
+              "title": "Harakatlanish Tarixi",
+              "desc": "Kun, hafta yoki oy davomida bosib o'tilgan yo'nalishlar, to'xtash nuqtalari va tezlik tahlilini xaritada qayta o'ynash.",
+              "icon": "History",
+              "tag": "Tahlil",
+              "enabled": true
+            },
+            {
+              "id": "feat-10",
+              "title": "Maktab Tahliliyoti",
+              "desc": "Davomat foizi, kechikishlar statistikasi va xavfsizlik hisobotlarini avtomatik generatsiya qilish.",
+              "icon": "BarChart3",
+              "tag": "Statistika",
+              "enabled": true
+            },
+            {
+              "id": "feat-11",
+              "title": "Xavfsiz Huquqlar Tizimi",
+              "desc": "Super Admin, Maktab Admini, O'qituvchi va Ota-onalar uchun qat'iy cheklangan, shifrlangan kirish huquqlari.",
+              "icon": "Lock",
+              "tag": "Xavfsizlik",
+              "enabled": true
+            },
+            {
+              "id": "feat-12",
+              "title": "Markazlashgan Ma'muriyat",
+              "desc": "Barcha maktablar, qurilmalar va veb-sayt kontentini yagona qulay boshqaruv panelidan nazorat qilish.",
+              "icon": "Sliders",
+              "tag": "CMS Boshqaruv",
+              "enabled": true
+            }
+          ],
+          "howItWorks": {
+            "badge": "BOSQICHMA-BOSQICH",
+            "title": "SMART CHILD tizimi qanday ishlaydi?",
+            "subtitle": "Maktabdan to ota-ona smartfonigacha bo'lgan 4 ta oson va ishonchli qadam",
+            "steps": [
+              {
+                "number": "01",
+                "title": "Maktab ro'yxatdan o'tadi",
+                "desc": "Ta'lim muassasasi platformaga ulanadi, maktab binosi va uning xavfsiz geozona chegaralari xaritada belgilanadi."
+              },
+              {
+                "number": "02",
+                "title": "Sinflar va o'quvchilar kiritiladi",
+                "desc": "Direktor va mas'ul o'qituvchilar sinflar ro'yxatini shakllantirib, o'quvchilar va ularning ota-onalari ma'lumotlarini biriktiradi."
+              },
+              {
+                "number": "03",
+                "title": "Aqlli soatlar xavfsiz bog'lanadi",
+                "desc": "Har bir o'quvchining shaxsiy profiliga xavfsiz token orqali Samsung Galaxy Watch yoki GPS soat biriktiriladi."
+              },
+              {
+                "number": "04",
+                "title": "Xavfsizlik va davomat nazorat qilinadi",
+                "desc": "Vakolatli shaxslar real vaqt rejimida o'quvchining joylashuvi, davomati va xavfsizlik holatini uzluksiz kuzatib boradi."
+              }
+            ]
+          },
+          "forSchools": {
+            "badge": "MAKTABLAR VA DIREKTORLAR UCHUN",
+            "title": "Ta'lim muassasasi uchun zamonaviy xavfsizlik standarti",
+            "subtitle": "Maktab nufuzini oshirish, ota-onalar ishonchini qozonish va har bir o'quvchining xavfsizligini kafolatlash",
+            "benefits": [
+              {
+                "title": "Davomatni 100% shaffoflashtirish",
+                "desc": "Qog'oz jurnallarsiz, inson omilisiz avtomatik elektron davomat hisoboti."
+              },
+              {
+                "title": "Xavfsizlik hodisalarini 95% ga kamaytirish",
+                "desc": "Dars vaqtida maktab hududini ruxsatsiz tark etish holatlarini oldini olish."
+              },
+              {
+                "title": "Vazirlik va shahar ta'lim boshqarmasi integratsiyasi",
+                "desc": "Yagona tizim orqali markazlashgan hisobotlar va tahliliy ma'lumotlar taqdim etish."
+              }
+            ]
+          },
+          "technology": {
+            "badge": "TEXNOLOGIK ARXITEKTURA",
+            "title": "Ishonchli va zamonaviy texnologiyalar ustiga qurilgan",
+            "subtitle": "Uzluksiz 99.9% faoliyat ko'rsatish va milliy xavfsizlik talablariga mos keluvchi backend infratuzilmasi",
+            "items": [
+              {
+                "title": "GPS & LBS Multi-Positioning",
+                "desc": "Sun'iy yo'ldosh GPS va mobil baza stantsiyalari (LBS) orqali bino ichida va ochiq maydonda aniq geolokatsiya.",
+                "badge": "Yuqori aniqlik"
+              },
+              {
+                "title": "Yandex Maps & OpenStreetMap",
+                "desc": "O'zbekistonning barcha viloyat, shahar va mahallalari bo'yicha to'liq yangilangan vektor va sun'iy yo'ldosh xaritalari.",
+                "badge": "Mahalliy xaritalar"
+              },
+              {
+                "title": "Samsung Galaxy Watch Integratsiyasi",
+                "desc": "WearOS tizimida ishlovchi Samsung soatlari bilan integratsiya va telemetriya protokoli.",
+                "badge": "WearOS / Tizen"
+              },
+              {
+                "title": "Real-time WebSocket & SSE",
+                "desc": "Kechikishlarsiz soniyali ma'lumot almashinuvi va zudlik bilan yetib boruvchi hodisalar kanali.",
+                "badge": "< 50ms kechikish"
+              },
+              {
+                "title": "Ray-Casting Geofencing Algoritmi",
+                "desc": "Matematik poligon algoritmi orqali maktab binosi va nozik zonalarni 100% aniqlik bilan nazorat qilish.",
+                "badge": "Matematik model"
+              },
+              {
+                "title": "TLS Shifrlash & JWT Autentifikatsiya",
+                "desc": "Bank darajasidagi 256-bitli ma'lumotlar shifrlanishi va foydalanuvchi huquqlarining qat'iy himoyasi.",
+                "badge": "Xavfsiz kirish"
+              }
+            ]
+          },
+          "gallery": [
+            {
+              "id": "gal-1",
+              "title": "30-sonli maktab binosi va hududi",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab binosi va sport maydoni"
+            },
+            {
+              "id": "gal-2",
+              "title": "Samsung Galaxy Watch bolalar soati",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Aqlli soat bilaguzukda"
+            },
+            {
+              "id": "gal-3",
+              "title": "Fleet Management xarita interfeysi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Platforma tahliliy paneli"
+            },
+            {
+              "id": "gal-4",
+              "title": "O'quvchilar xavfsizligi va dars jarayoni",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab o'quvchilari sinfxonada"
+            },
+            {
+              "id": "gal-5",
+              "title": "Mobil ilova orqali joylashuv monitoringi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Smartfon ekrani va xarita"
+            },
+            {
+              "id": "gal-6",
+              "title": "GPS Telemetriya va sensorlar",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Soat datchiklari va yurak urishi monitoringi"
+            }
+          ],
+          "news": [
+            {
+              "id": "news-1",
+              "title": "Urganch shahridagi 30-maktabda tizim to'liq ishga tushirildi",
+              "date": "2026-11-05",
+              "summary": "Tajriba tariqasida barcha boshlang'ich sinf o'quvchilari aqlli soatlar va xavfsizlik geozonalari bilan ta'minlandi."
+            },
+            {
+              "id": "news-2",
+              "title": "Yangi avlod favqulodda SOS audio-uzatish moduli qo'shildi",
+              "date": "2026-11-01",
+              "summary": "Endilikda SOS signali bosilganda 10 soniyali qisqa audio yozuv ham xavfsizlik paneliga yetkaziladi."
+            }
+          ],
+          "contact": {
+            "phone": "+998 97 200-12-79",
+            "mobile": "+998 97 200-12-79",
+            "email": "burxonturayev7900@gmail.com",
+            "address": "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
+            "workingHours": "Dushanba - Shanba: 08:30 - 18:30",
+            "telegram": "https://t.me/MMSA571",
+            "instagram": "https://instagram.com/smartchild_uz",
+            "youtube": "https://youtube.com/@smartchild_uz"
+          },
+          "navigation": {
+            "headerLinks": [
+              {
+                "id": "home",
+                "label": "Asosiy",
+                "href": "#hero"
+              },
+              {
+                "id": "about",
+                "label": "Biz haqimizda",
+                "href": "#about"
+              },
+              {
+                "id": "features",
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "id": "how",
+                "label": "Qanday ishlaydi",
+                "href": "#how-it-works"
+              },
+              {
+                "id": "schools",
+                "label": "Maktablar uchun",
+                "href": "#for-schools"
+              },
+              {
+                "id": "tech",
+                "label": "Texnologiya",
+                "href": "#technology"
+              },
+              {
+                "id": "status",
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "id": "gallery",
+                "label": "Galereya",
+                "href": "#gallery"
+              },
+              {
+                "id": "contact",
+                "label": "Bog'lanish",
+                "href": "#contact"
+              }
+            ],
+            "footerLinks": [
+              {
+                "label": "Asosiy sahifa",
+                "href": "#hero"
+              },
+              {
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "label": "Tizimga kirish",
+                "href": "/login"
+              },
+              {
+                "label": "Maxfiylik siyosati",
+                "href": "#"
+              },
+              {
+                "label": "Foydalanish shartlari",
+                "href": "#"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "v-1794766836513",
+        "version": "v1.0.23",
+        "publishedAt": "2026-11-15T18:20:36.513Z",
+        "publishedBy": "burxonturayev7900@gmail.com",
+        "summary": "Test avtomatlashtirilgan nashr",
+        "snapshot": {
+          "seo": {
+            "title": "SMART CHILD — Maktab Nazorati va Bolalar Xavfsizligi Intellektual Tizimi",
+            "description": "Maktablar, o'quvchilar va ota-onalarni aqlli soatlar va real vaqt rejimidagi GPS monitoring orqali birlashtiruvchi xavfsizlik ekotizimi.",
+            "keywords": "smart child, maktab nazorati, bolalar xavfsizligi, gps monitoring, aqlli soat, o'zbekiston ta'lim",
+            "ogImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "canonicalUrl": "https://maktab-nazorati.onrender.com"
+          },
+          "appearance": {
+            "brandName": "SMART CHILD",
+            "badgeText": "INTELLEKTUAL MAKTAB XAVFSIZLIGI PLATFORMASI",
+            "primaryColor": "#22d3ee",
+            "accentColor": "#2563eb",
+            "themeMode": "dark"
+          },
+          "banner": {
+            "enabled": true,
+            "badge": "YANGILIK",
+            "text": "2026-o'quv yili uchun umumta'lim maktablarida GPS monitoring va xavfsizlik tizimi integratsiyasi boshlandi!",
+            "linkText": "Batafsil tanishing",
+            "linkUrl": "#about"
+          },
+          "hero": {
+            "badge": "XALQARO TA'LIM TEXNOLOGIYASI",
+            "headline": "SMART CHILD — Har bir bola uchun xavfsiz kelajak",
+            "subtitle": "Maktablar, o'qituvchilar va oilalarni zamonaviy texnologiyalar orqali birlashtiruvchi intellektual maktab xavfsizligi va GPS monitoring tizimi.",
+            "primaryCta": {
+              "text": "Platformani o'rganish",
+              "link": "#features"
+            },
+            "secondaryCta": {
+              "text": "Tizimga kirish",
+              "link": "/login"
+            },
+            "heroImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "stats": [
+              {
+                "label": "Ulangan maktablar",
+                "value": "15+"
+              },
+              {
+                "label": "Kuzatuvdagi o'quvchilar",
+                "value": "1,200+"
+              },
+              {
+                "label": "GPS aniqligi",
+                "value": "±3 metr"
+              },
+              {
+                "label": "SOS javob vaqti",
+                "value": "< 2 soniya"
+              }
+            ]
+          },
+          "about": {
+            "badge": "BIZNING MISSIYAMIZ",
+            "title": "SMART CHILD platformasi qanday yaratildi va nima uchun muhim?",
+            "subtitle": "Farzandlarimizning maktabga borish va qaytish yo'lidagi har bir qadami xavfsiz, ota-onalar va ta'lim maskanlari esa xotirjam bo'lishi shart.",
+            "story": "SMART CHILD — zamonaviy axborot texnologiyalari, IoT aqlli soatlar va sun'iy yo'ldosh navigatsiyasini uyg'unlashtirgan innovatsion milliy loyihadir. Platforma orqali maktab rahbariyati o'quvchilar davomati va hududdagi xavfsizlikni, ota-onalar esa o'z farzandlarining joriy geolokatsiyasi va salomatlik holatini to'liq shaffof nazorat qila oladilar.",
+            "features": [
+              {
+                "title": "To'liq avtomatlashtirilgan davomat",
+                "desc": "O'quvchi maktab darvozasidan o'tishi bilanoq virtual geozona orqali tizimga avtomatik belgi qo'yiladi."
+              },
+              {
+                "title": "24/7 Favqulodda SOS himoyasi",
+                "desc": "Xavf yuzaga kelganda soatdagi bitta tugma orqali maktab xavfsizlik xizmati va ota-onaga tezkor signal boradi."
+              },
+              {
+                "title": "Maxfiylik va qat'iy ma'lumotlar xavfsizligi",
+                "desc": "O'quvchining shaxsiy koordinatalari faqat qonuniy ota-onasi va vakolatli xavfsizlik ma'muriga ko'rinadi."
+              }
+            ]
+          },
+          "features": [
+            {
+              "id": "feat-1",
+              "title": "Jonli GPS Kuzatuv",
+              "desc": "O'quvchining harakatlanish trayektoriyasi va joriy koordinatalarini real vaqtda yuqori aniqlikda xaritada ko'rish.",
+              "icon": "Compass",
+              "tag": "Real-vaqt",
+              "enabled": true
+            },
+            {
+              "id": "feat-2",
+              "title": "Aqlli Soatlar Integratsiyasi",
+              "desc": "Samsung Galaxy Watch va bolalar GPS soatlari bilan to'liq avtomatik uzluksiz sinxronizatsiya.",
+              "icon": "Watch",
+              "tag": "IoT Qurilmalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-3",
+              "title": "Maktab Boshqaruvi",
+              "desc": "Ko'p maktabli arxitektura, binolar xaritasi, sinflar va o'quvchilar kontingentini markazlashgan boshqaruv.",
+              "icon": "School",
+              "tag": "Ma'muriyat",
+              "enabled": true
+            },
+            {
+              "id": "feat-4",
+              "title": "O'quvchilar Monitoringi",
+              "desc": "O'quvchining maktab hududida, tashqarisida yoki chegarada ekanligini avtomatik aniqlash.",
+              "icon": "UserCheck",
+              "tag": "Monitoring",
+              "enabled": true
+            },
+            {
+              "id": "feat-5",
+              "title": "Sinf Rahbari Paneli",
+              "desc": "O'qituvchi o'z sinfidagi o'quvchilarning darsdagi davomati va holatini tezkor kuzatishi uchun qulay interfeys.",
+              "icon": "LayoutDashboard",
+              "tag": "O'qituvchilar",
+              "enabled": true
+            },
+            {
+              "id": "feat-6",
+              "title": "Xavfsizlik Geozonalari",
+              "desc": "Maktab atrofi, xavfli yo'llar va hududlarni poligon shaklida chizish hamda chegarani kesib o'tishni qayd etish.",
+              "icon": "ShieldAlert",
+              "tag": "Geozonalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-7",
+              "title": "Favqulodda SOS Signallari",
+              "desc": "Soatdagi SOS tugmasi 3 soniya bosilganda zudlik bilan koordinatalar bilan birga audio va vizual signal yuboriladi.",
+              "icon": "BellRing",
+              "tag": "Favqulodda",
+              "enabled": true
+            },
+            {
+              "id": "feat-8",
+              "title": "Batareya Quvvati Nazorati",
+              "desc": "Soat quvvati 20% dan pastga tushganda ota-ona va maktabga qurilmani quvvatlantirish haqida eslatma yuboriladi.",
+              "icon": "BatteryCharging",
+              "tag": "Texnik holat",
+              "enabled": true
+            },
+            {
+              "id": "feat-9",
+              "title": "Harakatlanish Tarixi",
+              "desc": "Kun, hafta yoki oy davomida bosib o'tilgan yo'nalishlar, to'xtash nuqtalari va tezlik tahlilini xaritada qayta o'ynash.",
+              "icon": "History",
+              "tag": "Tahlil",
+              "enabled": true
+            },
+            {
+              "id": "feat-10",
+              "title": "Maktab Tahliliyoti",
+              "desc": "Davomat foizi, kechikishlar statistikasi va xavfsizlik hisobotlarini avtomatik generatsiya qilish.",
+              "icon": "BarChart3",
+              "tag": "Statistika",
+              "enabled": true
+            },
+            {
+              "id": "feat-11",
+              "title": "Xavfsiz Huquqlar Tizimi",
+              "desc": "Super Admin, Maktab Admini, O'qituvchi va Ota-onalar uchun qat'iy cheklangan, shifrlangan kirish huquqlari.",
+              "icon": "Lock",
+              "tag": "Xavfsizlik",
+              "enabled": true
+            },
+            {
+              "id": "feat-12",
+              "title": "Markazlashgan Ma'muriyat",
+              "desc": "Barcha maktablar, qurilmalar va veb-sayt kontentini yagona qulay boshqaruv panelidan nazorat qilish.",
+              "icon": "Sliders",
+              "tag": "CMS Boshqaruv",
+              "enabled": true
+            }
+          ],
+          "howItWorks": {
+            "badge": "BOSQICHMA-BOSQICH",
+            "title": "SMART CHILD tizimi qanday ishlaydi?",
+            "subtitle": "Maktabdan to ota-ona smartfonigacha bo'lgan 4 ta oson va ishonchli qadam",
+            "steps": [
+              {
+                "number": "01",
+                "title": "Maktab ro'yxatdan o'tadi",
+                "desc": "Ta'lim muassasasi platformaga ulanadi, maktab binosi va uning xavfsiz geozona chegaralari xaritada belgilanadi."
+              },
+              {
+                "number": "02",
+                "title": "Sinflar va o'quvchilar kiritiladi",
+                "desc": "Direktor va mas'ul o'qituvchilar sinflar ro'yxatini shakllantirib, o'quvchilar va ularning ota-onalari ma'lumotlarini biriktiradi."
+              },
+              {
+                "number": "03",
+                "title": "Aqlli soatlar xavfsiz bog'lanadi",
+                "desc": "Har bir o'quvchining shaxsiy profiliga xavfsiz token orqali Samsung Galaxy Watch yoki GPS soat biriktiriladi."
+              },
+              {
+                "number": "04",
+                "title": "Xavfsizlik va davomat nazorat qilinadi",
+                "desc": "Vakolatli shaxslar real vaqt rejimida o'quvchining joylashuvi, davomati va xavfsizlik holatini uzluksiz kuzatib boradi."
+              }
+            ]
+          },
+          "forSchools": {
+            "badge": "MAKTABLAR VA DIREKTORLAR UCHUN",
+            "title": "Ta'lim muassasasi uchun zamonaviy xavfsizlik standarti",
+            "subtitle": "Maktab nufuzini oshirish, ota-onalar ishonchini qozonish va har bir o'quvchining xavfsizligini kafolatlash",
+            "benefits": [
+              {
+                "title": "Davomatni 100% shaffoflashtirish",
+                "desc": "Qog'oz jurnallarsiz, inson omilisiz avtomatik elektron davomat hisoboti."
+              },
+              {
+                "title": "Xavfsizlik hodisalarini 95% ga kamaytirish",
+                "desc": "Dars vaqtida maktab hududini ruxsatsiz tark etish holatlarini oldini olish."
+              },
+              {
+                "title": "Vazirlik va shahar ta'lim boshqarmasi integratsiyasi",
+                "desc": "Yagona tizim orqali markazlashgan hisobotlar va tahliliy ma'lumotlar taqdim etish."
+              }
+            ]
+          },
+          "technology": {
+            "badge": "TEXNOLOGIK ARXITEKTURA",
+            "title": "Ishonchli va zamonaviy texnologiyalar ustiga qurilgan",
+            "subtitle": "Uzluksiz 99.9% faoliyat ko'rsatish va milliy xavfsizlik talablariga mos keluvchi backend infratuzilmasi",
+            "items": [
+              {
+                "title": "GPS & LBS Multi-Positioning",
+                "desc": "Sun'iy yo'ldosh GPS va mobil baza stantsiyalari (LBS) orqali bino ichida va ochiq maydonda aniq geolokatsiya.",
+                "badge": "Yuqori aniqlik"
+              },
+              {
+                "title": "Yandex Maps & OpenStreetMap",
+                "desc": "O'zbekistonning barcha viloyat, shahar va mahallalari bo'yicha to'liq yangilangan vektor va sun'iy yo'ldosh xaritalari.",
+                "badge": "Mahalliy xaritalar"
+              },
+              {
+                "title": "Samsung Galaxy Watch Integratsiyasi",
+                "desc": "WearOS tizimida ishlovchi Samsung soatlari bilan integratsiya va telemetriya protokoli.",
+                "badge": "WearOS / Tizen"
+              },
+              {
+                "title": "Real-time WebSocket & SSE",
+                "desc": "Kechikishlarsiz soniyali ma'lumot almashinuvi va zudlik bilan yetib boruvchi hodisalar kanali.",
+                "badge": "< 50ms kechikish"
+              },
+              {
+                "title": "Ray-Casting Geofencing Algoritmi",
+                "desc": "Matematik poligon algoritmi orqali maktab binosi va nozik zonalarni 100% aniqlik bilan nazorat qilish.",
+                "badge": "Matematik model"
+              },
+              {
+                "title": "TLS Shifrlash & JWT Autentifikatsiya",
+                "desc": "Bank darajasidagi 256-bitli ma'lumotlar shifrlanishi va foydalanuvchi huquqlarining qat'iy himoyasi.",
+                "badge": "Xavfsiz kirish"
+              }
+            ]
+          },
+          "gallery": [
+            {
+              "id": "gal-1",
+              "title": "30-sonli maktab binosi va hududi",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab binosi va sport maydoni"
+            },
+            {
+              "id": "gal-2",
+              "title": "Samsung Galaxy Watch bolalar soati",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Aqlli soat bilaguzukda"
+            },
+            {
+              "id": "gal-3",
+              "title": "Fleet Management xarita interfeysi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Platforma tahliliy paneli"
+            },
+            {
+              "id": "gal-4",
+              "title": "O'quvchilar xavfsizligi va dars jarayoni",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab o'quvchilari sinfxonada"
+            },
+            {
+              "id": "gal-5",
+              "title": "Mobil ilova orqali joylashuv monitoringi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Smartfon ekrani va xarita"
+            },
+            {
+              "id": "gal-6",
+              "title": "GPS Telemetriya va sensorlar",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Soat datchiklari va yurak urishi monitoringi"
+            }
+          ],
+          "news": [
+            {
+              "id": "news-1",
+              "title": "Urganch shahridagi 30-maktabda tizim to'liq ishga tushirildi",
+              "date": "2026-11-05",
+              "summary": "Tajriba tariqasida barcha boshlang'ich sinf o'quvchilari aqlli soatlar va xavfsizlik geozonalari bilan ta'minlandi."
+            },
+            {
+              "id": "news-2",
+              "title": "Yangi avlod favqulodda SOS audio-uzatish moduli qo'shildi",
+              "date": "2026-11-01",
+              "summary": "Endilikda SOS signali bosilganda 10 soniyali qisqa audio yozuv ham xavfsizlik paneliga yetkaziladi."
+            }
+          ],
+          "contact": {
+            "phone": "+998 97 200-12-79",
+            "mobile": "+998 97 200-12-79",
+            "email": "burxonturayev7900@gmail.com",
+            "address": "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
+            "workingHours": "Dushanba - Shanba: 08:30 - 18:30",
+            "telegram": "https://t.me/MMSA571",
+            "instagram": "https://instagram.com/smartchild_uz",
+            "youtube": "https://youtube.com/@smartchild_uz"
+          },
+          "navigation": {
+            "headerLinks": [
+              {
+                "id": "home",
+                "label": "Asosiy",
+                "href": "#hero"
+              },
+              {
+                "id": "about",
+                "label": "Biz haqimizda",
+                "href": "#about"
+              },
+              {
+                "id": "features",
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "id": "how",
+                "label": "Qanday ishlaydi",
+                "href": "#how-it-works"
+              },
+              {
+                "id": "schools",
+                "label": "Maktablar uchun",
+                "href": "#for-schools"
+              },
+              {
+                "id": "tech",
+                "label": "Texnologiya",
+                "href": "#technology"
+              },
+              {
+                "id": "status",
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "id": "gallery",
+                "label": "Galereya",
+                "href": "#gallery"
+              },
+              {
+                "id": "contact",
+                "label": "Bog'lanish",
+                "href": "#contact"
+              }
+            ],
+            "footerLinks": [
+              {
+                "label": "Asosiy sahifa",
+                "href": "#hero"
+              },
+              {
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "label": "Tizimga kirish",
+                "href": "/login"
+              },
+              {
+                "label": "Maxfiylik siyosati",
+                "href": "#"
+              },
+              {
+                "label": "Foydalanish shartlari",
+                "href": "#"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "v-1794766285078",
+        "version": "v1.0.22",
+        "publishedAt": "2026-11-15T18:11:25.078Z",
+        "publishedBy": "burxonturayev7900@gmail.com",
+        "summary": "Test avtomatlashtirilgan nashr",
+        "snapshot": {
+          "seo": {
+            "title": "SMART CHILD — Maktab Nazorati va Bolalar Xavfsizligi Intellektual Tizimi",
+            "description": "Maktablar, o'quvchilar va ota-onalarni aqlli soatlar va real vaqt rejimidagi GPS monitoring orqali birlashtiruvchi xavfsizlik ekotizimi.",
+            "keywords": "smart child, maktab nazorati, bolalar xavfsizligi, gps monitoring, aqlli soat, o'zbekiston ta'lim",
+            "ogImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "canonicalUrl": "https://maktab-nazorati.onrender.com"
+          },
+          "appearance": {
+            "brandName": "SMART CHILD",
+            "badgeText": "INTELLEKTUAL MAKTAB XAVFSIZLIGI PLATFORMASI",
+            "primaryColor": "#22d3ee",
+            "accentColor": "#2563eb",
+            "themeMode": "dark"
+          },
+          "banner": {
+            "enabled": true,
+            "badge": "YANGILIK",
+            "text": "2026-o'quv yili uchun umumta'lim maktablarida GPS monitoring va xavfsizlik tizimi integratsiyasi boshlandi!",
+            "linkText": "Batafsil tanishing",
+            "linkUrl": "#about"
+          },
+          "hero": {
+            "badge": "XALQARO TA'LIM TEXNOLOGIYASI",
+            "headline": "SMART CHILD — Har bir bola uchun xavfsiz kelajak",
+            "subtitle": "Maktablar, o'qituvchilar va oilalarni zamonaviy texnologiyalar orqali birlashtiruvchi intellektual maktab xavfsizligi va GPS monitoring tizimi.",
+            "primaryCta": {
+              "text": "Platformani o'rganish",
+              "link": "#features"
+            },
+            "secondaryCta": {
+              "text": "Tizimga kirish",
+              "link": "/login"
+            },
+            "heroImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "stats": [
+              {
+                "label": "Ulangan maktablar",
+                "value": "15+"
+              },
+              {
+                "label": "Kuzatuvdagi o'quvchilar",
+                "value": "1,200+"
+              },
+              {
+                "label": "GPS aniqligi",
+                "value": "±3 metr"
+              },
+              {
+                "label": "SOS javob vaqti",
+                "value": "< 2 soniya"
+              }
+            ]
+          },
+          "about": {
+            "badge": "BIZNING MISSIYAMIZ",
+            "title": "SMART CHILD platformasi qanday yaratildi va nima uchun muhim?",
+            "subtitle": "Farzandlarimizning maktabga borish va qaytish yo'lidagi har bir qadami xavfsiz, ota-onalar va ta'lim maskanlari esa xotirjam bo'lishi shart.",
+            "story": "SMART CHILD — zamonaviy axborot texnologiyalari, IoT aqlli soatlar va sun'iy yo'ldosh navigatsiyasini uyg'unlashtirgan innovatsion milliy loyihadir. Platforma orqali maktab rahbariyati o'quvchilar davomati va hududdagi xavfsizlikni, ota-onalar esa o'z farzandlarining joriy geolokatsiyasi va salomatlik holatini to'liq shaffof nazorat qila oladilar.",
+            "features": [
+              {
+                "title": "To'liq avtomatlashtirilgan davomat",
+                "desc": "O'quvchi maktab darvozasidan o'tishi bilanoq virtual geozona orqali tizimga avtomatik belgi qo'yiladi."
+              },
+              {
+                "title": "24/7 Favqulodda SOS himoyasi",
+                "desc": "Xavf yuzaga kelganda soatdagi bitta tugma orqali maktab xavfsizlik xizmati va ota-onaga tezkor signal boradi."
+              },
+              {
+                "title": "Maxfiylik va qat'iy ma'lumotlar xavfsizligi",
+                "desc": "O'quvchining shaxsiy koordinatalari faqat qonuniy ota-onasi va vakolatli xavfsizlik ma'muriga ko'rinadi."
+              }
+            ]
+          },
+          "features": [
+            {
+              "id": "feat-1",
+              "title": "Jonli GPS Kuzatuv",
+              "desc": "O'quvchining harakatlanish trayektoriyasi va joriy koordinatalarini real vaqtda yuqori aniqlikda xaritada ko'rish.",
+              "icon": "Compass",
+              "tag": "Real-vaqt",
+              "enabled": true
+            },
+            {
+              "id": "feat-2",
+              "title": "Aqlli Soatlar Integratsiyasi",
+              "desc": "Samsung Galaxy Watch va bolalar GPS soatlari bilan to'liq avtomatik uzluksiz sinxronizatsiya.",
+              "icon": "Watch",
+              "tag": "IoT Qurilmalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-3",
+              "title": "Maktab Boshqaruvi",
+              "desc": "Ko'p maktabli arxitektura, binolar xaritasi, sinflar va o'quvchilar kontingentini markazlashgan boshqaruv.",
+              "icon": "School",
+              "tag": "Ma'muriyat",
+              "enabled": true
+            },
+            {
+              "id": "feat-4",
+              "title": "O'quvchilar Monitoringi",
+              "desc": "O'quvchining maktab hududida, tashqarisida yoki chegarada ekanligini avtomatik aniqlash.",
+              "icon": "UserCheck",
+              "tag": "Monitoring",
+              "enabled": true
+            },
+            {
+              "id": "feat-5",
+              "title": "Sinf Rahbari Paneli",
+              "desc": "O'qituvchi o'z sinfidagi o'quvchilarning darsdagi davomati va holatini tezkor kuzatishi uchun qulay interfeys.",
+              "icon": "LayoutDashboard",
+              "tag": "O'qituvchilar",
+              "enabled": true
+            },
+            {
+              "id": "feat-6",
+              "title": "Xavfsizlik Geozonalari",
+              "desc": "Maktab atrofi, xavfli yo'llar va hududlarni poligon shaklida chizish hamda chegarani kesib o'tishni qayd etish.",
+              "icon": "ShieldAlert",
+              "tag": "Geozonalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-7",
+              "title": "Favqulodda SOS Signallari",
+              "desc": "Soatdagi SOS tugmasi 3 soniya bosilganda zudlik bilan koordinatalar bilan birga audio va vizual signal yuboriladi.",
+              "icon": "BellRing",
+              "tag": "Favqulodda",
+              "enabled": true
+            },
+            {
+              "id": "feat-8",
+              "title": "Batareya Quvvati Nazorati",
+              "desc": "Soat quvvati 20% dan pastga tushganda ota-ona va maktabga qurilmani quvvatlantirish haqida eslatma yuboriladi.",
+              "icon": "BatteryCharging",
+              "tag": "Texnik holat",
+              "enabled": true
+            },
+            {
+              "id": "feat-9",
+              "title": "Harakatlanish Tarixi",
+              "desc": "Kun, hafta yoki oy davomida bosib o'tilgan yo'nalishlar, to'xtash nuqtalari va tezlik tahlilini xaritada qayta o'ynash.",
+              "icon": "History",
+              "tag": "Tahlil",
+              "enabled": true
+            },
+            {
+              "id": "feat-10",
+              "title": "Maktab Tahliliyoti",
+              "desc": "Davomat foizi, kechikishlar statistikasi va xavfsizlik hisobotlarini avtomatik generatsiya qilish.",
+              "icon": "BarChart3",
+              "tag": "Statistika",
+              "enabled": true
+            },
+            {
+              "id": "feat-11",
+              "title": "Xavfsiz Huquqlar Tizimi",
+              "desc": "Super Admin, Maktab Admini, O'qituvchi va Ota-onalar uchun qat'iy cheklangan, shifrlangan kirish huquqlari.",
+              "icon": "Lock",
+              "tag": "Xavfsizlik",
+              "enabled": true
+            },
+            {
+              "id": "feat-12",
+              "title": "Markazlashgan Ma'muriyat",
+              "desc": "Barcha maktablar, qurilmalar va veb-sayt kontentini yagona qulay boshqaruv panelidan nazorat qilish.",
+              "icon": "Sliders",
+              "tag": "CMS Boshqaruv",
+              "enabled": true
+            }
+          ],
+          "howItWorks": {
+            "badge": "BOSQICHMA-BOSQICH",
+            "title": "SMART CHILD tizimi qanday ishlaydi?",
+            "subtitle": "Maktabdan to ota-ona smartfonigacha bo'lgan 4 ta oson va ishonchli qadam",
+            "steps": [
+              {
+                "number": "01",
+                "title": "Maktab ro'yxatdan o'tadi",
+                "desc": "Ta'lim muassasasi platformaga ulanadi, maktab binosi va uning xavfsiz geozona chegaralari xaritada belgilanadi."
+              },
+              {
+                "number": "02",
+                "title": "Sinflar va o'quvchilar kiritiladi",
+                "desc": "Direktor va mas'ul o'qituvchilar sinflar ro'yxatini shakllantirib, o'quvchilar va ularning ota-onalari ma'lumotlarini biriktiradi."
+              },
+              {
+                "number": "03",
+                "title": "Aqlli soatlar xavfsiz bog'lanadi",
+                "desc": "Har bir o'quvchining shaxsiy profiliga xavfsiz token orqali Samsung Galaxy Watch yoki GPS soat biriktiriladi."
+              },
+              {
+                "number": "04",
+                "title": "Xavfsizlik va davomat nazorat qilinadi",
+                "desc": "Vakolatli shaxslar real vaqt rejimida o'quvchining joylashuvi, davomati va xavfsizlik holatini uzluksiz kuzatib boradi."
+              }
+            ]
+          },
+          "forSchools": {
+            "badge": "MAKTABLAR VA DIREKTORLAR UCHUN",
+            "title": "Ta'lim muassasasi uchun zamonaviy xavfsizlik standarti",
+            "subtitle": "Maktab nufuzini oshirish, ota-onalar ishonchini qozonish va har bir o'quvchining xavfsizligini kafolatlash",
+            "benefits": [
+              {
+                "title": "Davomatni 100% shaffoflashtirish",
+                "desc": "Qog'oz jurnallarsiz, inson omilisiz avtomatik elektron davomat hisoboti."
+              },
+              {
+                "title": "Xavfsizlik hodisalarini 95% ga kamaytirish",
+                "desc": "Dars vaqtida maktab hududini ruxsatsiz tark etish holatlarini oldini olish."
+              },
+              {
+                "title": "Vazirlik va shahar ta'lim boshqarmasi integratsiyasi",
+                "desc": "Yagona tizim orqali markazlashgan hisobotlar va tahliliy ma'lumotlar taqdim etish."
+              }
+            ]
+          },
+          "technology": {
+            "badge": "TEXNOLOGIK ARXITEKTURA",
+            "title": "Ishonchli va zamonaviy texnologiyalar ustiga qurilgan",
+            "subtitle": "Uzluksiz 99.9% faoliyat ko'rsatish va milliy xavfsizlik talablariga mos keluvchi backend infratuzilmasi",
+            "items": [
+              {
+                "title": "GPS & LBS Multi-Positioning",
+                "desc": "Sun'iy yo'ldosh GPS va mobil baza stantsiyalari (LBS) orqali bino ichida va ochiq maydonda aniq geolokatsiya.",
+                "badge": "Yuqori aniqlik"
+              },
+              {
+                "title": "Yandex Maps & OpenStreetMap",
+                "desc": "O'zbekistonning barcha viloyat, shahar va mahallalari bo'yicha to'liq yangilangan vektor va sun'iy yo'ldosh xaritalari.",
+                "badge": "Mahalliy xaritalar"
+              },
+              {
+                "title": "Samsung Galaxy Watch Integratsiyasi",
+                "desc": "WearOS tizimida ishlovchi Samsung soatlari bilan integratsiya va telemetriya protokoli.",
+                "badge": "WearOS / Tizen"
+              },
+              {
+                "title": "Real-time WebSocket & SSE",
+                "desc": "Kechikishlarsiz soniyali ma'lumot almashinuvi va zudlik bilan yetib boruvchi hodisalar kanali.",
+                "badge": "< 50ms kechikish"
+              },
+              {
+                "title": "Ray-Casting Geofencing Algoritmi",
+                "desc": "Matematik poligon algoritmi orqali maktab binosi va nozik zonalarni 100% aniqlik bilan nazorat qilish.",
+                "badge": "Matematik model"
+              },
+              {
+                "title": "TLS Shifrlash & JWT Autentifikatsiya",
+                "desc": "Bank darajasidagi 256-bitli ma'lumotlar shifrlanishi va foydalanuvchi huquqlarining qat'iy himoyasi.",
+                "badge": "Xavfsiz kirish"
+              }
+            ]
+          },
+          "gallery": [
+            {
+              "id": "gal-1",
+              "title": "30-sonli maktab binosi va hududi",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab binosi va sport maydoni"
+            },
+            {
+              "id": "gal-2",
+              "title": "Samsung Galaxy Watch bolalar soati",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Aqlli soat bilaguzukda"
+            },
+            {
+              "id": "gal-3",
+              "title": "Fleet Management xarita interfeysi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Platforma tahliliy paneli"
+            },
+            {
+              "id": "gal-4",
+              "title": "O'quvchilar xavfsizligi va dars jarayoni",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab o'quvchilari sinfxonada"
+            },
+            {
+              "id": "gal-5",
+              "title": "Mobil ilova orqali joylashuv monitoringi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Smartfon ekrani va xarita"
+            },
+            {
+              "id": "gal-6",
+              "title": "GPS Telemetriya va sensorlar",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Soat datchiklari va yurak urishi monitoringi"
+            }
+          ],
+          "news": [
+            {
+              "id": "news-1",
+              "title": "Urganch shahridagi 30-maktabda tizim to'liq ishga tushirildi",
+              "date": "2026-11-05",
+              "summary": "Tajriba tariqasida barcha boshlang'ich sinf o'quvchilari aqlli soatlar va xavfsizlik geozonalari bilan ta'minlandi."
+            },
+            {
+              "id": "news-2",
+              "title": "Yangi avlod favqulodda SOS audio-uzatish moduli qo'shildi",
+              "date": "2026-11-01",
+              "summary": "Endilikda SOS signali bosilganda 10 soniyali qisqa audio yozuv ham xavfsizlik paneliga yetkaziladi."
+            }
+          ],
+          "contact": {
+            "phone": "+998 97 200-12-79",
+            "mobile": "+998 97 200-12-79",
+            "email": "burxonturayev7900@gmail.com",
+            "address": "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
+            "workingHours": "Dushanba - Shanba: 08:30 - 18:30",
+            "telegram": "https://t.me/MMSA571",
+            "instagram": "https://instagram.com/smartchild_uz",
+            "youtube": "https://youtube.com/@smartchild_uz"
+          },
+          "navigation": {
+            "headerLinks": [
+              {
+                "id": "home",
+                "label": "Asosiy",
+                "href": "#hero"
+              },
+              {
+                "id": "about",
+                "label": "Biz haqimizda",
+                "href": "#about"
+              },
+              {
+                "id": "features",
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "id": "how",
+                "label": "Qanday ishlaydi",
+                "href": "#how-it-works"
+              },
+              {
+                "id": "schools",
+                "label": "Maktablar uchun",
+                "href": "#for-schools"
+              },
+              {
+                "id": "tech",
+                "label": "Texnologiya",
+                "href": "#technology"
+              },
+              {
+                "id": "status",
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "id": "gallery",
+                "label": "Galereya",
+                "href": "#gallery"
+              },
+              {
+                "id": "contact",
+                "label": "Bog'lanish",
+                "href": "#contact"
+              }
+            ],
+            "footerLinks": [
+              {
+                "label": "Asosiy sahifa",
+                "href": "#hero"
+              },
+              {
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "label": "Tizimga kirish",
+                "href": "/login"
+              },
+              {
+                "label": "Maxfiylik siyosati",
+                "href": "#"
+              },
+              {
+                "label": "Foydalanish shartlari",
+                "href": "#"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "v-1794766170658",
+        "version": "v1.0.21",
+        "publishedAt": "2026-11-15T18:09:30.658Z",
+        "publishedBy": "burxonturayev7900@gmail.com",
+        "summary": "Test avtomatlashtirilgan nashr",
+        "snapshot": {
+          "seo": {
+            "title": "SMART CHILD — Maktab Nazorati va Bolalar Xavfsizligi Intellektual Tizimi",
+            "description": "Maktablar, o'quvchilar va ota-onalarni aqlli soatlar va real vaqt rejimidagi GPS monitoring orqali birlashtiruvchi xavfsizlik ekotizimi.",
+            "keywords": "smart child, maktab nazorati, bolalar xavfsizligi, gps monitoring, aqlli soat, o'zbekiston ta'lim",
+            "ogImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "canonicalUrl": "https://maktab-nazorati.onrender.com"
+          },
+          "appearance": {
+            "brandName": "SMART CHILD",
+            "badgeText": "INTELLEKTUAL MAKTAB XAVFSIZLIGI PLATFORMASI",
+            "primaryColor": "#22d3ee",
+            "accentColor": "#2563eb",
+            "themeMode": "dark"
+          },
+          "banner": {
+            "enabled": true,
+            "badge": "YANGILIK",
+            "text": "2026-o'quv yili uchun umumta'lim maktablarida GPS monitoring va xavfsizlik tizimi integratsiyasi boshlandi!",
+            "linkText": "Batafsil tanishing",
+            "linkUrl": "#about"
+          },
+          "hero": {
+            "badge": "XALQARO TA'LIM TEXNOLOGIYASI",
+            "headline": "SMART CHILD — Har bir bola uchun xavfsiz kelajak",
+            "subtitle": "Maktablar, o'qituvchilar va oilalarni zamonaviy texnologiyalar orqali birlashtiruvchi intellektual maktab xavfsizligi va GPS monitoring tizimi.",
+            "primaryCta": {
+              "text": "Platformani o'rganish",
+              "link": "#features"
+            },
+            "secondaryCta": {
+              "text": "Tizimga kirish",
+              "link": "/login"
+            },
+            "heroImage": "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+            "stats": [
+              {
+                "label": "Ulangan maktablar",
+                "value": "15+"
+              },
+              {
+                "label": "Kuzatuvdagi o'quvchilar",
+                "value": "1,200+"
+              },
+              {
+                "label": "GPS aniqligi",
+                "value": "±3 metr"
+              },
+              {
+                "label": "SOS javob vaqti",
+                "value": "< 2 soniya"
+              }
+            ]
+          },
+          "about": {
+            "badge": "BIZNING MISSIYAMIZ",
+            "title": "SMART CHILD platformasi qanday yaratildi va nima uchun muhim?",
+            "subtitle": "Farzandlarimizning maktabga borish va qaytish yo'lidagi har bir qadami xavfsiz, ota-onalar va ta'lim maskanlari esa xotirjam bo'lishi shart.",
+            "story": "SMART CHILD — zamonaviy axborot texnologiyalari, IoT aqlli soatlar va sun'iy yo'ldosh navigatsiyasini uyg'unlashtirgan innovatsion milliy loyihadir. Platforma orqali maktab rahbariyati o'quvchilar davomati va hududdagi xavfsizlikni, ota-onalar esa o'z farzandlarining joriy geolokatsiyasi va salomatlik holatini to'liq shaffof nazorat qila oladilar.",
+            "features": [
+              {
+                "title": "To'liq avtomatlashtirilgan davomat",
+                "desc": "O'quvchi maktab darvozasidan o'tishi bilanoq virtual geozona orqali tizimga avtomatik belgi qo'yiladi."
+              },
+              {
+                "title": "24/7 Favqulodda SOS himoyasi",
+                "desc": "Xavf yuzaga kelganda soatdagi bitta tugma orqali maktab xavfsizlik xizmati va ota-onaga tezkor signal boradi."
+              },
+              {
+                "title": "Maxfiylik va qat'iy ma'lumotlar xavfsizligi",
+                "desc": "O'quvchining shaxsiy koordinatalari faqat qonuniy ota-onasi va vakolatli xavfsizlik ma'muriga ko'rinadi."
+              }
+            ]
+          },
+          "features": [
+            {
+              "id": "feat-1",
+              "title": "Jonli GPS Kuzatuv",
+              "desc": "O'quvchining harakatlanish trayektoriyasi va joriy koordinatalarini real vaqtda yuqori aniqlikda xaritada ko'rish.",
+              "icon": "Compass",
+              "tag": "Real-vaqt",
+              "enabled": true
+            },
+            {
+              "id": "feat-2",
+              "title": "Aqlli Soatlar Integratsiyasi",
+              "desc": "Samsung Galaxy Watch va bolalar GPS soatlari bilan to'liq avtomatik uzluksiz sinxronizatsiya.",
+              "icon": "Watch",
+              "tag": "IoT Qurilmalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-3",
+              "title": "Maktab Boshqaruvi",
+              "desc": "Ko'p maktabli arxitektura, binolar xaritasi, sinflar va o'quvchilar kontingentini markazlashgan boshqaruv.",
+              "icon": "School",
+              "tag": "Ma'muriyat",
+              "enabled": true
+            },
+            {
+              "id": "feat-4",
+              "title": "O'quvchilar Monitoringi",
+              "desc": "O'quvchining maktab hududida, tashqarisida yoki chegarada ekanligini avtomatik aniqlash.",
+              "icon": "UserCheck",
+              "tag": "Monitoring",
+              "enabled": true
+            },
+            {
+              "id": "feat-5",
+              "title": "Sinf Rahbari Paneli",
+              "desc": "O'qituvchi o'z sinfidagi o'quvchilarning darsdagi davomati va holatini tezkor kuzatishi uchun qulay interfeys.",
+              "icon": "LayoutDashboard",
+              "tag": "O'qituvchilar",
+              "enabled": true
+            },
+            {
+              "id": "feat-6",
+              "title": "Xavfsizlik Geozonalari",
+              "desc": "Maktab atrofi, xavfli yo'llar va hududlarni poligon shaklida chizish hamda chegarani kesib o'tishni qayd etish.",
+              "icon": "ShieldAlert",
+              "tag": "Geozonalar",
+              "enabled": true
+            },
+            {
+              "id": "feat-7",
+              "title": "Favqulodda SOS Signallari",
+              "desc": "Soatdagi SOS tugmasi 3 soniya bosilganda zudlik bilan koordinatalar bilan birga audio va vizual signal yuboriladi.",
+              "icon": "BellRing",
+              "tag": "Favqulodda",
+              "enabled": true
+            },
+            {
+              "id": "feat-8",
+              "title": "Batareya Quvvati Nazorati",
+              "desc": "Soat quvvati 20% dan pastga tushganda ota-ona va maktabga qurilmani quvvatlantirish haqida eslatma yuboriladi.",
+              "icon": "BatteryCharging",
+              "tag": "Texnik holat",
+              "enabled": true
+            },
+            {
+              "id": "feat-9",
+              "title": "Harakatlanish Tarixi",
+              "desc": "Kun, hafta yoki oy davomida bosib o'tilgan yo'nalishlar, to'xtash nuqtalari va tezlik tahlilini xaritada qayta o'ynash.",
+              "icon": "History",
+              "tag": "Tahlil",
+              "enabled": true
+            },
+            {
+              "id": "feat-10",
+              "title": "Maktab Tahliliyoti",
+              "desc": "Davomat foizi, kechikishlar statistikasi va xavfsizlik hisobotlarini avtomatik generatsiya qilish.",
+              "icon": "BarChart3",
+              "tag": "Statistika",
+              "enabled": true
+            },
+            {
+              "id": "feat-11",
+              "title": "Xavfsiz Huquqlar Tizimi",
+              "desc": "Super Admin, Maktab Admini, O'qituvchi va Ota-onalar uchun qat'iy cheklangan, shifrlangan kirish huquqlari.",
+              "icon": "Lock",
+              "tag": "Xavfsizlik",
+              "enabled": true
+            },
+            {
+              "id": "feat-12",
+              "title": "Markazlashgan Ma'muriyat",
+              "desc": "Barcha maktablar, qurilmalar va veb-sayt kontentini yagona qulay boshqaruv panelidan nazorat qilish.",
+              "icon": "Sliders",
+              "tag": "CMS Boshqaruv",
+              "enabled": true
+            }
+          ],
+          "howItWorks": {
+            "badge": "BOSQICHMA-BOSQICH",
+            "title": "SMART CHILD tizimi qanday ishlaydi?",
+            "subtitle": "Maktabdan to ota-ona smartfonigacha bo'lgan 4 ta oson va ishonchli qadam",
+            "steps": [
+              {
+                "number": "01",
+                "title": "Maktab ro'yxatdan o'tadi",
+                "desc": "Ta'lim muassasasi platformaga ulanadi, maktab binosi va uning xavfsiz geozona chegaralari xaritada belgilanadi."
+              },
+              {
+                "number": "02",
+                "title": "Sinflar va o'quvchilar kiritiladi",
+                "desc": "Direktor va mas'ul o'qituvchilar sinflar ro'yxatini shakllantirib, o'quvchilar va ularning ota-onalari ma'lumotlarini biriktiradi."
+              },
+              {
+                "number": "03",
+                "title": "Aqlli soatlar xavfsiz bog'lanadi",
+                "desc": "Har bir o'quvchining shaxsiy profiliga xavfsiz token orqali Samsung Galaxy Watch yoki GPS soat biriktiriladi."
+              },
+              {
+                "number": "04",
+                "title": "Xavfsizlik va davomat nazorat qilinadi",
+                "desc": "Vakolatli shaxslar real vaqt rejimida o'quvchining joylashuvi, davomati va xavfsizlik holatini uzluksiz kuzatib boradi."
+              }
+            ]
+          },
+          "forSchools": {
+            "badge": "MAKTABLAR VA DIREKTORLAR UCHUN",
+            "title": "Ta'lim muassasasi uchun zamonaviy xavfsizlik standarti",
+            "subtitle": "Maktab nufuzini oshirish, ota-onalar ishonchini qozonish va har bir o'quvchining xavfsizligini kafolatlash",
+            "benefits": [
+              {
+                "title": "Davomatni 100% shaffoflashtirish",
+                "desc": "Qog'oz jurnallarsiz, inson omilisiz avtomatik elektron davomat hisoboti."
+              },
+              {
+                "title": "Xavfsizlik hodisalarini 95% ga kamaytirish",
+                "desc": "Dars vaqtida maktab hududini ruxsatsiz tark etish holatlarini oldini olish."
+              },
+              {
+                "title": "Vazirlik va shahar ta'lim boshqarmasi integratsiyasi",
+                "desc": "Yagona tizim orqali markazlashgan hisobotlar va tahliliy ma'lumotlar taqdim etish."
+              }
+            ]
+          },
+          "technology": {
+            "badge": "TEXNOLOGIK ARXITEKTURA",
+            "title": "Ishonchli va zamonaviy texnologiyalar ustiga qurilgan",
+            "subtitle": "Uzluksiz 99.9% faoliyat ko'rsatish va milliy xavfsizlik talablariga mos keluvchi backend infratuzilmasi",
+            "items": [
+              {
+                "title": "GPS & LBS Multi-Positioning",
+                "desc": "Sun'iy yo'ldosh GPS va mobil baza stantsiyalari (LBS) orqali bino ichida va ochiq maydonda aniq geolokatsiya.",
+                "badge": "Yuqori aniqlik"
+              },
+              {
+                "title": "Yandex Maps & OpenStreetMap",
+                "desc": "O'zbekistonning barcha viloyat, shahar va mahallalari bo'yicha to'liq yangilangan vektor va sun'iy yo'ldosh xaritalari.",
+                "badge": "Mahalliy xaritalar"
+              },
+              {
+                "title": "Samsung Galaxy Watch Integratsiyasi",
+                "desc": "WearOS tizimida ishlovchi Samsung soatlari bilan integratsiya va telemetriya protokoli.",
+                "badge": "WearOS / Tizen"
+              },
+              {
+                "title": "Real-time WebSocket & SSE",
+                "desc": "Kechikishlarsiz soniyali ma'lumot almashinuvi va zudlik bilan yetib boruvchi hodisalar kanali.",
+                "badge": "< 50ms kechikish"
+              },
+              {
+                "title": "Ray-Casting Geofencing Algoritmi",
+                "desc": "Matematik poligon algoritmi orqali maktab binosi va nozik zonalarni 100% aniqlik bilan nazorat qilish.",
+                "badge": "Matematik model"
+              },
+              {
+                "title": "TLS Shifrlash & JWT Autentifikatsiya",
+                "desc": "Bank darajasidagi 256-bitli ma'lumotlar shifrlanishi va foydalanuvchi huquqlarining qat'iy himoyasi.",
+                "badge": "Xavfsiz kirish"
+              }
+            ]
+          },
+          "gallery": [
+            {
+              "id": "gal-1",
+              "title": "30-sonli maktab binosi va hududi",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab binosi va sport maydoni"
+            },
+            {
+              "id": "gal-2",
+              "title": "Samsung Galaxy Watch bolalar soati",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Aqlli soat bilaguzukda"
+            },
+            {
+              "id": "gal-3",
+              "title": "Fleet Management xarita interfeysi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Platforma tahliliy paneli"
+            },
+            {
+              "id": "gal-4",
+              "title": "O'quvchilar xavfsizligi va dars jarayoni",
+              "category": "schools",
+              "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Maktab o'quvchilari sinfxonada"
+            },
+            {
+              "id": "gal-5",
+              "title": "Mobil ilova orqali joylashuv monitoringi",
+              "category": "platform",
+              "url": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Smartfon ekrani va xarita"
+            },
+            {
+              "id": "gal-6",
+              "title": "GPS Telemetriya va sensorlar",
+              "category": "watches",
+              "url": "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1000&q=80",
+              "alt": "Soat datchiklari va yurak urishi monitoringi"
+            }
+          ],
+          "news": [
+            {
+              "id": "news-1",
+              "title": "Urganch shahridagi 30-maktabda tizim to'liq ishga tushirildi",
+              "date": "2026-11-05",
+              "summary": "Tajriba tariqasida barcha boshlang'ich sinf o'quvchilari aqlli soatlar va xavfsizlik geozonalari bilan ta'minlandi."
+            },
+            {
+              "id": "news-2",
+              "title": "Yangi avlod favqulodda SOS audio-uzatish moduli qo'shildi",
+              "date": "2026-11-01",
+              "summary": "Endilikda SOS signali bosilganda 10 soniyali qisqa audio yozuv ham xavfsizlik paneliga yetkaziladi."
+            }
+          ],
+          "contact": {
+            "phone": "+998 97 200-12-79",
+            "mobile": "+998 97 200-12-79",
+            "email": "burxonturayev7900@gmail.com",
+            "address": "O'zbekiston Respublikasi, Urganch sh., Xonqa ko'chasi, 26-uy",
+            "workingHours": "Dushanba - Shanba: 08:30 - 18:30",
+            "telegram": "https://t.me/MMSA571",
+            "instagram": "https://instagram.com/smartchild_uz",
+            "youtube": "https://youtube.com/@smartchild_uz"
+          },
+          "navigation": {
+            "headerLinks": [
+              {
+                "id": "home",
+                "label": "Asosiy",
+                "href": "#hero"
+              },
+              {
+                "id": "about",
+                "label": "Biz haqimizda",
+                "href": "#about"
+              },
+              {
+                "id": "features",
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "id": "how",
+                "label": "Qanday ishlaydi",
+                "href": "#how-it-works"
+              },
+              {
+                "id": "schools",
+                "label": "Maktablar uchun",
+                "href": "#for-schools"
+              },
+              {
+                "id": "tech",
+                "label": "Texnologiya",
+                "href": "#technology"
+              },
+              {
+                "id": "status",
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "id": "gallery",
+                "label": "Galereya",
+                "href": "#gallery"
+              },
+              {
+                "id": "contact",
+                "label": "Bog'lanish",
+                "href": "#contact"
+              }
+            ],
+            "footerLinks": [
+              {
+                "label": "Asosiy sahifa",
+                "href": "#hero"
+              },
+              {
+                "label": "Imkoniyatlar",
+                "href": "#features"
+              },
+              {
+                "label": "Tizim holati",
+                "href": "#status"
+              },
+              {
+                "label": "Tizimga kirish",
+                "href": "/login"
+              },
+              {
+                "label": "Maxfiylik siyosati",
+                "href": "#"
+              },
+              {
+                "label": "Foydalanish shartlari",
+                "href": "#"
+              }
+            ]
+          }
+        }
+      },
       {
         "id": "v-1794437626746",
         "version": "v1.0.20",
@@ -13534,6 +15982,102 @@
     ],
     "auditLogs": [
       {
+        "id": "audit-1794768353240",
+        "action": "PUBLISH",
+        "section": "ALL",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:45:53.240Z",
+        "details": "v1.0.24 versiyasi muvaffaqiyatli nashr qilindi: Test avtomatlashtirilgan nashr"
+      },
+      {
+        "id": "audit-1794768353231",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:45:53.231Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794768353211",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:45:53.211Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766836514",
+        "action": "PUBLISH",
+        "section": "ALL",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:20:36.514Z",
+        "details": "v1.0.23 versiyasi muvaffaqiyatli nashr qilindi: Test avtomatlashtirilgan nashr"
+      },
+      {
+        "id": "audit-1794766836504",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:20:36.504Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766836492",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:20:36.492Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766285078",
+        "action": "PUBLISH",
+        "section": "ALL",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:11:25.078Z",
+        "details": "v1.0.22 versiyasi muvaffaqiyatli nashr qilindi: Test avtomatlashtirilgan nashr"
+      },
+      {
+        "id": "audit-1794766285069",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:11:25.069Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766285057",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:11:25.057Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766170658",
+        "action": "PUBLISH",
+        "section": "ALL",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:09:30.658Z",
+        "details": "v1.0.21 versiyasi muvaffaqiyatli nashr qilindi: Test avtomatlashtirilgan nashr"
+      },
+      {
+        "id": "audit-1794766170648",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:09:30.648Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
+        "id": "audit-1794766170636",
+        "action": "UPDATE_DRAFT",
+        "section": "hero",
+        "updatedBy": "burxonturayev7900@gmail.com",
+        "timestamp": "2026-11-15T18:09:30.636Z",
+        "details": "hero bo'limi qoralamada yangilandi"
+      },
+      {
         "id": "audit-1794437626746",
         "action": "PUBLISH",
         "section": "ALL",
@@ -14001,6 +16545,14 @@
   },
   "deviceTokens": {
     "W5P-DISCOV-1794566137692": "f9b5647c8d860e8dea12f7988d6f4b1c249169ff7827afd65ca7196d9d212956",
-    "W5P-DISCOV-AUTH-1794566138337": "ae8ecb71f15b03ded194917cee4654e887caac912b94edcee829f9f367464759"
+    "W5P-DISCOV-AUTH-1794566138337": "ae8ecb71f15b03ded194917cee4654e887caac912b94edcee829f9f367464759",
+    "W5P-DISCOV-1794766169322": "590ad220851caa8a68d88f13c92a17e228c34d586f3b1b0725156d4a4d52dc78",
+    "W5P-DISCOV-AUTH-1794766169689": "314c55fa77ab4ae5249dae48bee443c56927d2c72b28ac84cdd41e2fc42be670",
+    "W5P-DISCOV-1794766283739": "c1e07dafd9d867a394925f36702218fc25b7b637394a10fb8576c21c650fd5a3",
+    "W5P-DISCOV-AUTH-1794766284105": "34ab48ca781f826ab929394a43b4cb83d51906d480cacf47078e547188fbf746",
+    "W5P-DISCOV-1794766835153": "1d089662b37af8eebd56c446e4640c9bd7ebc9441b259175bceeab88e4ada459",
+    "W5P-DISCOV-AUTH-1794766835533": "9ba4b850d09635531ce60db72afd5493a8dc4dae4edc47511455ad406b4bdd41",
+    "W5P-DISCOV-1794768358518": "6a21b499379bdf64f46d1f3a71e0ec7f3b8d09935eb06ecea26c17ae05d31463",
+    "W5P-DISCOV-AUTH-1794768358909": "2d39b517693c24e7dc315a739dcd0263aafe2016fbb81df84865166d18c4b322"
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { School, Student } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -192,13 +192,34 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const isStudentInSchool = (s: Student, schId: string) => {
+    if (!schId || schId === 'ALL') return true;
+    const sId = String(s.schoolId || '').trim().toLowerCase();
+    const sName = String(s.schoolName || '').trim().toLowerCase();
+    const targetId = String(schId || '').trim().toLowerCase();
+    const targetSchool = schools.find(sch => String(sch.id).toLowerCase() === targetId || String(sch.code).toLowerCase() === targetId);
+    const targetCode = String(targetSchool?.code || '').trim().toLowerCase();
+    const targetName = String(targetSchool?.name || '').trim().toLowerCase();
+
+    return (
+      sId === targetId ||
+      (targetCode && sId === targetCode) ||
+      (targetName && sName.includes(targetName)) ||
+      (targetName && targetName.includes(sName))
+    );
+  };
+
   // Open Assign Modal
   const handleOpenAssign = (dev: UnknownDevice) => {
     setSelectedDevice(dev);
-    const initialSchool = schools.length > 0 ? schools[0].id : '';
+    let initialSchool = schools.length > 0 ? schools[0].id : 'ALL';
+    if (!students.some(s => isStudentInSchool(s, initialSchool)) && students.length > 0) {
+      const foundSchool = schools.find(sch => students.some(s => isStudentInSchool(s, sch.id)));
+      initialSchool = foundSchool ? foundSchool.id : 'ALL';
+    }
     setSelectedSchoolId(initialSchool);
-    const schoolStudents = students.filter(s => s.schoolId === initialSchool);
-    setSelectedStudentId(schoolStudents.length > 0 ? schoolStudents[0].id : '');
+    const matching = students.filter(s => isStudentInSchool(s, initialSchool));
+    setSelectedStudentId(matching.length > 0 ? matching[0].id : (students[0]?.id || ''));
     setAssignNotes('');
     setFeedbackMessage(null);
     setAssignModalOpen(true);
@@ -421,10 +442,22 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
     );
   };
 
-  const eligibleStudentsForAssign = students.filter(s =>
-    (!selectedSchoolId || s.schoolId === selectedSchoolId) &&
-    (!s.deviceId || s.deviceId === selectedDevice?.deviceUid)
-  );
+  const isStudentUnassigned = (st: Student) => {
+    if (!st.deviceId) return true;
+    const d = String(st.deviceId).trim().toLowerCase();
+    return d === '' || d === 'null' || d.startsWith('watch-5pro-') || d === 'samsung galaxy watch 5 pro';
+  };
+
+  const eligibleStudentsForAssign = useMemo(() => {
+    const list = students.filter(s => isStudentInSchool(s, selectedSchoolId));
+    return [...list].sort((a, b) => {
+      const aFree = isStudentUnassigned(a);
+      const bFree = isStudentUnassigned(b);
+      if (aFree && !bFree) return -1;
+      if (!aFree && bFree) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [students, schools, selectedSchoolId, selectedDevice]);
 
   return (
     <div className="space-y-6">
@@ -910,11 +943,12 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
                   onChange={(e) => {
                     const newSchId = e.target.value;
                     setSelectedSchoolId(newSchId);
-                    const matching = students.filter(s => s.schoolId === newSchId);
+                    const matching = students.filter(s => isStudentInSchool(s, newSchId));
                     setSelectedStudentId(matching.length > 0 ? matching[0].id : '');
                   }}
-                  className="w-full h-10 px-3 rounded-xl bg-[#16233d] border border-white/[0.07] text-xs text-[#eaf2ff] focus:outline-none focus:border-cyan-500"
+                  className="w-full h-10 px-3 rounded-xl bg-[#16233d] border border-white/[0.07] text-xs text-[#eaf2ff] focus:outline-none focus:border-cyan-500 font-medium"
                 >
+                  <option value="ALL">🏢 Barcha maktablar (Barcha o'quvchilar)</option>
                   {schools.map((sch) => (
                     <option key={sch.id} value={sch.id}>
                       {sch.name} ({sch.id})
@@ -925,25 +959,71 @@ export const WatchManager: React.FC<WatchManagerProps> = ({
 
               {/* Student Selector */}
               <div>
-                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">
-                  2. O'quvchini tanlang (F.I.O va Sinf):
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-[#cbd5e1]">
+                    2. O'quvchini tanlang (F.I.O va Sinf):
+                  </label>
+                  <span className="text-[11px] text-[#8ea3c4]">
+                    Topildi: <strong className="text-cyan-400">{eligibleStudentsForAssign.length} ta</strong> o'quvchi
+                  </span>
+                </div>
                 {eligibleStudentsForAssign.length === 0 ? (
-                  <p className="text-xs text-amber-400 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
-                    Ushbu maktabda soat biriktirilmagan bo'sh o'quvchi topilmadi.
-                  </p>
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 space-y-2">
+                    <p>Ushbu maktabda o'quvchilar ro'yxati topilmadi.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSchoolId('ALL');
+                        if (students.length > 0) setSelectedStudentId(students[0].id);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-semibold transition"
+                    >
+                      Barcha maktablar o'quvchilarini ko'rsatish ({students.length} ta)
+                    </button>
+                  </div>
                 ) : (
-                  <select
-                    value={selectedStudentId}
-                    onChange={(e) => setSelectedStudentId(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-[#16233d] border border-white/[0.07] text-xs text-[#eaf2ff] focus:outline-none focus:border-cyan-500"
-                  >
-                    {eligibleStudentsForAssign.map((st) => (
-                      <option key={st.id} value={st.id}>
-                        {st.name} — {st.className || "5-B sinf"} (ID: {st.id})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="space-y-2">
+                    <select
+                      value={selectedStudentId}
+                      onChange={(e) => setSelectedStudentId(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl bg-[#16233d] border border-white/[0.07] text-xs text-[#eaf2ff] focus:outline-none focus:border-cyan-500 font-medium"
+                    >
+                      {eligibleStudentsForAssign.map((st) => {
+                        const isFree = isStudentUnassigned(st);
+                        const hasRealOtherDevice = !isFree && st.deviceId !== selectedDevice?.deviceUid;
+                        return (
+                          <option key={st.id} value={st.id}>
+                            {hasRealOtherDevice
+                              ? `🟡 ${st.name} — ${st.className || "5-B"} (Hozirgi soat: ${st.deviceId})`
+                              : `🟢 ${st.name} — ${st.className || "5-B"} [Bo'sh - Biriktirishga tayyor]`}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {(() => {
+                      const curSt = students.find(s => s.id === selectedStudentId);
+                      if (curSt?.deviceId && curSt.deviceId !== selectedDevice?.deviceUid) {
+                        return (
+                          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-start gap-2">
+                            <span className="text-sm shrink-0">⚠️</span>
+                            <div>
+                              <strong>Diqqat:</strong> {curSt.name} o'quvchisiga avval{' '}
+                              <code className="font-mono text-cyan-300 font-bold bg-black/30 px-1 py-0.5 rounded">
+                                {curSt.deviceId}
+                              </code>{' '}
+                              soati biriktirilgan. Yangi soat tasdiqlanganda, unga yangi{' '}
+                              <code className="font-mono text-cyan-300 font-bold bg-black/30 px-1 py-0.5 rounded">
+                                {selectedDevice?.deviceUid}
+                              </code>{' '}
+                              biriktiriladi va eski biriktiruv bekor qilinadi.
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
                 )}
               </div>
 

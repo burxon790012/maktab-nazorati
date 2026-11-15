@@ -18,6 +18,7 @@ import {
   AddSchoolDialog,
   EditSchoolDialog,
   AddStudentDialog,
+  EditStudentDialog,
   BulkImportDialog,
   CorrectionDialog,
   NotificationDrawer,
@@ -152,6 +153,8 @@ export const App: React.FC = () => {
   const [openEditSchool, setOpenEditSchool] = useState(false);
   const [schoolToEdit, setSchoolToEdit] = useState<School | null>(null);
   const [openAddStudent, setOpenAddStudent] = useState(false);
+  const [openEditStudent, setOpenEditStudent] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
   const [openBulkImport, setOpenBulkImport] = useState(false);
   const [openCorrection, setOpenCorrection] = useState(false);
   const [studentToCorrect, setStudentToCorrect] = useState<Student | null>(null);
@@ -167,6 +170,26 @@ export const App: React.FC = () => {
       document.documentElement.classList.remove('light');
     }
   }, [theme]);
+
+  // Global Super Admin coordinate copy utility
+  useEffect(() => {
+    (window as any).currentUserRole = currentRole;
+    (window as any).copySmartChildCoords = (lat: number | string, lng: number | string) => {
+      const text = `${lat}, ${lng}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      }
+      const existing = document.getElementById('sc-coord-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'sc-coord-toast';
+      toast.innerText = `GPS Koordinata nusxalandi: ${text}`;
+      toast.style.cssText =
+        'position:fixed;bottom:24px;right:24px;background:#059669;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:bold;z-index:999999;box-shadow:0 10px 25px rgba(0,0,0,0.5);border:1px solid #34d399;font-family:sans-serif;';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    };
+  }, [currentRole]);
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -791,6 +814,10 @@ export const App: React.FC = () => {
                   onOpenAddSingle={() => setOpenAddStudent(true)}
                   onOpenBulkImport={() => setOpenBulkImport(true)}
                   onOpenTransfer={() => {}}
+                  onEditStudent={(std) => {
+                    setStudentToEdit(std);
+                    setOpenEditStudent(true);
+                  }}
                   onDeleteStudent={async (id) => {
                     await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
                     fetchStudents();
@@ -903,6 +930,7 @@ export const App: React.FC = () => {
               onSelectFilter={(f) => setKpiFilter(f as any)}
               alerts={notifications}
               onOpenAlerts={() => setCurrentTab('alerts')}
+              currentRole={currentRole}
               selectedStudent={selectedStudent}
               onCloseSelectedStudent={() => setSelectedStudent(null)}
               onFocusStudent={(s) => setSelectedStudent(s)}
@@ -1006,6 +1034,26 @@ export const App: React.FC = () => {
           }
           fetchStudents();
           fetchUsers();
+        }}
+      />
+
+      <EditStudentDialog
+        open={openEditStudent}
+        onOpenChange={setOpenEditStudent}
+        student={studentToEdit}
+        schools={schools}
+        currentRole={currentRole}
+        onUpdateStudent={async (id, data) => {
+          await authFetch(`/api/v1/students/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          fetchStudents();
+        }}
+        onDeleteStudent={async (id) => {
+          await authFetch(`/api/v1/students/${id}`, { method: 'DELETE' });
+          fetchStudents();
         }}
       />
 

@@ -15,6 +15,7 @@ import {
   Clock,
   MapPin,
   Check,
+  Copy,
 } from 'lucide-react';
 import { Student } from '@/types';
 
@@ -33,6 +34,7 @@ interface RightStatsColumnProps {
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
   isLoading?: boolean;
+  currentRole?: string;
 }
 
 // 300ms smooth count-up animation hook
@@ -81,6 +83,7 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
   mobileOpen,
   onCloseMobile,
   isLoading = false,
+  currentRole,
 }) => {
   // Listen for Esc key to close selected student
   useEffect(() => {
@@ -305,11 +308,40 @@ export const RightStatsColumn: React.FC<RightStatsColumnProps> = ({
                       </div>
 
                       {/* Real address (no Toshkent shahri fallback) */}
-                      <div className="text-xs text-[#8ea3c4] flex items-start gap-1.5 bg-black/20 p-2.5 rounded-xl border border-white/[0.04]">
-                        <MapPin className="w-3.5 h-3.5 text-[#22d3ee] shrink-0 mt-0.5" />
-                        <span className="line-clamp-2">
-                          {selectedStudent.telemetry?.address || 'Manzil aniqlanmoqda...'}
-                        </span>
+                      <div
+                        onClick={() => {
+                          const isSuperAdmin = (currentRole === 'SUPER_ADMIN') || ((window as any).currentUserRole === 'SUPER_ADMIN');
+                          if (isSuperAdmin && selectedStudent?.telemetry) {
+                            const lat = selectedStudent.telemetry.latitude || 41.550500;
+                            const lng = selectedStudent.telemetry.longitude || 60.631500;
+                            if ((window as any).copySmartChildCoords) {
+                              (window as any).copySmartChildCoords(lat.toFixed(6), lng.toFixed(6));
+                            }
+                          }
+                        }}
+                        className={`text-xs text-[#8ea3c4] flex items-start justify-between gap-1.5 bg-black/20 p-2.5 rounded-xl border border-white/[0.04] ${
+                          (currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN')
+                            ? 'cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-500/5 transition'
+                            : ''
+                        }`}
+                        title={
+                          (currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN')
+                            ? "Super Admin: Koordinatani nusxalash uchun bosing"
+                            : undefined
+                        }
+                      >
+                        <div className="flex items-start gap-1.5 min-w-0">
+                          <MapPin className="w-3.5 h-3.5 text-[#22d3ee] shrink-0 mt-0.5" />
+                          <span className="line-clamp-2">
+                            {selectedStudent.telemetry?.address || 'Manzil aniqlanmoqda...'}
+                          </span>
+                        </div>
+                        {(currentRole === 'SUPER_ADMIN' || (window as any).currentUserRole === 'SUPER_ADMIN') && (
+                          <span className="text-[10px] font-mono font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
+                            <Copy className="w-2.5 h-2.5" />
+                            <span>Nusxa</span>
+                          </span>
+                        )}
                       </div>
 
                       {/* Vital stats row */}

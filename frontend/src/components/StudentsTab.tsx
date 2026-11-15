@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Users, UserPlus, FileSpreadsheet, ArrowLeftRight, Trash2, Search, MapPin } from 'lucide-react';
+import { Users, UserPlus, FileSpreadsheet, ArrowLeftRight, Trash2, Search, MapPin, Edit3, Copy, Check } from 'lucide-react';
 
 interface StudentsTabProps {
   students: Student[];
@@ -13,6 +13,7 @@ interface StudentsTabProps {
   onOpenBulkImport: () => void;
   onOpenTransfer: () => void;
   onDeleteStudent: (id: string) => Promise<void>;
+  onEditStudent?: (student: Student) => void;
   onViewOnMap?: (student: Student) => void;
   currentRole?: string;
   currentUser?: any;
@@ -24,6 +25,7 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
   onOpenBulkImport,
   onOpenTransfer,
   onDeleteStudent,
+  onEditStudent,
   onViewOnMap,
   currentRole,
   currentUser,
@@ -120,7 +122,33 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="font-mono text-muted-foreground">{std.schoolId}</span> • {std.schoolName}
+                  <div className="space-y-0.5">
+                    <div>
+                      <span className="font-mono text-muted-foreground">{std.schoolId}</span> • {std.schoolName}
+                    </div>
+                    {currentRole === 'SUPER_ADMIN' && std.telemetry?.latitude && std.telemetry?.longitude && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const lat = std.telemetry!.latitude;
+                          const lng = std.telemetry!.longitude;
+                          const coords = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                          navigator.clipboard.writeText(coords);
+                          if ((window as any).copySmartChildCoords) {
+                            (window as any).copySmartChildCoords(lat.toFixed(6), lng.toFixed(6));
+                          } else {
+                            alert(`Super Admin: GPS Koordinata nusxalandi: ${coords}`);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 font-mono text-[10px] text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-1.5 py-0.5 rounded hover:bg-cyan-900/40 transition cursor-pointer"
+                        title="Super Admin: GPS koordinatasini nusxalash uchun bosing"
+                      >
+                        <MapPin className="w-2.5 h-2.5" />
+                        <span>{std.telemetry.latitude.toFixed(4)}, {std.telemetry.longitude.toFixed(4)}</span>
+                        <Copy className="w-2.5 h-2.5 ml-0.5" />
+                      </button>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="font-bold">
@@ -128,12 +156,28 @@ export const StudentsTab: React.FC<StudentsTabProps> = ({
                   </Badge>
                 </TableCell>
                 <TableCell className="font-mono text-xs">
-                  {std.deviceId}
+                  {std.deviceId ? (
+                    <span className="text-cyan-300 font-semibold">{std.deviceId}</span>
+                  ) : (
+                    <span className="text-muted-foreground italic">Biriktirilmagan</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-xs">{std.parentName || "Ota-ona"}</TableCell>
                 <TableCell className="font-mono text-xs">{std.parentPhone || "—"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {onEditStudent && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onEditStudent(std)}
+                        className="h-7 text-xs px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 font-semibold gap-1"
+                        title="O'quvchi ma'lumotlarini tahrirlash"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Tahrirlash</span>
+                      </Button>
+                    )}
                     {onViewOnMap && (
                       <Button
                         size="sm"

@@ -487,13 +487,19 @@ export const AddStudentDialog: React.FC<AddStudentModalProps> = ({
           </div>
 
           <div>
-            <Label>Samsung Galaxy Watch 5 Pro Qurilma ID:</Label>
+            <div className="flex items-center justify-between">
+              <Label>Samsung Galaxy Watch 5 Pro Qurilma ID:</Label>
+              <span className="text-[10px] text-amber-300">Ixtiyoriy (bo'sh qoldirish mumkin)</span>
+            </div>
             <Input
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}
-              placeholder="watch-5pro-05"
+              placeholder="Masalan: W5P-C8C5B916 (agar soat keyinroq biriktirilsa, bo'sh qoldiring)"
               className="mt-1 font-mono text-xs text-cyan-300 font-bold"
             />
+            <p className="text-[10px] text-[#8ea3c4] mt-0.5">
+              💡 Eslatma: Agar soatni "Notanish soatlar" bo'limidan biriktirmoqchi bo'lsangiz, bu maydonni bo'sh qoldiring.
+            </p>
           </div>
 
           {/* Ota-ona Hisobi (Level 4 Hierarchy) */}
@@ -716,5 +722,213 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ open, on
         ))}
       </div>
     </div>
+  );
+};
+
+// 7. EDIT STUDENT MODAL
+export interface EditStudentModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  student: Student | null;
+  schools: School[];
+  onUpdateStudent: (id: string, data: any) => Promise<void>;
+  onDeleteStudent?: (id: string) => Promise<void>;
+  currentRole?: string;
+}
+
+export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
+  open,
+  onOpenChange,
+  student,
+  schools,
+  onUpdateStudent,
+  onDeleteStudent,
+}) => {
+  if (!student) return null;
+
+  const [name, setName] = useState(student.name || '');
+  const [schoolId, setSchoolId] = useState(student.schoolId || schools[0]?.id || 'SCH001');
+  const [className, setClassName] = useState(student.className || '5-B');
+  const [parentName, setParentName] = useState(student.parentName || '');
+  const [parentPhone, setParentPhone] = useState(student.parentPhone || '+998901234567');
+  const [deviceId, setDeviceId] = useState(student.deviceId || '');
+  const [photo, setPhoto] = useState(student.photo || '');
+  const [saving, setSaving] = useState(false);
+
+  React.useEffect(() => {
+    if (student) {
+      setName(student.name || '');
+      setSchoolId(student.schoolId || schools[0]?.id || 'SCH001');
+      setClassName(student.className || '5-B');
+      setParentName(student.parentName || '');
+      setParentPhone(student.parentPhone || '+998901234567');
+      setDeviceId(student.deviceId || '');
+      setPhoto(student.photo || '');
+    }
+  }, [student, open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return alert("O'quvchi ismini kiriting!");
+    setSaving(true);
+    try {
+      await onUpdateStudent(student.id, {
+        name: name.trim(),
+        schoolId,
+        className: className.trim(),
+        parentName: parentName.trim(),
+        parentPhone: parentPhone.trim(),
+        deviceId: deviceId.trim() || null,
+        photo: photo.trim() || undefined,
+      });
+      onOpenChange(false);
+    } catch (err: any) {
+      alert("Xatolik yuz berdi: " + (err.message || err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-[#101a2e] border-white/[0.08] text-[#eaf2ff]">
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold text-[#eaf2ff] flex items-center gap-2">
+            ✏️ O'quvchi Ma'lumotlarini Tahrirlash va Yangilash
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-[#8ea3c4]">Student ID (Tizim kodi):</Label>
+              <Input
+                value={student.uniqueId || student.id}
+                readOnly
+                disabled
+                className="mt-1 font-mono text-xs opacity-70 bg-[#0b1220] border-white/10"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-[#8ea3c4]">Smartwatch ID (Soat):</Label>
+              <Input
+                value={deviceId}
+                onChange={(e) => setDeviceId(e.target.value)}
+                placeholder="Masalan: W5P-C470C226"
+                className="mt-1 font-mono text-xs bg-[#16233d] border-white/10 text-cyan-300"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs text-[#8ea3c4]">O'quvchi F.I.O (Ism, Familiya):</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 text-sm font-semibold bg-[#16233d] border-white/10 text-[#eaf2ff]"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-[#8ea3c4]">Biriktirilgan Maktab:</Label>
+              <select
+                value={schoolId}
+                onChange={(e) => setSchoolId(e.target.value)}
+                className="w-full mt-1 h-9 px-3 rounded-md bg-[#16233d] border border-white/10 text-xs text-[#eaf2ff] focus:outline-none focus:border-cyan-500 font-medium"
+              >
+                {schools.map((sch) => (
+                  <option key={sch.id} value={sch.id}>
+                    {sch.name} ({sch.id})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-xs text-[#8ea3c4]">Sinf (Masalan: 5-B):</Label>
+              <Input
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
+                className="mt-1 text-xs bg-[#16233d] border-white/10 font-bold text-[#eaf2ff]"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
+            <div className="text-xs font-semibold text-cyan-400">Ota-ona Ma'lumotlari:</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-[#8ea3c4]">Ota-onasi (F.I.O):</Label>
+                <Input
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  placeholder="Masalan: Valiyev Karim"
+                  className="mt-1 text-xs bg-[#16233d] border-white/10 text-[#eaf2ff]"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-[#8ea3c4]">Telefon Raqami:</Label>
+                <Input
+                  value={parentPhone}
+                  onChange={(e) => setParentPhone(e.target.value)}
+                  placeholder="+998901234567"
+                  className="mt-1 font-mono text-xs bg-[#16233d] border-white/10 text-[#eaf2ff]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs text-[#8ea3c4]">Rasm URL (Avatar):</Label>
+            <Input
+              value={photo}
+              onChange={(e) => setPhoto(e.target.value)}
+              placeholder="https://..."
+              className="mt-1 text-xs bg-[#16233d] border-white/10 text-[#eaf2ff]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-white/[0.08]">
+            {onDeleteStudent && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (confirm(`${student.name} o'quvchisini tizimdan butunlay o'chirishga ishonchingiz komilmi?`)) {
+                    onDeleteStudent(student.id);
+                    onOpenChange(false);
+                  }
+                }}
+                className="text-xs h-9 border-rose-500/30 text-rose-400 hover:bg-rose-500/10"
+              >
+                O'chirish
+              </Button>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="text-xs h-9 border-white/10 hover:bg-white/5 text-[#cbd5e1]"
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={saving}
+                className="text-xs h-9 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold hover:brightness-110 shadow"
+              >
+                {saving ? 'Saqlanmoqda...' : 'Saqlash va Yangilash'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };

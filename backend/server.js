@@ -2136,19 +2136,23 @@ app.post('/api/v1/devices/assign', authMiddleware, async (req, res) => {
       }
 
       // 3. Find student
-      assignedStudent = db.students.find(s => String(s.id) === String(studentId));
+      assignedStudent = db.students.find(s => String(s.id) === String(studentId) || String(s.uniqueId) === String(studentId));
       if (!assignedStudent) {
         throw new Error("STUDENT_NOT_FOUND");
       }
 
-      // 4. Validate student does not already have an active watch
-      const existingStudentDev = await trx('devices')
-        .where({ student_id: String(studentId), is_assigned: 1, is_revoked: 0 })
-        .whereNot({ id: device.id })
-        .first();
+      // 4. If student already has another active watch, cleanly unassign old watch
+      const existingStudentDevs = await trx('devices')
+        .where({ student_id: String(assignedStudent.id), is_assigned: 1 })
+        .whereNot({ id: device.id });
 
-      if (existingStudentDev) {
-        throw new Error("STUDENT_ALREADY_HAS_DEVICE");
+      for (const oldDev of existingStudentDevs) {
+        await trx('device_assignments')
+          .where({ device_uid: oldDev.device_uid, is_active: 1 })
+          .update({ is_active: 0, unassigned_at: new Date() });
+        await trx('devices')
+          .where({ id: oldDev.id })
+          .update({ is_assigned: 0, student_id: null, is_paired: 0, updated_at: new Date() });
       }
 
       // 5. Deactivate previous active assignment for this device
@@ -3636,8 +3640,8 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
     return res.status(400).json({ success: false, message: "O'quvchi ismi kiritilishi shart" });
   }
 
-  const schoolId = req.user.schoolId || 'SCH001';
-  const school = db.schools.find(s => s.id === schoolId) || db.schools[0];
+  const targetSchoolId = req.body.schoolId || req.user.schoolId || 'SCH001';
+  const school = db.schools.find(s => s.id === targetSchoolId || s.code === targetSchoolId) || db.schools[0];
   const uniqueId = (studentId && studentId.trim()) ? studentId.trim() : `STU-${(db.students.length + 101).toString()}`;
 
   // 1. Create or find Parent user
@@ -3667,7 +3671,7 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
   }
 
   // 2. Create or Update Student
-  const finalDeviceId = deviceId || `watch-5pro-${uniqueId.toLowerCase()}`;
+  const finalDeviceId = (deviceId && String(deviceId).trim()) ? String(deviceId).trim() : null;
   const newStudent = {
     id: uniqueId,
     studentId: uniqueId,
@@ -3682,10 +3686,10 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
     parentName: parentUser.name,
     parentPhone: parentUser.phone,
     deviceId: finalDeviceId,
-    deviceModel: "Samsung Galaxy Watch5 Pro",
+    deviceModel: finalDeviceId ? "Samsung Galaxy Watch5 Pro" : null,
     photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
     status: "ACTIVE",
-    telemetry: {
+    telemetry: finalDeviceId ? {
       latitude: school.lat || 41.550500,
       longitude: school.lng || 60.631500,
       batteryLevel: 95,
@@ -3695,7 +3699,7 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
       heartRate: 78,
       steps: 1250,
       lastSeen: Date.now()
-    }
+    } : undefined
   };
 
   const existingIdx = db.students.findIndex(s => s.id === uniqueId || s.uniqueId === uniqueId);
@@ -3706,19 +3710,21 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
   }
 
   // Update telemetry state
-  db.telemetryState[finalDeviceId] = {
-    deviceId: finalDeviceId,
-    studentId: uniqueId,
-    latitude: school.lat || 41.550500,
-    longitude: school.lng || 60.631500,
-    batteryLevel: 95,
-    isWorn: true,
-    geofenceStatus: "INSIDE",
-    deviceStatus: "ONLINE",
-    heartRate: 78,
-    steps: 1250,
-    lastSeen: Date.now()
-  };
+  if (finalDeviceId) {
+    db.telemetryState[finalDeviceId] = {
+      deviceId: finalDeviceId,
+      studentId: uniqueId,
+      latitude: school.lat || 41.550500,
+      longitude: school.lng || 60.631500,
+      batteryLevel: 95,
+      isWorn: true,
+      geofenceStatus: "INSIDE",
+      deviceStatus: "ONLINE",
+      heartRate: 78,
+      steps: 1250,
+      lastSeen: Date.now()
+    };
+  }
 
   if (!db.auditLogs) db.auditLogs = [];
   db.auditLogs.unshift({
@@ -3922,7 +3928,7 @@ app.post('/api/v1/users', (req, res) => {
 // 20. Single Student Registration (Section 3)
 app.post('/api/v1/students', (req, res) => {
   const { studentId, name, schoolId, classId, className, parentPhone, parentName, deviceId } = req.body;
-  const school = db.schools.find(s => s.id === schoolId) || db.schools[0];
+  const targetSchool = db.schools.find(s => s.id === schoolId || s.code === schoolId) || db.schools[0];
   const uniqueId = studentId || `10${(db.students.length + 101).toString()}`;
 
   const newStudent = {
@@ -3930,15 +3936,15 @@ app.post('/api/v1/students', (req, res) => {
     studentId: uniqueId,
     uniqueId,
     name: name || `O'quvchi ${uniqueId}`,
-    schoolId: school.id,
-    schoolName: school.name,
+    schoolId: targetSchool.id,
+    schoolName: targetSchool.name,
     classId: classId || "cls-5b",
     className: className || "5-B",
     parentId: "usr-parent-1",
     parentName: parentName || "Ota-ona",
     parentPhone: parentPhone || "+998901112233",
-    deviceId: deviceId || `watch-5pro-${uniqueId}`,
-    deviceModel: "Samsung Galaxy Watch5 Pro",
+    deviceId: (deviceId && String(deviceId).trim()) ? String(deviceId).trim() : null,
+    deviceModel: (deviceId && String(deviceId).trim()) ? "Samsung Galaxy Watch5 Pro" : null,
     photo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
     status: "ACTIVE"
   };
@@ -3958,6 +3964,122 @@ app.post('/api/v1/students', (req, res) => {
   saveDb();
   broadcast('student_added', newStudent);
   res.json({ success: true, message: "O'quvchi muvaffaqiyatli ro'yxatdan o'tdi", student: newStudent });
+});
+
+// 20.1 Edit/Update Student (Complete Information Update)
+app.put('/api/v1/students/:id', optionalAuthMiddleware, async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    const student = db.students.find(s => String(s.id) === String(studentId) || String(s.uniqueId) === String(studentId));
+    if (!student) {
+      return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+    }
+
+    const {
+      name,
+      schoolId,
+      className,
+      classId,
+      parentName,
+      parentPhone,
+      deviceId,
+      photo
+    } = req.body || {};
+
+    if (name !== undefined) student.name = String(name).trim();
+    if (className !== undefined) student.className = String(className).trim();
+    if (classId !== undefined) student.classId = classId;
+    if (parentName !== undefined) student.parentName = String(parentName).trim();
+    if (parentPhone !== undefined) student.parentPhone = String(parentPhone).trim();
+    if (photo !== undefined) student.photo = photo;
+
+    // School update
+    if (schoolId && schoolId !== student.schoolId) {
+      student.schoolId = schoolId;
+      const targetSchool = db.schools.find(s => s.id === schoolId || s.code === schoolId);
+      if (targetSchool) {
+        student.schoolName = targetSchool.name;
+      }
+    }
+
+    // Device ID update
+    const oldDeviceId = student.deviceId;
+    if (deviceId !== undefined) {
+      const newDeviceId = deviceId ? String(deviceId).trim() : null;
+      student.deviceId = newDeviceId;
+
+      // Sync with SQL devices table if knexDb available
+      try {
+        if (oldDeviceId && oldDeviceId !== newDeviceId) {
+          // Unassign old device
+          await knexDb('devices')
+            .where({ device_uid: oldDeviceId })
+            .orWhere({ id: oldDeviceId })
+            .update({ is_assigned: 0, student_id: null, is_paired: 0, updated_at: new Date() });
+          
+          await knexDb('device_assignments')
+            .where({ device_uid: oldDeviceId, is_active: 1 })
+            .update({ is_active: 0, unassigned_at: new Date() });
+        }
+
+        if (newDeviceId) {
+          // Assign or update new device
+          const targetDevice = await knexDb('devices')
+            .where({ device_uid: newDeviceId })
+            .orWhere({ id: newDeviceId })
+            .first();
+
+          if (targetDevice) {
+            await knexDb('devices')
+              .where({ id: targetDevice.id })
+              .update({
+                student_id: String(student.id),
+                school_id: student.schoolId || 'SCH001',
+                is_assigned: 1,
+                is_paired: 1,
+                updated_at: new Date()
+              });
+
+            await knexDb('device_assignments').insert({
+              id: 'asg_' + crypto.randomUUID(),
+              device_uid: targetDevice.device_uid,
+              student_id: String(student.id),
+              school_id: student.schoolId || 'SCH001',
+              assigned_by: req.user?.email || 'ADMIN',
+              is_active: 1,
+              assigned_at: new Date(),
+              notes: "Tahrirlash orqali yangilandi"
+            });
+          }
+        }
+      } catch (sqlErr) {
+        console.warn('Student device SQL update non-critical warning:', sqlErr.message);
+      }
+    }
+
+    if (!db.auditLogs) db.auditLogs = [];
+    db.auditLogs.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      user: req.user?.email || "Maktab Administratori",
+      role: req.user?.role || "ADMIN",
+      action: "STUDENT_UPDATED",
+      target: student.uniqueId || student.id,
+      details: `${student.name} (${student.uniqueId || student.id}) ma'lumotlari yangilandi.`
+    });
+
+    saveDb();
+    broadcast('student_updated', student);
+
+    res.json({
+      success: true,
+      message: "O'quvchi ma'lumotlari muvaffaqiyatli yangilandi",
+      student
+    });
+  } catch (err) {
+    console.error('Error updating student:', err);
+    res.status(500).json({ success: false, message: "O'quvchini yangilashda xatolik: " + err.message });
+  }
 });
 
 // 21. Delete Student

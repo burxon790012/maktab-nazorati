@@ -751,6 +751,9 @@ export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
   const [className, setClassName] = useState(student.className || '5-B');
   const [parentName, setParentName] = useState(student.parentName || '');
   const [parentPhone, setParentPhone] = useState(student.parentPhone || '+998901234567');
+  const [parentLogin, setParentLogin] = useState((student as any).parentLogin || '');
+  const [parentPassword, setParentPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [deviceId, setDeviceId] = useState(student.deviceId || '');
   const [photo, setPhoto] = useState(student.photo || '');
   const [saving, setSaving] = useState(false);
@@ -762,6 +765,8 @@ export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
       setClassName(student.className || '5-B');
       setParentName(student.parentName || '');
       setParentPhone(student.parentPhone || '+998901234567');
+      setParentLogin((student as any).parentLogin || '');
+      setParentPassword('');
       setDeviceId(student.deviceId || '');
       setPhoto(student.photo || '');
     }
@@ -778,6 +783,8 @@ export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
         className: className.trim(),
         parentName: parentName.trim(),
         parentPhone: parentPhone.trim(),
+        parentLogin: parentLogin.trim() || undefined,
+        parentPassword: parentPassword.trim() || undefined,
         deviceId: deviceId.trim() || null,
         photo: photo.trim() || undefined,
       });
@@ -856,8 +863,12 @@ export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
-            <div className="text-xs font-semibold text-cyan-400">Ota-ona Ma'lumotlari:</div>
+          <div className="p-3.5 rounded-xl bg-white/[0.02] border border-amber-500/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-300">👨‍👩‍👧 Ota-ona Hisobi & Tizimga Kirish Ma'lumotlari</span>
+              <span className="text-[10px] text-slate-400">Rol: PARENT</span>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs text-[#8ea3c4]">Ota-onasi (F.I.O):</Label>
@@ -876,6 +887,39 @@ export const EditStudentDialog: React.FC<EditStudentModalProps> = ({
                   placeholder="+998901234567"
                   className="mt-1 font-mono text-xs bg-[#16233d] border-white/10 text-[#eaf2ff]"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+              <div>
+                <Label className="text-xs text-amber-300">Ota-ona Logini:</Label>
+                <Input
+                  value={parentLogin}
+                  onChange={(e) => setParentLogin(e.target.value)}
+                  placeholder="Masalan: otashbek.com"
+                  className="mt-1 font-mono text-xs bg-[#16233d] border-amber-500/30 text-amber-200"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">Ilovaga kirish uchun login yoki telefon</p>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-amber-300">Ota-ona Yangi Paroli:</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[10px] text-cyan-400 hover:underline"
+                  >
+                    {showPassword ? "Yashirish" : "Ko'rish"}
+                  </button>
+                </div>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={parentPassword}
+                  onChange={(e) => setParentPassword(e.target.value)}
+                  placeholder="Yangi parol (ixtiyoriy)"
+                  className="mt-1 font-mono text-xs bg-[#16233d] border-amber-500/30 text-amber-200"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">Parol o'zgarmasa, bo'sh qoldiring</p>
               </div>
             </div>
           </div>

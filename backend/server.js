@@ -1080,8 +1080,14 @@ app.get('/api/v1/students', optionalAuthMiddleware, (req, res) => {
       statusDisplay: "LEFT SCHOOL – OUTSIDE SCHOOL",
       statusColor: "RED"
     };
+    const parentUser = db.users.find(u =>
+      (std.parentId && u.id === std.parentId) ||
+      (Array.isArray(u.childrenIds) && u.childrenIds.map(String).includes(String(std.uniqueId || std.id))) ||
+      (u.role === 'PARENT' && std.parentPhone && u.phone === std.parentPhone)
+    );
     return {
       ...std,
+      parentLogin: parentUser?.username || parentUser?.email || '',
       telemetry: telem,
       todayAttendance: att
     };
@@ -3982,6 +3988,8 @@ app.put('/api/v1/students/:id', optionalAuthMiddleware, async (req, res) => {
       classId,
       parentName,
       parentPhone,
+      parentLogin,
+      parentPassword,
       deviceId,
       photo
     } = req.body || {};
@@ -3992,6 +4000,51 @@ app.put('/api/v1/students/:id', optionalAuthMiddleware, async (req, res) => {
     if (parentName !== undefined) student.parentName = String(parentName).trim();
     if (parentPhone !== undefined) student.parentPhone = String(parentPhone).trim();
     if (photo !== undefined) student.photo = photo;
+
+    // Parent Account (Login & Password) Update
+    if (parentLogin || parentPassword || parentName || parentPhone) {
+      let parentUser = db.users.find(u =>
+        (student.parentId && u.id === student.parentId) ||
+        (Array.isArray(u.childrenIds) && u.childrenIds.map(String).includes(String(student.uniqueId || student.id))) ||
+        (u.role === 'PARENT' && student.parentPhone && u.phone === student.parentPhone) ||
+        (parentLogin && (u.username === String(parentLogin).trim().toLowerCase() || u.email === String(parentLogin).trim().toLowerCase()))
+      );
+
+      if (parentUser) {
+        if (parentLogin) {
+          const cleanLogin = String(parentLogin).trim().toLowerCase();
+          parentUser.username = cleanLogin;
+          parentUser.email = cleanLogin.includes('@') ? cleanLogin : `${cleanLogin}@smartchild.uz`;
+        }
+        if (parentPassword && String(parentPassword).trim()) {
+          parentUser.password = hashPassword(String(parentPassword).trim());
+        }
+        if (parentName) parentUser.name = String(parentName).trim();
+        if (parentPhone) parentUser.phone = String(parentPhone).trim();
+        student.parentId = parentUser.id;
+        student.parentName = parentUser.name;
+        student.parentPhone = parentUser.phone;
+      } else if (parentLogin || parentPassword) {
+        const pUsername = (parentLogin || `ota_${(student.uniqueId || student.id).toLowerCase()}`).trim().toLowerCase();
+        const pPass = parentPassword ? String(parentPassword).trim() : 'Ota12345!';
+        parentUser = {
+          id: `usr-par-${Date.now()}`,
+          name: parentName ? String(parentName).trim() : (student.parentName || `${student.name}ning Ota-onasi`),
+          username: pUsername,
+          email: pUsername.includes('@') ? pUsername : `${pUsername}@smartchild.uz`,
+          phone: parentPhone ? String(parentPhone).trim() : (student.parentPhone || "+998901112233"),
+          password: hashPassword(pPass),
+          role: "PARENT",
+          childrenIds: [student.uniqueId || student.id],
+          mustChangePassword: false,
+          createdAt: new Date().toISOString()
+        };
+        db.users.push(parentUser);
+        student.parentId = parentUser.id;
+        student.parentName = parentUser.name;
+        student.parentPhone = parentUser.phone;
+      }
+    }
 
     // School update
     if (schoolId && schoolId !== student.schoolId) {

@@ -3259,9 +3259,26 @@ app.post('/api/v1/notifications/push', (req, res) => {
 });
 
 // 15. Single Student Details (Section 6: Parent Application Integration)
-app.get('/api/v1/students/:id', (req, res) => {
-  const student = db.students.find(s => s.id === req.params.id || s.uniqueId === req.params.id);
+app.get('/api/v1/students/:id', optionalAuthMiddleware, (req, res) => {
+  const student = db.students.find(s => String(s.id) === String(req.params.id) || String(s.uniqueId) === String(req.params.id));
   if (!student) return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+
+  if (req.user && req.user.role === 'PARENT') {
+    const liveUser = db.users.find(u => u.id === req.user.id || (u.email && u.email.toLowerCase() === (req.user.email || '').toLowerCase()));
+    if (liveUser && (liveUser.status === 'INACTIVE' || liveUser.isActive === false)) {
+      return res.status(403).json({ success: false, message: "Hisob ma'muriyat tomonidan bloklangan" });
+    }
+    const currentChildIds = (liveUser?.childrenIds || req.user.childrenIds || []).map(String);
+    const isAuthorized = currentChildIds.includes(String(student.id)) ||
+      (student.uniqueId && currentChildIds.includes(String(student.uniqueId))) ||
+      (student.parentId && student.parentId === req.user.id);
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Ruxsat berilmagan: Siz faqat o'zingizga biriktirilgan farzand ma'lumotlarini ko'ra olasiz"
+      });
+    }
+  }
 
   const telem = db.telemetryState[student.deviceId] || {};
   const school = db.schools.find(s => s.id === student.schoolId) || {};
@@ -3363,6 +3380,10 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
     return res.status(401).json({ success: false, message: 'Foydalanuvchi topilmadi' });
   }
 
+  if (user && (user.status === 'INACTIVE' || user.isActive === false)) {
+    return res.status(403).json({ success: false, message: "Hisob faolsizlantirilgan. Maktab ma'muriyatiga murojaat qiling." });
+  }
+
   // Password verification
   if (password) {
     let isValid = verifyPassword(password, user.password);
@@ -3383,9 +3404,21 @@ app.post('/api/v1/auth/login', authLimiter, (req, res) => {
   }
 
   const school = user.schoolId ? db.schools.find(s => s.id === user.schoolId) : null;
-  const children = user.role === 'PARENT' && user.childrenIds 
-    ? db.students.filter(s => user.childrenIds.includes(s.id))
+  const children = user.role === 'PARENT'
+    ? db.students.filter(s =>
+        (user.childrenIds && (user.childrenIds.map(String).includes(String(s.id)) || (s.uniqueId && user.childrenIds.map(String).includes(String(s.uniqueId))))) ||
+        (s.parentId && s.parentId === user.id)
+      )
     : [];
+
+  if (user.role === 'PARENT') {
+    const allChildIds = new Set((user.childrenIds || []).map(String));
+    for (const ch of children) {
+      allChildIds.add(String(ch.id));
+      if (ch.uniqueId) allChildIds.add(String(ch.uniqueId));
+    }
+    user.childrenIds = Array.from(allChildIds);
+  }
 
   const token = signToken(user);
   const refreshToken = signRefreshToken(user);
@@ -3768,18 +3801,27 @@ app.post('/api/v1/teacher/students-with-parent', authMiddleware, (req, res) => {
   });
 });
 
-// Parent: Get ONLY their own children
-app.get('/api/v1/parent/my-children', authMiddleware, (req, res) => {
+// Parent: Get ONLY their own children (supports both /children and /my-children)
+app.get(['/api/v1/parent/my-children', '/api/v1/parent/children'], authMiddleware, (req, res) => {
   if (req.user.role !== 'PARENT' && req.user.role !== 'SUPER_ADMIN') {
     return res.status(403).json({ success: false, message: "Faqat ota-ona hisobi uchun ruxsat etilgan" });
   }
 
-  const childIds = req.user.childrenIds || [];
+  // Real-time lookup of parent user to reflect any administrator updates instantly
+  const liveUser = db.users.find(u => u.id === req.user.id || (u.email && u.email.toLowerCase() === (req.user.email || '').toLowerCase()));
+  if (liveUser && (liveUser.status === 'INACTIVE' || liveUser.isActive === false)) {
+    return res.status(403).json({ success: false, message: "Hisobingiz ma'muriyat tomonidan bloklangan" });
+  }
+
+  const childIds = (liveUser?.childrenIds || req.user.childrenIds || []).map(String);
   const seenIds = new Set();
   const children = [];
 
   for (const s of db.students) {
-    if (childIds.map(String).includes(String(s.id)) || childIds.map(String).includes(String(s.uniqueId))) {
+    const isLinked = childIds.includes(String(s.id)) ||
+                     (s.uniqueId && childIds.includes(String(s.uniqueId))) ||
+                     (s.parentId && s.parentId === req.user.id);
+    if (isLinked) {
       if (!seenIds.has(s.id)) {
         seenIds.add(s.id);
         const telem = db.telemetryState[s.deviceId] || s.telemetry || {
@@ -3812,16 +3854,32 @@ app.get('/api/v1/parent/my-children', authMiddleware, (req, res) => {
 // Parent: Get Child telemetry with strict permission check
 app.get('/api/v1/parent/child/:id/telemetry', authMiddleware, (req, res) => {
   const childId = req.params.id;
-  if (!canAccessChildLocation(req.user, childId)) {
+  const student = db.students.find(s => String(s.id) === String(childId) || String(s.uniqueId) === String(childId));
+  if (!student) {
+    return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+  }
+
+  // Real-time verification of user status & permission
+  const liveUser = db.users.find(u => u.id === req.user.id || (u.email && u.email.toLowerCase() === (req.user.email || '').toLowerCase()));
+  if (liveUser && (liveUser.status === 'INACTIVE' || liveUser.isActive === false)) {
+    return res.status(403).json({ success: false, message: "Hisobingiz ma'muriyat tomonidan bloklangan" });
+  }
+  const currentChildIds = (liveUser?.childrenIds || req.user.childrenIds || []).map(String);
+
+  const isAuthorized = req.user.role === 'SUPER_ADMIN' ||
+    (req.user.role === 'PARENT' && (
+      currentChildIds.includes(String(student.id)) ||
+      (student.uniqueId && currentChildIds.includes(String(student.uniqueId))) ||
+      (student.parentId && student.parentId === req.user.id) ||
+      canAccessChildLocation(req.user, student.id) ||
+      canAccessChildLocation(req.user, student.uniqueId)
+    ));
+
+  if (!isAuthorized) {
     return res.status(403).json({
       success: false,
       message: "Ruxsat berilmagan: Siz faqat o'z farzandingiz telemetriyasini ko'ra olasiz"
     });
-  }
-
-  const student = db.students.find(s => String(s.id) === String(childId) || String(s.uniqueId) === String(childId));
-  if (!student) {
-    return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
   }
 
   const telem = db.telemetryState[student.deviceId] || student.telemetry;
@@ -4191,9 +4249,31 @@ app.delete('/api/v1/schools/:id', (req, res) => {
 });
 
 // 24. Movement Route History (Section 6)
-app.get('/api/v1/students/:id/route-history', (req, res) => {
+app.get('/api/v1/students/:id/route-history', optionalAuthMiddleware, (req, res) => {
   const studentId = req.params.id;
-  const history = (db.routeHistory && db.routeHistory[studentId]) || [
+  const student = db.students.find(s => String(s.id) === String(studentId) || String(s.uniqueId) === String(studentId));
+  if (!student) {
+    return res.status(404).json({ success: false, message: "O'quvchi topilmadi" });
+  }
+
+  if (req.user && req.user.role === 'PARENT') {
+    const liveUser = db.users.find(u => u.id === req.user.id || (u.email && u.email.toLowerCase() === (req.user.email || '').toLowerCase()));
+    if (liveUser && (liveUser.status === 'INACTIVE' || liveUser.isActive === false)) {
+      return res.status(403).json({ success: false, message: "Hisob ma'muriyat tomonidan bloklangan" });
+    }
+    const currentChildIds = (liveUser?.childrenIds || req.user.childrenIds || []).map(String);
+    const isAuthorized = currentChildIds.includes(String(student.id)) ||
+      (student.uniqueId && currentChildIds.includes(String(student.uniqueId))) ||
+      (student.parentId && student.parentId === req.user.id);
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Ruxsat berilmagan: Siz faqat o'z farzandingiz marshrut tarixini ko'ra olasiz"
+      });
+    }
+  }
+
+  const history = (db.routeHistory && (db.routeHistory[student.id] || db.routeHistory[student.uniqueId])) || [
     { lat: 41.306000, lng: 69.236000, time: "07:55:00", speed: 1.1, heading: 45, status: "OUTSIDE", color: "RED" },
     { lat: 41.307500, lng: 69.237200, time: "08:02:15", speed: 1.3, heading: 48, status: "OUTSIDE", color: "RED" },
     { lat: 41.309000, lng: 69.238500, time: "08:10:30", speed: 1.2, heading: 50, status: "OUTSIDE", color: "RED" },
@@ -4201,7 +4281,7 @@ app.get('/api/v1/students/:id/route-history', (req, res) => {
     { lat: 41.311120, lng: 69.240610, time: "08:18:24", speed: 0.2, heading: 45, status: "INSIDE", color: "GREEN" }
   ];
 
-  res.json({ success: true, studentId, points: history });
+  res.json({ success: true, studentId: student.id, points: history });
 });
 
 // 25. Parent Adds Child By Student ID (Section 6)
